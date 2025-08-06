@@ -1,0 +1,62 @@
+# BuildwiseAI - Real Estate Development Finance Platform
+
+## Overview
+
+BuildwiseAI is a modern web application designed to streamline financial management workflows for real estate developers and investors. The platform provides AI-powered tools for feasibility analysis, development budgeting, joint venture structuring, and automated investor reporting. Built as a single-page application with a React frontend and Express backend, it targets small to mid-size real estate developers who need efficient, specialized financial management tools.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript for type safety and modern development patterns
+- **Routing**: Wouter for lightweight client-side routing
+- **UI Components**: Shadcn/ui component library built on Radix UI primitives for accessibility and consistency
+- **Styling**: Tailwind CSS with custom design tokens and CSS variables for theming
+- **State Management**: TanStack Query (React Query) for server state management and API data fetching
+- **Forms**: React Hook Form with Zod validation for type-safe form handling
+- **Build Tool**: Vite for fast development and optimized production builds
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js framework using ES modules
+- **Language**: TypeScript for full-stack type safety
+- **API Design**: RESTful API endpoints for lead management and calculation storage
+- **Middleware**: Custom logging middleware for API request tracking
+- **Error Handling**: Centralized error handling with proper HTTP status codes
+
+### Data Storage Solutions
+- **Database**: PostgreSQL configured through Drizzle ORM
+- **ORM**: Drizzle ORM with schema-first approach for type-safe database operations
+- **Schema Management**: Shared schema definitions between frontend and backend using Zod
+- **Migrations**: Drizzle Kit for database schema migrations
+- **Development Storage**: In-memory storage implementation for development/testing
+- **Connection**: Neon Database serverless PostgreSQL for production
+
+### Authentication and Authorization
+- **Current State**: No authentication system implemented (prototype stage)
+- **Session Management**: Basic Express session configuration present but not actively used
+- **Future Considerations**: Ready for implementation of user authentication and role-based access control
+
+### External Dependencies
+- **Database Hosting**: Neon Database (@neondatabase/serverless) for serverless PostgreSQL
+- **UI Framework**: Comprehensive Radix UI component ecosystem for accessible components
+- **Development Tools**: Replit-specific plugins for development environment integration
+- **Validation**: Zod for runtime type checking and form validation
+- **Date Handling**: date-fns for date manipulation and formatting
+- **Styling**: Class Variance Authority for component variant management
+
+### Key Design Patterns
+- **Shared Schema**: Common type definitions and validation schemas shared between client and server
+- **Component-Driven Development**: Modular React components with clear separation of concerns
+- **Type Safety**: End-to-end TypeScript implementation with strict type checking
+- **Error Boundaries**: Proper error handling with user-friendly error displays
+- **Responsive Design**: Mobile-first approach with responsive layouts
+- **Performance Optimization**: Lazy loading, code splitting, and optimized bundle sizes
+
+### Development Workflow
+- **Build Process**: Separate client and server build processes with esbuild for server bundling
+- **Development Server**: Hot module replacement with Vite for fast development cycles
+- **Code Quality**: TypeScript strict mode with comprehensive type checking
+- **Asset Management**: Static asset serving with proper caching strategies
