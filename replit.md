@@ -8,6 +8,25 @@ BuildwiseAI is a modern web application designed to streamline financial managem
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 2025)
+
+### BuildwiseAI Marketing Website Completed
+- **Date**: August 2025
+- **Status**: Production-ready website built for BuildwiseAI real estate development finance platform
+- **Features Implemented**:
+  - Professional marketing homepage with hero section
+  - Interactive feasibility calculator with real-time ROI analysis
+  - Features overview highlighting AI-powered tools
+  - Product showcase for budget tracking and investor reporting
+  - About founder section featuring Kourosh Ahmadian's background
+  - Pricing plans (Starter/Pro/Enterprise) with clear value propositions
+  - Lead generation contact form with role-based segmentation
+  - Professional testimonials and social proof
+  - Responsive design with BuildwiseAI brand colors
+- **Technical Stack**: React/TypeScript frontend, Express backend, in-memory storage for development
+- **Deployment Ready**: Configured for Replit deployment with custom domain (buildwiseai.ca) support
+- **Business Impact**: Ready to capture leads and demonstrate platform capabilities to potential customers
+
 ## System Architecture
 
 ### Frontend Architecture
