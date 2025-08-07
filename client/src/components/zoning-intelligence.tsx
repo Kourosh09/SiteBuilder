@@ -33,10 +33,16 @@ interface ZoningData {
     side: number;
   };
   parkingRequirements: string;
+  bill44Eligible: boolean;
+  bill44MaxUnits: number;
+  transitOriented: boolean;
+  multiplexEligible: boolean;
 }
 
 interface DevelopmentPotential {
   maxUnits: number;
+  bill44MaxUnits: number;
+  recommendedUnits: number;
   suggestedUnitMix: {
     bedrooms: number;
     count: number;
@@ -47,6 +53,12 @@ interface DevelopmentPotential {
   feasibilityScore: number;
   constraints: string[];
   opportunities: string[];
+  bill44Compliance: {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  };
 }
 
 interface CityDataResult {
@@ -86,7 +98,8 @@ export default function ZoningIntelligence() {
   const [analysisForm, setAnalysisForm] = useState({
     address: "",
     city: "",
-    lotSize: ""
+    lotSize: "",
+    frontage: ""
   });
 
   const [designForm, setDesignForm] = useState({
@@ -94,10 +107,10 @@ export default function ZoningIntelligence() {
   });
 
   const handleZoningAnalysis = async () => {
-    if (!analysisForm.address || !analysisForm.city || !analysisForm.lotSize) {
+    if (!analysisForm.address || !analysisForm.city || !analysisForm.lotSize || !analysisForm.frontage) {
       toast({
         title: "Missing Information",
-        description: "Please enter address, city, and lot size.",
+        description: "Please enter address, city, lot size, and frontage.",
         variant: "destructive"
       });
       return;
@@ -111,7 +124,8 @@ export default function ZoningIntelligence() {
         body: JSON.stringify({
           address: analysisForm.address,
           city: analysisForm.city,
-          lotSize: parseInt(analysisForm.lotSize)
+          lotSize: parseInt(analysisForm.lotSize),
+          frontage: parseInt(analysisForm.frontage)
         })
       });
 
@@ -256,6 +270,104 @@ export default function ZoningIntelligence() {
           </p>
         </div>
 
+        {/* Bill 44 Quick Checker */}
+        <Card className="max-w-4xl mx-auto mb-8 shadow-lg border-brand-blue/20">
+          <CardHeader className="bg-gradient-to-r from-brand-blue/5 to-emerald-50">
+            <CardTitle className="flex items-center gap-2 text-brand-blue">
+              <Zap className="w-5 h-5" />
+              Bill 44 Quick Eligibility Checker
+            </CardTitle>
+            <CardDescription>
+              Instantly check if your property qualifies for Bill 44 multiplex development
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="quick-lot-size">Lot Size (sq ft)</Label>
+                <Input
+                  id="quick-lot-size"
+                  placeholder="3500"
+                  type="number"
+                  value={analysisForm.lotSize}
+                  onChange={(e) => setAnalysisForm({...analysisForm, lotSize: e.target.value})}
+                  data-testid="input-quick-lot-size"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quick-frontage">Frontage (ft)</Label>
+                <Input
+                  id="quick-frontage"
+                  placeholder="35"
+                  type="number"
+                  value={analysisForm.frontage}
+                  onChange={(e) => setAnalysisForm({...analysisForm, frontage: e.target.value})}
+                  data-testid="input-quick-frontage"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quick-city">City</Label>
+                <Input
+                  id="quick-city"
+                  placeholder="Vancouver"
+                  value={analysisForm.city}
+                  onChange={(e) => setAnalysisForm({...analysisForm, city: e.target.value})}
+                  data-testid="input-quick-city"
+                />
+              </div>
+            </div>
+            
+            {/* Quick Results */}
+            {analysisForm.lotSize && analysisForm.frontage && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-neutral-50 to-emerald-50 rounded-lg border">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Lot Size Check</h4>
+                    <Badge 
+                      variant={parseInt(analysisForm.lotSize) >= 3000 ? "default" : "secondary"}
+                      className={parseInt(analysisForm.lotSize) >= 3000 ? "bg-emerald-600" : ""}
+                    >
+                      {parseInt(analysisForm.lotSize) >= 3000 ? "✅ Meets 3,000 sq ft minimum" : "❌ Below 3,000 sq ft minimum"}
+                    </Badge>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Frontage Check</h4>
+                    <Badge 
+                      variant={parseInt(analysisForm.frontage) >= 33 ? "default" : "secondary"}
+                      className={parseInt(analysisForm.frontage) >= 33 ? "bg-emerald-600" : ""}
+                    >
+                      {parseInt(analysisForm.frontage) >= 33 ? "✅ Meets 33 ft minimum" : "❌ Below 33 ft minimum"}
+                    </Badge>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Bill 44 Eligibility</h4>
+                    <Badge 
+                      variant={(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? "default" : "secondary"}
+                      className={(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? "bg-brand-blue" : ""}
+                    >
+                      {(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? 
+                        (parseInt(analysisForm.lotSize) >= 4000 && parseInt(analysisForm.frontage) >= 40 ? 
+                          "🎯 6-plex Eligible" : "🏘️ 4-plex Eligible") : 
+                        "❌ Not Eligible"}
+                    </Badge>
+                  </div>
+                </div>
+                
+                {(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-emerald-600 font-medium">
+                      ✅ This property qualifies for Bill 44 multiplex development!
+                    </p>
+                    <p className="text-xs text-neutral-600 mt-1">
+                      Complete the analysis below for detailed zoning information and development recommendations.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Analysis Input Form */}
         <Card className="max-w-2xl mx-auto mb-12 shadow-lg">
           <CardHeader>
@@ -264,7 +376,7 @@ export default function ZoningIntelligence() {
               Property Analysis Input
             </CardTitle>
             <CardDescription>
-              Enter property details to analyze zoning and development potential
+              Enter property details to analyze zoning and Bill 44 development potential
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -290,16 +402,29 @@ export default function ZoningIntelligence() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lot-size">Lot Size (sq ft)</Label>
-              <Input
-                id="lot-size"
-                placeholder="5000"
-                type="number"
-                value={analysisForm.lotSize}
-                onChange={(e) => setAnalysisForm({...analysisForm, lotSize: e.target.value})}
-                data-testid="input-lot-size"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lot-size">Lot Size (sq ft)</Label>
+                <Input
+                  id="lot-size"
+                  placeholder="5000"
+                  type="number"
+                  value={analysisForm.lotSize}
+                  onChange={(e) => setAnalysisForm({...analysisForm, lotSize: e.target.value})}
+                  data-testid="input-lot-size"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="frontage">Frontage (ft)</Label>
+                <Input
+                  id="frontage"
+                  placeholder="50"
+                  type="number"
+                  value={analysisForm.frontage}
+                  onChange={(e) => setAnalysisForm({...analysisForm, frontage: e.target.value})}
+                  data-testid="input-frontage"
+                />
+              </div>
             </div>
 
             <Button
@@ -317,7 +442,7 @@ export default function ZoningIntelligence() {
               ) : (
                 <>
                   <Zap className="w-4 h-4 mr-2" />
-                  Analyze Zoning & Development Potential
+                  Analyze Bill 44 Eligibility & Development Potential
                 </>
               )}
             </Button>
@@ -448,13 +573,32 @@ export default function ZoningIntelligence() {
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-neutral-600">Max Units</p>
-                          <p className="text-2xl font-bold" data-testid="text-max-units">
-                            {cityData.developmentPotential.maxUnits}
+                      {/* Bill 44 Unit Comparison */}
+                      <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-blue-50 to-emerald-50 rounded-lg border border-brand-blue/20">
+                        <div className="space-y-2 text-center">
+                          <p className="text-sm font-medium text-neutral-600">Traditional Zoning</p>
+                          <p className="text-xl font-bold text-neutral-600" data-testid="text-max-units">
+                            {cityData.developmentPotential.maxUnits} units
                           </p>
+                          <Badge variant="outline" className="text-xs">Current Zoning</Badge>
                         </div>
+                        <div className="space-y-2 text-center">
+                          <p className="text-sm font-medium text-neutral-600">Bill 44 Eligible</p>
+                          <p className="text-2xl font-bold text-brand-blue" data-testid="text-bill44-units">
+                            {cityData.developmentPotential.bill44MaxUnits} units
+                          </p>
+                          <Badge variant="default" className="text-xs bg-brand-blue">Enhanced</Badge>
+                        </div>
+                        <div className="space-y-2 text-center">
+                          <p className="text-sm font-medium text-neutral-600">🎯 Recommended</p>
+                          <p className="text-2xl font-bold text-emerald-600" data-testid="text-recommended-units">
+                            {cityData.developmentPotential.recommendedUnits} units
+                          </p>
+                          <Badge variant="default" className="text-xs bg-emerald-600">Optimal</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <p className="text-sm font-medium text-neutral-600">Building Type</p>
                           <p className="font-semibold" data-testid="text-building-type">
@@ -473,6 +617,64 @@ export default function ZoningIntelligence() {
                             {formatCurrency(cityData.developmentPotential.estimatedValue)}
                           </p>
                         </div>
+                      </div>
+
+                      {/* Bill 44 Compliance Section */}
+                      {cityData.developmentPotential.bill44Compliance && (
+                        <div className="space-y-4 p-4 bg-neutral-50 rounded-lg border">
+                          <div className="flex items-center gap-2">
+                            <Building className="w-5 h-5 text-brand-blue" />
+                            <h4 className="font-semibold text-brand-blue">Bill 44 Compliance Analysis</h4>
+                            <Badge 
+                              variant={cityData.developmentPotential.bill44Compliance.eligible ? "default" : "secondary"}
+                              className={cityData.developmentPotential.bill44Compliance.eligible ? "bg-emerald-600" : ""}
+                            >
+                              {cityData.developmentPotential.bill44Compliance.eligible ? "✅ Eligible" : "❌ Not Eligible"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-sm font-medium text-neutral-600 mb-2">Benefits & Requirements</p>
+                              <div className="space-y-1">
+                                {cityData.developmentPotential.bill44Compliance.benefits.map((benefit, index) => (
+                                  <div key={index} className="text-sm" data-testid={`bill44-benefit-${index}`}>
+                                    {benefit}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {cityData.developmentPotential.bill44Compliance.requirements.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Requirements</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.bill44Compliance.requirements.map((requirement, index) => (
+                                    <div key={index} className="text-sm text-neutral-600" data-testid={`bill44-requirement-${index}`}>
+                                      • {requirement}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {cityData.developmentPotential.bill44Compliance.incentives.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Available Incentives</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.bill44Compliance.incentives.map((incentive, index) => (
+                                    <div key={index} className="text-sm text-emerald-600" data-testid={`bill44-incentive-${index}`}>
+                                      💰 {incentive}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 gap-4">
                       </div>
 
                       <div className="space-y-2">

@@ -82,7 +82,7 @@ export class ZoningIntelligenceService {
   /**
    * Get comprehensive zoning and development analysis (BC-focused with Bill 44 compliance)
    */
-  async getZoningAnalysis(address: string, city: string, lotSize: number): Promise<CityDataResult> {
+  async getZoningAnalysisWithBill44(address: string, city: string, lotSize: number, frontage: number): Promise<CityDataResult> {
     try {
       // Ensure BC location
       if (!this.isBCLocation(city)) {
@@ -96,7 +96,7 @@ export class ZoningIntelligenceService {
       const zoning = await this.getZoningDataWithBill44(coordinates, city);
       
       // Calculate development potential including Bill 44 benefits
-      const developmentPotential = await this.calculateDevelopmentPotentialWithBill44(zoning, lotSize, city);
+      const developmentPotential = await this.calculateDevelopmentPotentialWithBill44(zoning, lotSize, frontage, city);
       
       // Get nearby amenities (simulated - would integrate with maps APIs)
       const nearbyAmenities = await this.getNearbyAmenities(coordinates);
@@ -258,6 +258,7 @@ export class ZoningIntelligenceService {
   private async calculateDevelopmentPotentialWithBill44(
     zoning: ZoningData,
     lotSize: number,
+    frontage: number,
     city: string
   ): Promise<DevelopmentPotential> {
     // Calculate maximum units based on traditional zoning
@@ -267,7 +268,7 @@ export class ZoningIntelligenceService {
     );
 
     // Bill 44 analysis - enhanced density potential
-    const bill44MaxUnits = this.calculateBill44MaxUnits(zoning, lotSize, city);
+    const bill44MaxUnits = this.calculateBill44MaxUnits(zoning, lotSize, frontage, city);
     
     // Recommended units (higher of traditional or Bill 44)
     const recommendedUnits = Math.max(traditionalMaxUnits, bill44MaxUnits);
@@ -302,12 +303,12 @@ export class ZoningIntelligenceService {
     const opportunities = this.identifyOpportunitiesWithBill44(zoning, recommendedUnits, city);
 
     // Bill 44 compliance analysis
-    const bill44Compliance = this.analyzeBill44Compliance(zoning, lotSize, city);
+    const bill44Compliance = this.analyzeBill44Compliance(zoning, lotSize, frontage, city);
 
     return {
       maxUnits: traditionalMaxUnits,
-      bill44MaxUnits,
-      recommendedUnits,
+      bill44MaxUnits: bill44MaxUnits,
+      recommendedUnits: recommendedUnits,
       suggestedUnitMix,
       buildingType: this.determineBuildingType(recommendedUnits, zoning.zoningCode),
       estimatedGFA,
@@ -465,19 +466,29 @@ export class ZoningIntelligenceService {
   }
 
   /**
-   * Calculate maximum units under Bill 44
+   * Calculate maximum units under Bill 44 with frontage validation
    */
-  private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, city: string): number {
-    if (!zoning.bill44Eligible) return zoning.maxDensity;
+  private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, frontage: number, city: string): number {
+    // Core Bill 44 eligibility check (lot size and frontage requirements)
+    const meetsMinimumSize = lotSize >= 3000 && frontage >= 33;
     
-    // Base Bill 44 allowance
-    let bill44Units = zoning.bill44MaxUnits;
+    if (!zoning.bill44Eligible || !meetsMinimumSize) {
+      return zoning.maxDensity;
+    }
     
-    // Larger lots get additional units
+    // Base Bill 44 allowance (4-plex eligible)
+    let bill44Units = 4;
+    
+    // Enhanced eligibility for larger lots
+    if (lotSize >= 4000 && frontage >= 40) {
+      bill44Units = 6; // 6-plex eligible
+    }
+    
+    // Additional bonuses
     if (lotSize > 6000) bill44Units += 1;
     if (lotSize > 8000) bill44Units += 1;
     
-    // Transit-oriented zones get bonus
+    // Transit-oriented zones get significant bonus
     if (zoning.transitOriented) bill44Units += 2;
     
     // High-demand cities get enhanced allowance
@@ -518,33 +529,50 @@ export class ZoningIntelligenceService {
   }
 
   /**
-   * Analyze Bill 44 compliance and benefits
+   * Analyze Bill 44 compliance and benefits with frontage validation
    */
-  private analyzeBill44Compliance(zoning: ZoningData, lotSize: number, city: string): {
+  private analyzeBill44Compliance(zoning: ZoningData, lotSize: number, frontage: number, city: string): {
     eligible: boolean;
     benefits: string[];
     requirements: string[];
     incentives: string[];
   } {
-    if (!zoning.bill44Eligible) {
+    const meetsMinimumSize = lotSize >= 3000 && frontage >= 33;
+    const meetsEnhancedSize = lotSize >= 4000 && frontage >= 40;
+    
+    if (!zoning.bill44Eligible || !meetsMinimumSize) {
       return {
         eligible: false,
-        benefits: [],
-        requirements: [],
+        benefits: [
+          ...(lotSize < 3000 ? ['❌ Lot size below 3,000 sq ft minimum'] : []),
+          ...(frontage < 33 ? ['❌ Frontage below 33 ft minimum'] : []),
+          ...(lotSize >= 3000 && frontage >= 33 ? ['✅ Property meets Bill 44 basic requirements'] : [])
+        ],
+        requirements: [
+          'Minimum 3,000 sq ft lot size for 4-plex eligibility',
+          'Minimum 33 ft frontage for multiplex development',
+          'Zoning must permit residential use'
+        ],
         incentives: []
       };
     }
 
     const benefits = [
-      'Up to 4-6 units permitted on single-family lots',
-      'Streamlined approval process',
-      'Reduced parking requirements possible',
-      'Higher density than traditional zoning'
+      '✅ Property qualifies for Bill 44 multiplex development',
+      `✅ Up to ${meetsEnhancedSize ? '6' : '4'} units permitted`,
+      '✅ Streamlined approval process under Bill 44',
+      '✅ Reduced parking requirements (0.5-1 space per unit)',
+      '✅ Significant density increase over traditional zoning'
     ];
 
+    if (meetsEnhancedSize) {
+      benefits.push('✅ Enhanced eligibility for 6-plex development');
+      benefits.push('✅ Potential for rental tenure or transit bonuses');
+    }
+
     if (zoning.transitOriented) {
-      benefits.push('Transit-oriented development bonus units');
-      benefits.push('Potential for further density increases');
+      benefits.push('✅ Transit-oriented development bonus units available');
+      benefits.push('✅ Additional density increases near transit');
     }
 
     const requirements = [

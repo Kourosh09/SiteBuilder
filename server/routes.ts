@@ -412,16 +412,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get zoning analysis
   app.post("/api/zoning/analysis", async (req, res) => {
     try {
-      const { address, city, lotSize } = req.body;
+      const { address, city, lotSize, frontage } = req.body;
       
-      if (!address || !city || !lotSize) {
+      if (!address || !city || !lotSize || !frontage) {
         return res.status(400).json({ 
           success: false, 
-          error: "Missing required fields: address, city, lotSize" 
+          error: "Missing required fields: address, city, lotSize, frontage" 
         });
       }
 
-      const analysis = await zoningIntelligenceService.getZoningAnalysis(address, city, lotSize);
+      const analysis = await zoningIntelligenceService.getZoningAnalysisWithBill44(address, city, lotSize, frontage);
       res.json({ success: true, data: analysis });
       
     } catch (error) {
