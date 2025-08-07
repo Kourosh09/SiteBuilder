@@ -18,7 +18,7 @@ export default function HeroSection() {
               AI-Powered Financial Management for{" "}
               <span className="text-brand-amber">Real Estate Developers</span>
             </h1>
-            <p className="text-xl text-white mb-8 leading-relaxed">
+            <p className="text-xl text-blue-50 mb-8 leading-relaxed">
               Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
