@@ -16,7 +16,9 @@ import {
   BarChart3,
   Briefcase,
   Calculator,
-  Bot
+  Bot,
+  Bell,
+  Shield
 } from "lucide-react";
 
 // Import existing components
@@ -26,6 +28,9 @@ import AIPropertyAnalyzer from "./ai-property-analyzer";
 import PermitTracker from "./permit-tracker";
 import PartnerFinder from "./partner-finder";
 import PermitTracking from "./permit-tracking";
+import PropertyAlerts from "./property-alerts";
+import FinancialModeling from "./financial-modeling";
+import RegulatoryCompliance from "./regulatory-compliance";
 
 interface DashboardStats {
   totalProjects: number;
@@ -61,10 +66,31 @@ export default function Dashboard() {
       action: () => setActiveTab("zoning")
     },
     {
+      title: "Property Alerts",
+      description: "Get notified of new opportunities",
+      icon: Bell,
+      color: "bg-purple-600",
+      action: () => setActiveTab("alerts")
+    },
+    {
+      title: "Financial Models",
+      description: "Advanced ROI & cash flow analysis",
+      icon: Calculator,
+      color: "bg-emerald-600",
+      action: () => setActiveTab("financial")
+    },
+    {
+      title: "Compliance",
+      description: "Regulatory tracking & updates",
+      icon: Shield,
+      color: "bg-red-600", 
+      action: () => setActiveTab("compliance")
+    },
+    {
       title: "Find Partners",
       description: "Connect with architects & engineers",
       icon: Users,
-      color: "bg-purple-600",
+      color: "bg-orange-600",
       action: () => setActiveTab("partners")
     },
     {
@@ -107,11 +133,14 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-7 max-w-5xl mx-auto">
+          <TabsList className="grid w-full grid-cols-8 max-w-6xl mx-auto">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer">AI Analysis</TabsTrigger>
             <TabsTrigger value="zoning" data-testid="tab-zoning">Zoning</TabsTrigger>
             <TabsTrigger value="permits" data-testid="tab-permits">Permits</TabsTrigger>
+            <TabsTrigger value="alerts" data-testid="tab-alerts">Alerts</TabsTrigger>
+            <TabsTrigger value="financial" data-testid="tab-financial">Financial</TabsTrigger>
+            <TabsTrigger value="compliance" data-testid="tab-compliance">Compliance</TabsTrigger>
             <TabsTrigger value="partners" data-testid="tab-partners">Partners</TabsTrigger>
           </TabsList>
 
@@ -253,6 +282,21 @@ export default function Dashboard() {
           {/* Permits Tab */}
           <TabsContent value="permits">
             <PermitTracking />
+          </TabsContent>
+
+          {/* Property Alerts Tab */}
+          <TabsContent value="alerts">
+            <PropertyAlerts />
+          </TabsContent>
+
+          {/* Financial Modeling Tab */}
+          <TabsContent value="financial">
+            <FinancialModeling />
+          </TabsContent>
+
+          {/* Regulatory Compliance Tab */}
+          <TabsContent value="compliance">
+            <RegulatoryCompliance />
           </TabsContent>
 
           {/* Partners Tab */}

@@ -1149,6 +1149,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === PROPERTY ALERTS ENDPOINTS ===
+
+  // Property alerts endpoints
+  app.get("/api/property-alerts", async (req, res) => {
+    try {
+      const { propertyAlertService } = await import("./property-alerts");
+      const userId = "demo_user"; // In production, get from authentication
+      const alerts = await propertyAlertService.getUserAlerts(userId);
+      res.json(alerts);
+    } catch (error) {
+      console.error("Property alerts error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch alerts" });
+    }
+  });
+
+  app.post("/api/property-alerts", async (req, res) => {
+    try {
+      const { propertyAlertService } = await import("./property-alerts");
+      const userId = "demo_user"; // In production, get from authentication
+      const alertData = { ...req.body, userId };
+      const alert = await propertyAlertService.createAlert(alertData);
+      res.json({ success: true, alert });
+    } catch (error) {
+      console.error("Create alert error:", error);
+      res.status(500).json({ success: false, error: "Failed to create alert" });
+    }
+  });
+
+  app.get("/api/property-alerts/:alertId/matches", async (req, res) => {
+    try {
+      const { propertyAlertService } = await import("./property-alerts");
+      const matches = await propertyAlertService.getAlertMatches(req.params.alertId);
+      res.json(matches);
+    } catch (error) {
+      console.error("Alert matches error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch matches" });
+    }
+  });
+
+  app.patch("/api/property-alerts/:alertId", async (req, res) => {
+    try {
+      const { propertyAlertService } = await import("./property-alerts");
+      const alert = await propertyAlertService.updateAlert(req.params.alertId, req.body);
+      res.json({ success: true, alert });
+    } catch (error) {
+      console.error("Update alert error:", error);
+      res.status(500).json({ success: false, error: "Failed to update alert" });
+    }
+  });
+
+  // === FINANCIAL MODELING ENDPOINTS ===
+
+  // Financial modeling endpoints
+  app.get("/api/financial-models", async (req, res) => {
+    try {
+      const { financialModelingService } = await import("./financial-modeling");
+      const projects = await financialModelingService.getAllProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Financial models error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch projects" });
+    }
+  });
+
+  app.post("/api/financial-models", async (req, res) => {
+    try {
+      const { financialModelingService } = await import("./financial-modeling");
+      const project = await financialModelingService.createFinancialModel(req.body);
+      res.json({ success: true, project });
+    } catch (error) {
+      console.error("Create financial model error:", error);
+      res.status(500).json({ success: false, error: "Failed to create financial model" });
+    }
+  });
+
+  app.get("/api/financial-models/:projectId", async (req, res) => {
+    try {
+      const { financialModelingService } = await import("./financial-modeling");
+      const project = await financialModelingService.getProject(req.params.projectId);
+      if (!project) {
+        return res.status(404).json({ success: false, error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Get project error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch project" });
+    }
+  });
+
+  app.get("/api/financial-models/:projectId/sensitivity", async (req, res) => {
+    try {
+      const { financialModelingService } = await import("./financial-modeling");
+      const analysis = await financialModelingService.generateSensitivityAnalysis(req.params.projectId);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Sensitivity analysis error:", error);
+      res.status(500).json({ success: false, error: "Failed to generate sensitivity analysis" });
+    }
+  });
+
+  // === REGULATORY COMPLIANCE ENDPOINTS ===
+
+  // Regulatory compliance endpoints
+  app.get("/api/compliance/rules", async (req, res) => {
+    try {
+      const { regulatoryComplianceService } = await import("./regulatory-compliance");
+      const { jurisdiction, category } = req.query;
+      const rules = await regulatoryComplianceService.getComplianceRules(
+        jurisdiction as string, 
+        category as string
+      );
+      res.json(rules);
+    } catch (error) {
+      console.error("Compliance rules error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch compliance rules" });
+    }
+  });
+
+  app.post("/api/compliance/check", async (req, res) => {
+    try {
+      const { regulatoryComplianceService } = await import("./regulatory-compliance");
+      const { projectId, propertyAddress, projectType, jurisdiction } = req.body;
+      const check = await regulatoryComplianceService.performComplianceCheck(
+        projectId, propertyAddress, projectType, jurisdiction
+      );
+      res.json({ success: true, check });
+    } catch (error) {
+      console.error("Compliance check error:", error);
+      res.status(500).json({ success: false, error: "Failed to perform compliance check" });
+    }
+  });
+
+  app.get("/api/compliance/updates", async (req, res) => {
+    try {
+      const { regulatoryComplianceService } = await import("./regulatory-compliance");
+      const { jurisdiction, days } = req.query;
+      const updates = await regulatoryComplianceService.getRecentUpdates(
+        jurisdiction as string, 
+        days ? parseInt(days as string) : 30
+      );
+      res.json(updates);
+    } catch (error) {
+      console.error("Compliance updates error:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch updates" });
+    }
+  });
+
+  app.post("/api/compliance/alerts", async (req, res) => {
+    try {
+      const { regulatoryComplianceService } = await import("./regulatory-compliance");
+      const { jurisdiction, categories, email } = req.body;
+      const result = await regulatoryComplianceService.createComplianceAlert(
+        jurisdiction, categories, email
+      );
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error("Create compliance alert error:", error);
+      res.status(500).json({ success: false, error: "Failed to create alert" });
+    }
+  });
+
   // === CONTRACTOR SIGNUP & MARKETPLACE ENDPOINTS ===
 
   // Contractor Signup Endpoint
