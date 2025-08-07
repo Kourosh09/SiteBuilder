@@ -3,7 +3,9 @@ import HeroSection from "@/components/hero-section";
 import FeaturesOverview from "@/components/features-overview";
 import HowItWorks from "@/components/how-it-works";
 import PropertyLookup from "@/components/property-lookup";
+import ZoningIntelligence from "@/components/zoning-intelligence";
 import AIPropertyAnalyzer from "@/components/ai-property-analyzer";
+import LeadGeneration from "@/components/lead-generation";
 import CalculatorDemo from "@/components/calculator-demo";
 import ProductShowcase from "@/components/product-showcase";
 import AboutFounder from "@/components/about-founder";
@@ -20,7 +22,9 @@ export default function Home() {
       <FeaturesOverview />
       <HowItWorks />
       <PropertyLookup />
+      <ZoningIntelligence />
       <AIPropertyAnalyzer />
+      <LeadGeneration />
       <CalculatorDemo />
       <ProductShowcase />
       <AboutFounder />
