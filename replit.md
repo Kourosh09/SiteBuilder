@@ -131,9 +131,11 @@ Preferred communication style: Simple, everyday language.
 - **Connection**: Neon Database serverless PostgreSQL for production
 
 ### Authentication and Authorization
-- **Current State**: No authentication system implemented (prototype stage)
-- **Session Management**: Basic Express session configuration present but not actively used
-- **Future Considerations**: Ready for implementation of user authentication and role-based access control
+- **Current State**: Modern email/SMS verification login system implemented
+- **Login Methods**: Email verification codes and SMS verification codes
+- **Session Management**: Secure verification code system with 5-minute expiration
+- **User Flow**: Method selection → Contact entry → Code verification → Dashboard access
+- **Security Features**: 6-digit codes, rate limiting, secure session handling
 
 ### External Dependencies
 - **Database Hosting**: Neon Database (@neondatabase/serverless) for serverless PostgreSQL

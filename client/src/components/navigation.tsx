@@ -60,6 +60,13 @@ export default function Navigation() {
               >
                 About
               </button>
+              <a
+                href="/login"
+                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
+                data-testid="nav-login"
+              >
+                Login
+              </a>
               <Button
                 onClick={() => scrollToSection("contact")}
                 className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"

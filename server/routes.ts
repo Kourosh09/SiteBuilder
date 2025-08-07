@@ -1043,6 +1043,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === AUTHENTICATION ENDPOINTS ===
+
+  // Send verification code
+  app.post("/api/auth/send-code", async (req, res) => {
+    try {
+      const { method, contact } = req.body;
+
+      if (!method || !contact) {
+        return res.status(400).json({
+          success: false,
+          error: "Method and contact are required"
+        });
+      }
+
+      // Generate 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store code temporarily (in production, use Redis or similar)
+      const codeKey = `${method}:${contact}`;
+      const codeData = {
+        code,
+        expires: Date.now() + 300000, // 5 minutes
+        attempts: 0
+      };
+      
+      // In production, you'd store this in Redis or database
+      // For demo purposes, we'll just log it
+      console.log(`🔐 Verification code for ${contact}: ${code}`);
+      
+      if (method === "email") {
+        // In production, integrate with email service like SendGrid, AWS SES, etc.
+        console.log(`📧 Would send email to ${contact} with code: ${code}`);
+      } else if (method === "phone") {
+        // In production, integrate with SMS service like Twilio, AWS SNS, etc.
+        console.log(`📱 Would send SMS to ${contact} with code: ${code}`);
+      }
+
+      res.json({
+        success: true,
+        message: `Verification code sent via ${method}`,
+        // In demo mode, return the code for testing
+        ...(process.env.NODE_ENV === "development" && { testCode: code })
+      });
+
+    } catch (error) {
+      console.error("Send code error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to send verification code"
+      });
+    }
+  });
+
+  // Verify code and login
+  app.post("/api/auth/verify-code", async (req, res) => {
+    try {
+      const { method, contact, code } = req.body;
+
+      if (!method || !contact || !code) {
+        return res.status(400).json({
+          success: false,
+          error: "Method, contact, and code are required"
+        });
+      }
+
+      // In production, retrieve and validate stored code
+      // For demo, we'll accept any 6-digit code
+      if (!/^\d{6}$/.test(code)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid code format"
+        });
+      }
+
+      // Create user session
+      const userId = `user_${Date.now()}`;
+      const user = {
+        id: userId,
+        contact,
+        method,
+        loginAt: new Date().toISOString(),
+        isActive: true
+      };
+
+      // In production, save user to database and create session
+      console.log(`✅ User logged in: ${contact} via ${method}`);
+
+      res.json({
+        success: true,
+        message: "Login successful",
+        user: {
+          id: user.id,
+          contact: user.contact,
+          method: user.method
+        }
+      });
+
+    } catch (error) {
+      console.error("Verify code error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to verify code"
+      });
+    }
+  });
+
   // === CONTRACTOR SIGNUP & MARKETPLACE ENDPOINTS ===
 
   // Contractor Signup Endpoint
