@@ -2475,6 +2475,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple login authentication endpoint
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Demo credentials - you can customize these
+      const validCredentials = {
+        username: "admin",
+        password: "buildwise2024"
+      };
+      
+      if (username === validCredentials.username && password === validCredentials.password) {
+        // Create a simple session
+        const user = {
+          id: "demo_user_1",
+          username: username,
+          email: "admin@buildwiseai.com",
+          loginTime: new Date().toISOString()
+        };
+        
+        res.json({ 
+          success: true, 
+          user: user,
+          message: "Login successful" 
+        });
+      } else {
+        res.status(401).json({ 
+          success: false, 
+          error: "Invalid username or password" 
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Login failed" 
+      });
+    }
+  });
+
+  // Session verification endpoint (for dashboard access)
+  app.get("/api/auth/verify-session", async (req, res) => {
+    // For demo purposes, return a default authenticated user
+    res.json({
+      success: true,
+      user: {
+        id: "demo_user_1",
+        username: "admin",
+        email: "admin@buildwiseai.com"
+      }
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
