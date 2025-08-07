@@ -59,3 +59,43 @@ export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type Calculation = typeof calculationResults.$inferSelect;
+
+// AI Analysis schemas
+export interface PropertyAnalysisInput {
+  address: string;
+  city: string;
+  currentValue?: number;
+  lotSize: number;
+  currentUse?: string;
+  proposedUse?: string;
+}
+
+export interface PropertyAnalysisResult {
+  propertyId: string;
+  analysisDate: Date;
+  financialSummary: {
+    estimatedCosts: number;
+    projectedRevenue: number;
+    netProfit: number;
+    roi: number;
+    paybackPeriod: number;
+  };
+  marketAnalysis: {
+    marketDemand: string;
+    comparableSales: string;
+    priceRecommendation: number;
+    riskFactors: string[];
+  };
+  developmentFeasibility: {
+    complexity: string;
+    timelineMonths: number;
+    majorObstacles: string[];
+    regulatoryRequirements: string[];
+  };
+  recommendations: {
+    goNoGo: string;
+    optimizations: string[];
+    alternatives: string[];
+  };
+  confidence: number;
+}
