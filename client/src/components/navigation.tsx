@@ -32,6 +32,13 @@ export default function Navigation() {
               >
                 Features
               </button>
+              <a
+                href="/dashboard"
+                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
+                data-testid="nav-dashboard"
+              >
+                Dashboard
+              </a>
               <button
                 onClick={() => scrollToSection("calculator")}
                 className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
@@ -85,6 +92,13 @@ export default function Navigation() {
               >
                 Features
               </button>
+              <a
+                href="/dashboard"
+                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
+                data-testid="mobile-nav-dashboard"
+              >
+                Dashboard
+              </a>
               <button
                 onClick={() => scrollToSection("calculator")}
                 className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
