@@ -19,13 +19,20 @@ export interface ZoningData {
   specialRestrictions?: string[];
   bill44Eligible: boolean;
   bill44MaxUnits: number;
+  bill47Eligible: boolean;
+  bill47MaxUnits: number;
   transitOriented: boolean;
+  todZone: boolean;
+  todBonusUnits: number;
   multiplexEligible: boolean;
 }
 
 export interface DevelopmentPotential {
   maxUnits: number;
   bill44MaxUnits: number;
+  bill47MaxUnits: number;
+  todMaxUnits: number;
+  combinedMaxUnits: number;
   recommendedUnits: number;
   suggestedUnitMix: {
     bedrooms: number;
