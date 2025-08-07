@@ -231,6 +231,3 @@ export async function createSampleContractorData() {
     throw error;
   }
 }
-
-// Export for use in routes or startup
-export { sampleContractors: [] as any[], sampleProjects: [] as any[] };
