@@ -31,6 +31,7 @@ import PermitTracking from "./permit-tracking";
 import PropertyAlerts from "./property-alerts";
 import FinancialModeling from "./financial-modeling";
 import RegulatoryCompliance from "./regulatory-compliance";
+import MarketingAutomationShowcase from "./marketing-automation-showcase";
 
 interface DashboardStats {
   totalProjects: number;
@@ -133,7 +134,7 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-8 max-w-6xl mx-auto">
+          <TabsList className="grid w-full grid-cols-9 max-w-7xl mx-auto">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer">AI Analysis</TabsTrigger>
             <TabsTrigger value="zoning" data-testid="tab-zoning">Zoning</TabsTrigger>
@@ -141,6 +142,7 @@ export default function Dashboard() {
             <TabsTrigger value="alerts" data-testid="tab-alerts">Alerts</TabsTrigger>
             <TabsTrigger value="financial" data-testid="tab-financial">Financial</TabsTrigger>
             <TabsTrigger value="compliance" data-testid="tab-compliance">Compliance</TabsTrigger>
+            <TabsTrigger value="marketing" data-testid="tab-marketing">Social Media</TabsTrigger>
             <TabsTrigger value="partners" data-testid="tab-partners">Partners</TabsTrigger>
           </TabsList>
 
@@ -297,6 +299,11 @@ export default function Dashboard() {
           {/* Regulatory Compliance Tab */}
           <TabsContent value="compliance">
             <RegulatoryCompliance />
+          </TabsContent>
+
+          {/* Marketing Automation Tab */}
+          <TabsContent value="marketing">
+            <MarketingAutomationShowcase />
           </TabsContent>
 
           {/* Partners Tab */}

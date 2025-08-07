@@ -53,7 +53,7 @@
   /* BuildwiseAI Brand Colors */
   --brand-blue: hsl(219, 79%, 46%);
   --brand-green: hsl(160, 84%, 39%);
-  --brand-amber: hsl(43, 89%, 52%);
+  --brand-amber: hsl(35, 85%, 35%); /* Darker for better contrast */
   --neutral-50: hsl(210, 20%, 98%);
   --neutral-600: hsl(215, 14%, 44%);
   --neutral-900: hsl(222, 47%, 11%);
