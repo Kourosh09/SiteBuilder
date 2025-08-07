@@ -27,6 +27,7 @@ import LeadGeneration from "./lead-generation";
 import PermitTracker from "./permit-tracker";
 import PartnerFinder from "./partner-finder";
 import PermitTracking from "./permit-tracking";
+import ContractorMarketplace from "./contractor-marketplace";
 
 interface DashboardStats {
   totalProjects: number;
@@ -74,6 +75,13 @@ export default function Dashboard() {
       icon: FileText,
       color: "bg-orange-600",
       action: () => setActiveTab("permits")
+    },
+    {
+      title: "Find Contractors",
+      description: "Connect with trade professionals",
+      icon: Users,
+      color: "bg-indigo-600",
+      action: () => setActiveTab("marketplace")
     }
   ];
 
@@ -101,13 +109,14 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-6 max-w-4xl mx-auto">
+          <TabsList className="grid w-full grid-cols-7 max-w-5xl mx-auto">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer">AI Analysis</TabsTrigger>
             <TabsTrigger value="zoning" data-testid="tab-zoning">Zoning</TabsTrigger>
             <TabsTrigger value="permits" data-testid="tab-permits">Permits</TabsTrigger>
             <TabsTrigger value="lead-generation" data-testid="tab-lead-generation">Lead Gen</TabsTrigger>
             <TabsTrigger value="partners" data-testid="tab-partners">Partners</TabsTrigger>
+            <TabsTrigger value="marketplace" data-testid="tab-marketplace">Contractors</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -258,6 +267,11 @@ export default function Dashboard() {
           {/* Partners Tab */}
           <TabsContent value="partners">
             <PartnerFinder />
+          </TabsContent>
+
+          {/* Contractor Marketplace Tab */}
+          <TabsContent value="marketplace">
+            <ContractorMarketplace />
           </TabsContent>
         </Tabs>
       </div>

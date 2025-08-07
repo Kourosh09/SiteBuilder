@@ -1021,6 +1021,356 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === CONTRACTOR MARKETPLACE ENDPOINTS ===
+
+  // Get all contractors with filters
+  app.get("/api/contractors", async (req, res) => {
+    try {
+      const { trades, serviceAreas, city, minRating, availabilityStatus, isVerified, searchTerm } = req.query;
+      
+      const filters: any = {};
+      if (trades) filters.trades = Array.isArray(trades) ? trades : [trades];
+      if (serviceAreas) filters.serviceAreas = Array.isArray(serviceAreas) ? serviceAreas : [serviceAreas];
+      if (city) filters.city = city as string;
+      if (minRating) filters.minRating = parseFloat(minRating as string);
+      if (availabilityStatus) filters.availabilityStatus = availabilityStatus as string;
+      if (isVerified) filters.isVerified = isVerified === 'true';
+      if (searchTerm) filters.searchTerm = searchTerm as string;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const contractors = await contractorMarketplaceService.getContractors(filters);
+      
+      res.json({ success: true, data: contractors });
+      
+    } catch (error) {
+      console.error("Get contractors error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve contractors" 
+      });
+    }
+  });
+
+  // Register new contractor
+  app.post("/api/contractors", async (req, res) => {
+    try {
+      const contractorData = req.body;
+      
+      if (!contractorData.companyName || !contractorData.contactName || !contractorData.email || 
+          !contractorData.phone || !contractorData.city || !contractorData.trades || 
+          !contractorData.serviceAreas || !contractorData.yearsExperience) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: companyName, contactName, email, phone, city, trades, serviceAreas, yearsExperience" 
+        });
+      }
+
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const contractor = await contractorMarketplaceService.createContractor(contractorData);
+      
+      res.status(201).json({ success: true, data: contractor });
+      
+    } catch (error) {
+      console.error("Create contractor error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to register contractor" 
+      });
+    }
+  });
+
+  // Get specific contractor by ID
+  app.get("/api/contractors/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const contractor = await contractorMarketplaceService.getContractorById(id);
+      
+      if (!contractor) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Contractor not found" 
+        });
+      }
+
+      res.json({ success: true, data: contractor });
+      
+    } catch (error) {
+      console.error("Get contractor error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve contractor" 
+      });
+    }
+  });
+
+  // Update contractor profile
+  app.patch("/api/contractors/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      await contractorMarketplaceService.updateContractor(id, updates);
+      
+      res.json({ success: true, message: "Contractor profile updated successfully" });
+      
+    } catch (error) {
+      console.error("Update contractor error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update contractor profile" 
+      });
+    }
+  });
+
+  // Get all projects with filters
+  app.get("/api/projects", async (req, res) => {
+    try {
+      const { tradeNeeded, city, projectType, projectSize, status, minBudget, maxBudget, isUrgent, searchTerm } = req.query;
+      
+      const filters: any = {};
+      if (tradeNeeded) filters.tradeNeeded = tradeNeeded as string;
+      if (city) filters.city = city as string;
+      if (projectType) filters.projectType = projectType as string;
+      if (projectSize) filters.projectSize = projectSize as string;
+      if (status) filters.status = status as string;
+      if (minBudget && maxBudget) {
+        filters.budgetRange = {
+          min: parseInt(minBudget as string),
+          max: parseInt(maxBudget as string)
+        };
+      }
+      if (isUrgent) filters.isUrgent = isUrgent === 'true';
+      if (searchTerm) filters.searchTerm = searchTerm as string;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const projects = await contractorMarketplaceService.getProjects(filters);
+      
+      res.json({ success: true, data: projects });
+      
+    } catch (error) {
+      console.error("Get projects error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve projects" 
+      });
+    }
+  });
+
+  // Create new project
+  app.post("/api/projects", async (req, res) => {
+    try {
+      const projectData = req.body;
+      
+      if (!projectData.title || !projectData.description || !projectData.location || 
+          !projectData.city || !projectData.projectType || !projectData.tradeNeeded || 
+          !projectData.projectSize || !projectData.clientName || !projectData.clientEmail) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: title, description, location, city, projectType, tradeNeeded, projectSize, clientName, clientEmail" 
+        });
+      }
+
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const project = await contractorMarketplaceService.createProject(projectData);
+      
+      res.status(201).json({ success: true, data: project });
+      
+    } catch (error) {
+      console.error("Create project error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to create project" 
+      });
+    }
+  });
+
+  // Get projects for specific contractor
+  app.get("/api/contractors/:id/projects", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const projects = await contractorMarketplaceService.getProjectsForContractor(id);
+      
+      res.json({ success: true, data: projects });
+      
+    } catch (error) {
+      console.error("Get contractor projects error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve projects for contractor" 
+      });
+    }
+  });
+
+  // Submit bid for project
+  app.post("/api/bids", async (req, res) => {
+    try {
+      const bidData = req.body;
+      
+      if (!bidData.projectId || !bidData.contractorId || !bidData.bidAmount || 
+          !bidData.timeline || !bidData.proposalText) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: projectId, contractorId, bidAmount, timeline, proposalText" 
+        });
+      }
+
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const bid = await contractorMarketplaceService.createBid(bidData);
+      
+      res.status(201).json({ success: true, data: bid });
+      
+    } catch (error) {
+      console.error("Create bid error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to submit bid" 
+      });
+    }
+  });
+
+  // Get bids with filters
+  app.get("/api/bids", async (req, res) => {
+    try {
+      const { projectId, contractorId, status, startDate, endDate } = req.query;
+      
+      const filters: any = {};
+      if (projectId) filters.projectId = projectId as string;
+      if (contractorId) filters.contractorId = contractorId as string;
+      if (status) filters.status = status as string;
+      if (startDate && endDate) {
+        filters.dateRange = {
+          start: new Date(startDate as string),
+          end: new Date(endDate as string)
+        };
+      }
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const bids = await contractorMarketplaceService.getBids(filters);
+      
+      res.json({ success: true, data: bids });
+      
+    } catch (error) {
+      console.error("Get bids error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve bids" 
+      });
+    }
+  });
+
+  // Update bid status (accept/reject)
+  app.patch("/api/bids/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required field: status" 
+        });
+      }
+
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      await contractorMarketplaceService.updateBidStatus(id, status, notes);
+      
+      res.json({ success: true, message: "Bid status updated successfully" });
+      
+    } catch (error) {
+      console.error("Update bid status error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update bid status" 
+      });
+    }
+  });
+
+  // Submit contractor review
+  app.post("/api/reviews", async (req, res) => {
+    try {
+      const reviewData = req.body;
+      
+      if (!reviewData.contractorId || !reviewData.reviewerName || !reviewData.rating) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: contractorId, reviewerName, rating" 
+        });
+      }
+
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const review = await contractorMarketplaceService.createReview(reviewData);
+      
+      res.status(201).json({ success: true, data: review });
+      
+    } catch (error) {
+      console.error("Create review error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to submit review" 
+      });
+    }
+  });
+
+  // Get contractor reviews
+  app.get("/api/contractors/:id/reviews", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const reviews = await contractorMarketplaceService.getReviewsForContractor(id);
+      
+      res.json({ success: true, data: reviews });
+      
+    } catch (error) {
+      console.error("Get contractor reviews error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve contractor reviews" 
+      });
+    }
+  });
+
+  // Get marketplace statistics
+  app.get("/api/dashboard/marketplace-stats", async (req, res) => {
+    try {
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const stats = await contractorMarketplaceService.getMarketplaceStats();
+      
+      res.json({ success: true, data: stats });
+      
+    } catch (error) {
+      console.error("Get marketplace stats error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve marketplace statistics" 
+      });
+    }
+  });
+
+  // Get contractor dashboard stats
+  app.get("/api/contractors/:id/dashboard-stats", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const stats = await contractorMarketplaceService.getContractorDashboardStats(id);
+      
+      res.json({ success: true, data: stats });
+      
+    } catch (error) {
+      console.error("Get contractor dashboard stats error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve contractor dashboard statistics" 
+      });
+    }
+  });
+
   // === AI DESIGN GENERATOR ENDPOINTS ===
 
   // Generate design concept
@@ -1279,6 +1629,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, error: "Failed to fetch market statistics" });
     }
   });
+
+  // Initialize sample contractor data (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    app.get("/api/init-sample-contractors", async (req, res) => {
+      try {
+        const { createSampleContractorData } = await import('./sample-contractor-data');
+        await createSampleContractorData();
+        
+        res.json({ 
+          success: true, 
+          message: "Sample contractor marketplace data created successfully" 
+        });
+        
+      } catch (error) {
+        console.error("Init sample contractor data error:", error);
+        res.status(500).json({ 
+          success: false, 
+          error: error instanceof Error ? error.message : "Failed to initialize sample data" 
+        });
+      }
+    });
+  }
 
   const httpServer = createServer(app);
   return httpServer;
