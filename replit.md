@@ -79,6 +79,7 @@ Preferred communication style: Simple, everyday language.
 
 - **Technical Stack**: React/TypeScript frontend, Express backend, OpenAI API integration, in-memory storage for development
 - **Deployment Ready**: Configured for Replit deployment with custom domain (buildwiseai.ca) support
+- **Security**: HTTPS/TLS automatically enabled on Replit deployments with custom domains
 - **Business Impact**: Complete real estate development platform ready to compete with industry leaders
 
 ## System Architecture
