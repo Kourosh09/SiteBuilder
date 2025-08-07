@@ -10,6 +10,7 @@ import { permitTrackerService } from "./permit-tracker";
 import { partnerFinderService } from "./partner-finder";
 import { aiDesignGeneratorService } from "./ai-design-generator";
 import { getVancouverPermits, searchVancouverPermitsByAddress, getVancouverPermitStats } from "./vancouver-open-data";
+import { mlsService } from "./mls-integration";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -865,6 +866,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching Vancouver permit stats:", error);
       res.status(500).json({ success: false, error: "Failed to fetch permit statistics" });
+    }
+  });
+
+  // Real MLS endpoints for licensed realtors
+  app.get("/api/mls/listings/search", async (req, res) => {
+    try {
+      const { city, propertyType, minPrice, maxPrice, limit } = req.query;
+      
+      if (!city) {
+        return res.status(400).json({ success: false, error: "City parameter required" });
+      }
+
+      const listings = await mlsService.searchListings(
+        city as string,
+        propertyType as string,
+        minPrice ? parseInt(minPrice as string) : undefined,
+        maxPrice ? parseInt(maxPrice as string) : undefined,
+        limit ? parseInt(limit as string) : 50
+      );
+
+      res.json({ 
+        success: true, 
+        listings, 
+        source: "MLS Real Estate Board",
+        disclaimer: "MLS® data provided by licensed realtor"
+      });
+    } catch (error) {
+      console.error("Error searching MLS listings:", error);
+      res.status(500).json({ success: false, error: "Failed to search MLS listings" });
+    }
+  });
+
+  app.get("/api/mls/comparables", async (req, res) => {
+    try {
+      const { address, city, radius, months } = req.query;
+      
+      if (!address || !city) {
+        return res.status(400).json({ success: false, error: "Address and city parameters required" });
+      }
+
+      const comparables = await mlsService.getSoldComparables(
+        address as string,
+        city as string,
+        radius ? parseFloat(radius as string) : 1,
+        months ? parseInt(months as string) : 12
+      );
+
+      res.json({ 
+        success: true, 
+        comparables, 
+        source: "MLS Real Estate Board",
+        disclaimer: "MLS® sold data provided by licensed realtor"
+      });
+    } catch (error) {
+      console.error("Error fetching MLS comparables:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch sold comparables" });
+    }
+  });
+
+  app.get("/api/mls/property/:mlsNumber", async (req, res) => {
+    try {
+      const { mlsNumber } = req.params;
+      
+      const property = await mlsService.getPropertyDetails(mlsNumber);
+
+      res.json({ 
+        success: true, 
+        property, 
+        source: "MLS Real Estate Board",
+        disclaimer: "MLS® property data provided by licensed realtor"
+      });
+    } catch (error) {
+      console.error("Error fetching MLS property details:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch property details" });
+    }
+  });
+
+  app.get("/api/mls/market/stats", async (req, res) => {
+    try {
+      const { city, propertyType } = req.query;
+      
+      if (!city) {
+        return res.status(400).json({ success: false, error: "City parameter required" });
+      }
+
+      const stats = await mlsService.getMarketStats(
+        city as string,
+        propertyType as string
+      );
+
+      res.json({ 
+        success: true, 
+        stats, 
+        source: "MLS Real Estate Board",
+        disclaimer: "MLS® market data provided by licensed realtor"
+      });
+    } catch (error) {
+      console.error("Error fetching MLS market stats:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch market statistics" });
     }
   });
 
