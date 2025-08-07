@@ -120,9 +120,9 @@ export default function AIPropertyAnalyzer() {
   };
 
   const getROIColor = (roi: number) => {
-    if (roi >= 20) return "text-emerald-600";
-    if (roi >= 10) return "text-yellow-600";
-    return "text-red-600";
+    if (roi >= 20) return "text-emerald-700";
+    if (roi >= 10) return "text-yellow-700";
+    return "text-red-700";
   };
 
   return (
@@ -318,7 +318,7 @@ export default function AIPropertyAnalyzer() {
                       </div>
                       <div>
                         <p className="text-neutral-600">Net Profit</p>
-                        <p className="font-semibold text-emerald-600" data-testid="text-ai-net-profit">
+                        <p className="font-semibold text-emerald-700" data-testid="text-ai-net-profit">
                           {formatCurrency(analysis.financialSummary.netProfit)}
                         </p>
                       </div>

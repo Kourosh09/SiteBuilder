@@ -248,19 +248,19 @@ export default function CalculatorDemo() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-neutral-50 p-4 rounded-lg">
                     <div className="text-sm text-neutral-600 mb-1">Total Revenue</div>
-                    <div className="text-xl font-bold text-brand-green" data-testid="text-total-revenue">
+                    <div className="text-xl font-bold text-emerald-700" data-testid="text-total-revenue">
                       {results.totalRevenue}
                     </div>
                   </div>
                   <div className="bg-neutral-50 p-4 rounded-lg">
                     <div className="text-sm text-neutral-600 mb-1">Total Costs</div>
-                    <div className="text-xl font-bold text-neutral-900" data-testid="text-total-costs">
+                    <div className="text-xl font-bold text-neutral-800" data-testid="text-total-costs">
                       {results.totalCosts}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-brand-green to-green-600 p-6 rounded-lg text-white shadow-lg">
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 rounded-lg text-white shadow-lg">
                   <div className="text-sm opacity-90 mb-2 font-medium">💰 Net Profit</div>
                   <div className="text-4xl font-bold tracking-tight mb-3" data-testid="text-net-profit">
                     {results.netProfit}
