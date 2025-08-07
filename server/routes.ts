@@ -2039,6 +2039,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Lead Generation API endpoints
+  app.get("/api/leads", (req, res) => {
+    const sampleLeads = [
+      {
+        id: "lead-1",
+        name: "Sarah Chen",
+        email: "sarah.chen@email.com",
+        phone: "+1-604-555-0123",
+        source: "Facebook Ads",
+        status: "new",
+        score: 85,
+        notes: "Interested in 2-bedroom condo in Vancouver",
+        createdAt: "2024-08-07"
+      },
+      {
+        id: "lead-2",
+        name: "Michael Rodriguez",
+        email: "m.rodriguez@email.com",
+        phone: "+1-604-555-0124",
+        source: "LinkedIn",
+        status: "qualified",
+        score: 92,
+        notes: "Looking for investment property in Burnaby",
+        createdAt: "2024-08-06"
+      },
+      {
+        id: "lead-3",
+        name: "Jennifer Kim",
+        email: "jen.kim@email.com",
+        source: "Website Contact Form",
+        status: "contacted",
+        score: 78,
+        notes: "First-time buyer, needs pre-approval guidance",
+        createdAt: "2024-08-05"
+      }
+    ];
+    
+    res.json({ success: true, data: sampleLeads });
+  });
+
+  app.get("/api/campaigns", (req, res) => {
+    const sampleCampaigns = [
+      {
+        id: "campaign-1",
+        name: "Vancouver Luxury Condos",
+        type: "social",
+        status: "active",
+        leads: 24,
+        engagement: 87,
+        conversions: 6,
+        createdAt: "2024-08-01"
+      },
+      {
+        id: "campaign-2",
+        name: "First-Time Buyer Email Series",
+        type: "email",
+        status: "active",
+        leads: 156,
+        engagement: 65,
+        conversions: 23,
+        createdAt: "2024-07-28"
+      },
+      {
+        id: "campaign-3",
+        name: "Investment Property Ads",
+        type: "ads",
+        status: "paused",
+        leads: 78,
+        engagement: 72,
+        conversions: 12,
+        createdAt: "2024-07-25"
+      }
+    ];
+    
+    res.json({ success: true, data: sampleCampaigns });
+  });
+
+  app.post("/api/campaigns", (req, res) => {
+    const { name, type, content, targetAudience } = req.body;
+    
+    if (!name || !type || !content) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: name, type, content"
+      });
+    }
+
+    const newCampaign = {
+      id: `campaign-${Date.now()}`,
+      name,
+      type,
+      status: "active",
+      leads: Math.floor(Math.random() * 50) + 10,
+      engagement: Math.floor(Math.random() * 30) + 60,
+      conversions: Math.floor(Math.random() * 10) + 1,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    res.json({ success: true, data: newCampaign });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

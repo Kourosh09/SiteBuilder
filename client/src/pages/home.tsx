@@ -7,6 +7,7 @@ import HowItWorks from "@/components/how-it-works";
 import PropertyLookup from "@/components/property-lookup";
 import ZoningIntelligence from "@/components/zoning-intelligence";
 import AIPropertyAnalyzer from "@/components/ai-property-analyzer";
+import MarketingAutomationShowcase from "@/components/marketing-automation-showcase";
 import ContractorSignupSection from "@/components/contractor-signup-section";
 import CalculatorDemo from "@/components/calculator-demo";
 import ProductShowcase from "@/components/product-showcase";
@@ -44,6 +45,7 @@ export default function Home() {
       <PropertyLookup />
       <ZoningIntelligence />
       <AIPropertyAnalyzer />
+      <MarketingAutomationShowcase />
       <ContractorSignupSection />
       <CalculatorDemo />
       <ProductShowcase />

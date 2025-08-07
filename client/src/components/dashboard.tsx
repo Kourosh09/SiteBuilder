@@ -31,7 +31,7 @@ import PermitTracking from "./permit-tracking";
 import PropertyAlerts from "./property-alerts";
 import FinancialModeling from "./financial-modeling";
 import RegulatoryCompliance from "./regulatory-compliance";
-import MarketingAutomationShowcase from "./marketing-automation-showcase";
+import LeadGenerationDashboard from "./lead-generation-dashboard";
 
 interface DashboardStats {
   totalProjects: number;
@@ -142,7 +142,7 @@ export default function Dashboard() {
             <TabsTrigger value="alerts" data-testid="tab-alerts">Alerts</TabsTrigger>
             <TabsTrigger value="financial" data-testid="tab-financial">Financial</TabsTrigger>
             <TabsTrigger value="compliance" data-testid="tab-compliance">Compliance</TabsTrigger>
-            <TabsTrigger value="marketing" data-testid="tab-marketing">Social Media</TabsTrigger>
+            <TabsTrigger value="marketing" data-testid="tab-marketing">Lead Gen</TabsTrigger>
             <TabsTrigger value="partners" data-testid="tab-partners">Partners</TabsTrigger>
           </TabsList>
 
@@ -301,9 +301,9 @@ export default function Dashboard() {
             <RegulatoryCompliance />
           </TabsContent>
 
-          {/* Marketing Automation Tab */}
+          {/* Marketing/Lead Generation Tab */}
           <TabsContent value="marketing">
-            <MarketingAutomationShowcase />
+            <LeadGenerationDashboard />
           </TabsContent>
 
           {/* Partners Tab */}
