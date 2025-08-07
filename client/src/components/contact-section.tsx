@@ -96,7 +96,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-neutral-900 mb-1">Email</h3>
-                  <p className="text-neutral-600" data-testid="text-contact-email">kourosh@buildwiseai.ca</p>
+                  <p className="text-neutral-600" data-testid="text-contact-email">kouroshahmadian@gmail.com</p>
                 </div>
               </div>
 
@@ -106,7 +106,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-neutral-900 mb-1">Phone</h3>
-                  <p className="text-neutral-600" data-testid="text-contact-phone">+1 (604) 341-8888</p>
+                  <p className="text-neutral-600" data-testid="text-contact-phone">+1 (604) 771-7322</p>
                 </div>
               </div>
 

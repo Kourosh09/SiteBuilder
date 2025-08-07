@@ -15,7 +15,7 @@ export default function AboutFounder() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=800"
+              src="https://www.kouroshahmadian.com/storage/user_image/image_131941_1752038969.jpg"
               alt="Kourosh Ahmadian - BuildwiseAI Founder"
               className="rounded-2xl shadow-lg w-full max-w-md mx-auto"
               data-testid="img-founder-headshot"
@@ -32,7 +32,7 @@ export default function AboutFounder() {
             </div>
             
             <p className="text-xl text-neutral-600 mb-8">
-              BuildwiseAI was founded by Kourosh Ahmadian, bringing together deep expertise in real estate development, finance, and technology.
+              BuildwiseAI was founded by Kourosh Ahmadian, a real estate strategist and licensed residential builder with 7+ years of experience leading multi-family, townhouse, and residential developments across British Columbia.
             </p>
             
             <div className="space-y-6">
