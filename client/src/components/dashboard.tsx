@@ -26,6 +26,7 @@ import AIPropertyAnalyzer from "./ai-property-analyzer";
 import LeadGeneration from "./lead-generation";
 import PermitTracker from "./permit-tracker";
 import PartnerFinder from "./partner-finder";
+import PermitTracking from "./permit-tracking";
 
 interface DashboardStats {
   totalProjects: number;
@@ -246,7 +247,7 @@ export default function Dashboard() {
 
           {/* Permits Tab */}
           <TabsContent value="permits">
-            <PermitTracker />
+            <PermitTracking />
           </TabsContent>
 
           {/* Lead Generation Tab */}

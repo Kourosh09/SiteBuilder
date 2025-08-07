@@ -709,6 +709,318 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === PERMIT TRACKING & MILESTONE MANAGEMENT ENDPOINTS ===
+
+  // Get all permits with optional filters
+  app.get("/api/permits", async (req, res) => {
+    try {
+      const { municipality, permitType, status, searchTerm, startDate, endDate } = req.query;
+      
+      const filters: any = {};
+      if (municipality) filters.municipality = municipality as string;
+      if (permitType) filters.permitType = permitType as string;
+      if (status) filters.status = status as string;
+      if (searchTerm) filters.searchTerm = searchTerm as string;
+      if (startDate && endDate) {
+        filters.dateRange = {
+          start: new Date(startDate as string),
+          end: new Date(endDate as string)
+        };
+      }
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const permits = await permitMilestoneService.getPermits(filters);
+      
+      res.json({ success: true, data: permits });
+      
+    } catch (error) {
+      console.error("Get permits error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve permits" 
+      });
+    }
+  });
+
+  // Create new permit
+  app.post("/api/permits", async (req, res) => {
+    try {
+      const permitData = req.body;
+      
+      if (!permitData.permitNumber || !permitData.municipality || !permitData.address || !permitData.permitType) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: permitNumber, municipality, address, permitType" 
+        });
+      }
+
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const permit = await permitMilestoneService.createPermit(permitData);
+      
+      res.status(201).json({ success: true, data: permit });
+      
+    } catch (error) {
+      console.error("Create permit error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to create permit" 
+      });
+    }
+  });
+
+  // Get specific permit by ID
+  app.get("/api/permits/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const permit = await permitMilestoneService.getPermitById(id);
+      
+      if (!permit) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Permit not found" 
+        });
+      }
+
+      res.json({ success: true, data: permit });
+      
+    } catch (error) {
+      console.error("Get permit error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve permit" 
+      });
+    }
+  });
+
+  // Update permit status
+  app.patch("/api/permits/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required field: status" 
+        });
+      }
+
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      await permitMilestoneService.updatePermitStatus(id, status, notes);
+      
+      res.json({ success: true, message: "Permit status updated successfully" });
+      
+    } catch (error) {
+      console.error("Update permit status error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update permit status" 
+      });
+    }
+  });
+
+  // Get milestones with optional filters
+  app.get("/api/milestones", async (req, res) => {
+    try {
+      const { projectId, permitId, category, status, priority, assignedTo, overdue } = req.query;
+      
+      const filters: any = {};
+      if (projectId) filters.projectId = projectId as string;
+      if (permitId) filters.permitId = permitId as string;
+      if (category) filters.category = category as string;
+      if (status) filters.status = status as string;
+      if (priority) filters.priority = priority as string;
+      if (assignedTo) filters.assignedTo = assignedTo as string;
+      if (overdue === 'true') filters.overdue = true;
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const milestones = await permitMilestoneService.getMilestones(filters);
+      
+      res.json({ success: true, data: milestones });
+      
+    } catch (error) {
+      console.error("Get milestones error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve milestones" 
+      });
+    }
+  });
+
+  // Create new milestone
+  app.post("/api/milestones", async (req, res) => {
+    try {
+      const milestoneData = req.body;
+      
+      if (!milestoneData.title || !milestoneData.category) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: title, category" 
+        });
+      }
+
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const milestone = await permitMilestoneService.createMilestone(milestoneData);
+      
+      res.status(201).json({ success: true, data: milestone });
+      
+    } catch (error) {
+      console.error("Create milestone error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to create milestone" 
+      });
+    }
+  });
+
+  // Update milestone
+  app.patch("/api/milestones/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      await permitMilestoneService.updateMilestone(id, updates);
+      
+      res.json({ success: true, message: "Milestone updated successfully" });
+      
+    } catch (error) {
+      console.error("Update milestone error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update milestone" 
+      });
+    }
+  });
+
+  // Get upcoming milestones
+  app.get("/api/milestones/upcoming", async (req, res) => {
+    try {
+      const { days } = req.query;
+      const dayCount = days ? parseInt(days as string) : 7;
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const milestones = await permitMilestoneService.getUpcomingMilestones(dayCount);
+      
+      res.json({ success: true, data: milestones });
+      
+    } catch (error) {
+      console.error("Get upcoming milestones error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve upcoming milestones" 
+      });
+    }
+  });
+
+  // Get overdue milestones
+  app.get("/api/milestones/overdue", async (req, res) => {
+    try {
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const milestones = await permitMilestoneService.getOverdueMilestones();
+      
+      res.json({ success: true, data: milestones });
+      
+    } catch (error) {
+      console.error("Get overdue milestones error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve overdue milestones" 
+      });
+    }
+  });
+
+  // Schedule inspection
+  app.post("/api/inspections", async (req, res) => {
+    try {
+      const inspectionData = req.body;
+      
+      if (!inspectionData.permitId || !inspectionData.inspectionType) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: permitId, inspectionType" 
+        });
+      }
+
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const inspection = await permitMilestoneService.scheduleInspection(inspectionData);
+      
+      res.status(201).json({ success: true, data: inspection });
+      
+    } catch (error) {
+      console.error("Schedule inspection error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to schedule inspection" 
+      });
+    }
+  });
+
+  // Update inspection result
+  app.patch("/api/inspections/:id/result", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes, deficiencies } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required field: status" 
+        });
+      }
+
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      await permitMilestoneService.updateInspectionResult(id, status, notes, deficiencies || []);
+      
+      res.json({ success: true, message: "Inspection result updated successfully" });
+      
+    } catch (error) {
+      console.error("Update inspection result error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update inspection result" 
+      });
+    }
+  });
+
+  // Get project timeline
+  app.get("/api/projects/:id/timeline", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const timeline = await permitMilestoneService.getProjectTimeline(id);
+      
+      res.json({ success: true, data: timeline });
+      
+    } catch (error) {
+      console.error("Get project timeline error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve project timeline" 
+      });
+    }
+  });
+
+  // Get dashboard statistics
+  app.get("/api/dashboard/permit-stats", async (req, res) => {
+    try {
+      const { permitMilestoneService } = await import('./permit-milestone-service');
+      const stats = await permitMilestoneService.getDashboardStats();
+      
+      res.json({ success: true, data: stats });
+      
+    } catch (error) {
+      console.error("Get dashboard stats error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to retrieve dashboard statistics" 
+      });
+    }
+  });
+
   // === AI DESIGN GENERATOR ENDPOINTS ===
 
   // Generate design concept

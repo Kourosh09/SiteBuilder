@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -99,3 +99,113 @@ export interface PropertyAnalysisResult {
   };
   confidence: number;
 }
+
+// Permit Tracking and Milestone Management Tables
+export const permits = pgTable("permits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  permitNumber: varchar("permit_number").notNull(),
+  projectId: varchar("project_id"),
+  permitType: varchar("permit_type").notNull(), // Building, Development, Demolition, etc.
+  status: varchar("status").notNull().default("Applied"), // Applied, Under Review, Approved, Issued, Rejected
+  applicationDate: timestamp("application_date").defaultNow(),
+  approvalDate: timestamp("approval_date"),
+  expiryDate: timestamp("expiry_date"),
+  municipality: varchar("municipality").notNull(),
+  address: varchar("address").notNull(),
+  description: text("description"),
+  applicantName: varchar("applicant_name"),
+  estimatedValue: varchar("estimated_value"),
+  fees: varchar("fees"),
+  conditions: text("conditions").array(),
+  documents: text("documents").array(),
+  contactInfo: jsonb("contact_info"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const milestones = pgTable("milestones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  permitId: varchar("permit_id").references(() => permits.id, { onDelete: "cascade" }),
+  projectId: varchar("project_id"),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  category: varchar("category").notNull(), // Permit, Construction, Inspection, Completion
+  status: varchar("status").notNull().default("Pending"), // Pending, In Progress, Completed, Delayed
+  priority: varchar("priority").notNull().default("Medium"), // Low, Medium, High, Critical
+  dueDate: timestamp("due_date"),
+  completedDate: timestamp("completed_date"),
+  assignedTo: varchar("assigned_to"),
+  dependencies: text("dependencies").array(),
+  notes: text("notes"),
+  attachments: text("attachments").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const inspections = pgTable("inspections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  permitId: varchar("permit_id").references(() => permits.id, { onDelete: "cascade" }),
+  milestoneId: varchar("milestone_id").references(() => milestones.id),
+  inspectionType: varchar("inspection_type").notNull(), // Foundation, Framing, Electrical, etc.
+  scheduledDate: timestamp("scheduled_date"),
+  completedDate: timestamp("completed_date"),
+  status: varchar("status").notNull().default("Scheduled"), // Scheduled, Passed, Failed, Rescheduled
+  inspector: varchar("inspector"),
+  notes: text("notes"),
+  deficiencies: text("deficiencies").array(),
+  nextInspection: varchar("next_inspection"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations
+export const permitsRelations = relations(permits, ({ many }) => ({
+  milestones: many(milestones),
+  inspections: many(inspections),
+}));
+
+export const milestonesRelations = relations(milestones, ({ one, many }) => ({
+  permit: one(permits, {
+    fields: [milestones.permitId],
+    references: [permits.id],
+  }),
+  inspections: many(inspections),
+}));
+
+export const inspectionsRelations = relations(inspections, ({ one }) => ({
+  permit: one(permits, {
+    fields: [inspections.permitId],
+    references: [permits.id],
+  }),
+  milestone: one(milestones, {
+    fields: [inspections.milestoneId],
+    references: [milestones.id],
+  }),
+}));
+
+// Insert schemas for permit tracking
+export const insertPermitSchema = createInsertSchema(permits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMilestoneSchema = createInsertSchema(milestones).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertInspectionSchema = createInsertSchema(inspections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for permit tracking
+export type Permit = typeof permits.$inferSelect;
+export type InsertPermit = z.infer<typeof insertPermitSchema>;
+export type Milestone = typeof milestones.$inferSelect;
+export type InsertMilestone = z.infer<typeof insertMilestoneSchema>;
+export type Inspection = typeof inspections.$inferSelect;
+export type InsertInspection = z.infer<typeof insertInspectionSchema>;
