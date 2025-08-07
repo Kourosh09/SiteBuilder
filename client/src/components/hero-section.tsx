@@ -16,7 +16,7 @@ export default function HeroSection() {
           <div>
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
               AI-Powered Financial Management for{" "}
-              <span className="text-amber-500 font-extrabold">Real Estate Developers</span>
+              <span className="text-amber-300 font-extrabold drop-shadow-lg">Real Estate Developers</span>
             </h1>
             <p className="text-xl text-blue-50 mb-8 leading-relaxed">
               Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
