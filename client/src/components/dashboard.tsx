@@ -23,11 +23,9 @@ import {
 import PropertyLookup from "./property-lookup";
 import ZoningIntelligence from "./zoning-intelligence";
 import AIPropertyAnalyzer from "./ai-property-analyzer";
-import LeadGeneration from "./lead-generation";
 import PermitTracker from "./permit-tracker";
 import PartnerFinder from "./partner-finder";
 import PermitTracking from "./permit-tracking";
-import ContractorMarketplace from "./contractor-marketplace";
 
 interface DashboardStats {
   totalProjects: number;
@@ -63,11 +61,11 @@ export default function Dashboard() {
       action: () => setActiveTab("zoning")
     },
     {
-      title: "Generate Leads",
-      description: "AI social media & ad campaigns",
+      title: "Find Partners",
+      description: "Connect with architects & engineers",
       icon: Users,
       color: "bg-purple-600",
-      action: () => setActiveTab("lead-generation")
+      action: () => setActiveTab("partners")
     },
     {
       title: "Track Permits",
@@ -114,9 +112,7 @@ export default function Dashboard() {
             <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer">AI Analysis</TabsTrigger>
             <TabsTrigger value="zoning" data-testid="tab-zoning">Zoning</TabsTrigger>
             <TabsTrigger value="permits" data-testid="tab-permits">Permits</TabsTrigger>
-            <TabsTrigger value="lead-generation" data-testid="tab-lead-generation">Lead Gen</TabsTrigger>
             <TabsTrigger value="partners" data-testid="tab-partners">Partners</TabsTrigger>
-            <TabsTrigger value="marketplace" data-testid="tab-marketplace">Contractors</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -259,19 +255,9 @@ export default function Dashboard() {
             <PermitTracking />
           </TabsContent>
 
-          {/* Lead Generation Tab */}
-          <TabsContent value="lead-generation">
-            <LeadGeneration />
-          </TabsContent>
-
           {/* Partners Tab */}
           <TabsContent value="partners">
             <PartnerFinder />
-          </TabsContent>
-
-          {/* Contractor Marketplace Tab */}
-          <TabsContent value="marketplace">
-            <ContractorMarketplace />
           </TabsContent>
         </Tabs>
       </div>

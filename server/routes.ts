@@ -1043,6 +1043,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === CONTRACTOR SIGNUP & MARKETPLACE ENDPOINTS ===
+
+  // Contractor Signup Endpoint
+  app.post("/api/contractors/signup", async (req, res) => {
+    try {
+      const {
+        companyName,
+        contactPerson,
+        email,
+        phone,
+        trades,
+        experience,
+        serviceAreas,
+        licenseNumber
+      } = req.body;
+
+      // Basic validation
+      if (!companyName || !contactPerson || !email || !phone || !trades || trades.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields: companyName, contactPerson, email, phone, trades"
+        });
+      }
+
+      // Create contractor application
+      const contractorApplication = {
+        companyName,
+        contactPerson,
+        email,
+        phone,
+        trades,
+        experience: experience || "Not specified",
+        serviceAreas: serviceAreas || [],
+        licenseNumber: licenseNumber || null,
+        status: "pending",
+        appliedAt: new Date().toISOString(),
+        id: Date.now().toString()
+      };
+
+      // In a real app, this would save to database
+      // For now, we'll just return success
+      
+      res.json({
+        success: true,
+        message: "Contractor application submitted successfully",
+        applicationId: contractorApplication.id
+      });
+
+    } catch (error) {
+      console.error("Contractor signup error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to process contractor application"
+      });
+    }
+  });
+
   // === CONTRACTOR MARKETPLACE ENDPOINTS ===
 
   // Get all contractors with filters
