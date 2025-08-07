@@ -30,15 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all leads (admin endpoint)
-  app.get("/api/leads", async (req, res) => {
-    try {
-      const leads = await storage.getLeads();
-      res.json(leads);
-    } catch (error) {
-      res.status(500).json({ success: false, error: "Failed to fetch leads" });
-    }
-  });
+  // Get all leads (admin endpoint) - removed to avoid conflict
 
   // Calculation submission endpoint
   app.post("/api/calculations", async (req, res) => {
@@ -266,27 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get leads
-  app.get("/api/leads", async (req, res) => {
-    try {
-      const { status, leadType, projectInterest } = req.query;
-      
-      const leads = leadGenerationService.getLeads({
-        status: status as any,
-        leadType: leadType as any,
-        projectInterest: projectInterest as any
-      });
-
-      res.json({ success: true, data: leads });
-      
-    } catch (error) {
-      console.error("Get leads error:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "Failed to retrieve leads" 
-      });
-    }
-  });
+  // Get leads - removed to avoid conflict with main leads endpoint
 
   // Update lead status
   app.patch("/api/leads/:id", async (req, res) => {
