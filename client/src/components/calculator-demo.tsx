@@ -260,13 +260,14 @@ export default function CalculatorDemo() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-brand-green to-green-600 p-6 rounded-lg text-white">
-                  <div className="text-sm opacity-90 mb-1">Net Profit</div>
-                  <div className="text-3xl font-bold" data-testid="text-net-profit">
+                <div className="bg-gradient-to-r from-brand-green to-green-600 p-6 rounded-lg text-white shadow-lg">
+                  <div className="text-sm opacity-90 mb-2 font-medium">💰 Net Profit</div>
+                  <div className="text-4xl font-bold tracking-tight mb-3" data-testid="text-net-profit">
                     {results.netProfit}
                   </div>
-                  <div className="text-sm opacity-90 mt-2">
-                    ROI: <span className="font-semibold" data-testid="text-roi">{results.roi}</span>
+                  <div className="bg-white bg-opacity-20 rounded-md p-2">
+                    <span className="text-sm font-medium">ROI: </span>
+                    <span className="font-bold text-lg" data-testid="text-roi">{results.roi}</span>
                   </div>
                 </div>
 

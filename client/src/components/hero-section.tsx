@@ -19,7 +19,7 @@ export default function HeroSection() {
               <span className="text-brand-amber">Real Estate Developers</span>
             </h1>
             <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-              Simplify feasibility analysis, automate development budgets, and streamline investor reporting with our purpose-built platform for small to mid-size developers.
+              Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
