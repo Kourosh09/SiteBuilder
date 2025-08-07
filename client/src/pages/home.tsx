@@ -1,6 +1,7 @@
 import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
 import FeaturesOverview from "@/components/features-overview";
+import HowItWorks from "@/components/how-it-works";
 import CalculatorDemo from "@/components/calculator-demo";
 import ProductShowcase from "@/components/product-showcase";
 import AboutFounder from "@/components/about-founder";
@@ -15,6 +16,7 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <FeaturesOverview />
+      <HowItWorks />
       <CalculatorDemo />
       <ProductShowcase />
       <AboutFounder />
