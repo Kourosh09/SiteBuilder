@@ -9,6 +9,7 @@ import { zoningIntelligenceService } from "./zoning-intelligence";
 import { permitTrackerService } from "./permit-tracker";
 import { partnerFinderService } from "./partner-finder";
 import { aiDesignGeneratorService } from "./ai-design-generator";
+import { getVancouverPermits, searchVancouverPermitsByAddress, getVancouverPermitStats } from "./vancouver-open-data";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -828,6 +829,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         error: error instanceof Error ? error.message : "Failed to get design" 
       });
+    }
+  });
+
+  // Real Vancouver Open Data endpoints
+  app.get("/api/permits/vancouver/live", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const permits = await getVancouverPermits(limit);
+      res.json({ success: true, permits, source: "Vancouver Open Data API" });
+    } catch (error) {
+      console.error("Error fetching Vancouver permits:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch live permit data" });
+    }
+  });
+
+  app.get("/api/permits/vancouver/search", async (req, res) => {
+    try {
+      const { address } = req.query;
+      if (!address) {
+        return res.status(400).json({ success: false, error: "Address parameter required" });
+      }
+      const permits = await searchVancouverPermitsByAddress(address as string);
+      res.json({ success: true, permits, source: "Vancouver Open Data API" });
+    } catch (error) {
+      console.error("Error searching Vancouver permits:", error);
+      res.status(500).json({ success: false, error: "Failed to search permit data" });
+    }
+  });
+
+  app.get("/api/permits/vancouver/stats", async (req, res) => {
+    try {
+      const stats = await getVancouverPermitStats();
+      res.json({ success: true, stats, source: "Vancouver Open Data API" });
+    } catch (error) {
+      console.error("Error fetching Vancouver permit stats:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch permit statistics" });
     }
   });
 
