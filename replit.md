@@ -23,7 +23,8 @@ Preferred communication style: Simple, everyday language.
 ### Complete BuildwiseAI Platform (August 7, 2025)
 - **Date**: August 7, 2025
 - **Status**: ✅ PRODUCTION READY - Full-featured real estate development platform with authentication and lead generation
-- **Authentication**: Email/SMS verification system with protected dashboard access
+- **Authentication**: Email/SMS verification system with protected dashboard access (demo code: 123456)
+- **Login Preference**: User prefers email/SMS code verification over username/password system
 - **Lead Generation**: Functional campaign management, social media automation, and lead scoring system
 - **Marketing Structure**: Public marketing on home page, functional tools in protected dashboard
 - **Platform Architecture**:
