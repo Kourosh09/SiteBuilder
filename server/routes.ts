@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLeadSchema, insertCalculationSchema, PropertyAnalysisInput } from "@shared/schema";
 import { aiAnalysis } from "./ai-analysis";
+import { propertyDataService } from "./property-data";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -152,6 +153,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         error: error instanceof Error ? error.message : "Failed to generate JV structure" 
+      });
+    }
+  });
+
+  // Property Data Lookup endpoint (BC Assessment + MLS)
+  app.post("/api/property/lookup", async (req, res) => {
+    try {
+      const { address, city } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: address and city" 
+        });
+      }
+
+      const propertyData = await propertyDataService.getPropertyData(address, city);
+      res.json({ success: true, data: propertyData });
+      
+    } catch (error) {
+      console.error("Property lookup error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to lookup property data" 
+      });
+    }
+  });
+
+  // BC Assessment specific lookup
+  app.post("/api/property/bc-assessment", async (req, res) => {
+    try {
+      const { address, city } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: address and city" 
+        });
+      }
+
+      const bcData = await propertyDataService.getBCAssessmentData(address, city);
+      res.json({ success: true, data: bcData });
+      
+    } catch (error) {
+      console.error("BC Assessment lookup error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to lookup BC Assessment data" 
+      });
+    }
+  });
+
+  // MLS Comparables lookup
+  app.post("/api/property/mls-comparables", async (req, res) => {
+    try {
+      const { address, city, radius = 1 } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: address and city" 
+        });
+      }
+
+      const mlsData = await propertyDataService.getMLSComparables(address, city, radius);
+      res.json({ success: true, data: mlsData });
+      
+    } catch (error) {
+      console.error("MLS lookup error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to lookup MLS data" 
       });
     }
   });
