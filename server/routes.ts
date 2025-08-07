@@ -2475,24 +2475,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple login authentication endpoint
-  app.post("/api/auth/login", async (req, res) => {
+  // Email/SMS code verification endpoints
+  app.post("/api/auth/send-code", async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { method, contact } = req.body;
       
-      // Demo credentials - you can customize these
-      const validCredentials = {
-        username: "admin",
-        password: "buildwise2024"
-      };
+      // For demo purposes, accept any email or phone number
+      // In production, you would integrate with SMS/email providers
       
-      if (username === validCredentials.username && password === validCredentials.password) {
-        // Create a simple session
+      console.log(`Sending ${method} verification code to ${contact}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Verification code sent via ${method}`,
+        demoCode: "123456" // In production, don't send the actual code
+      });
+      
+    } catch (error) {
+      console.error("Send code error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to send verification code" 
+      });
+    }
+  });
+
+  app.post("/api/auth/verify-code", async (req, res) => {
+    try {
+      const { method, contact, code } = req.body;
+      
+      // For demo purposes, accept code "123456" or any 6-digit code
+      if (code === "123456" || (code && code.length === 6)) {
         const user = {
-          id: "demo_user_1",
-          username: username,
-          email: "admin@buildwiseai.com",
-          loginTime: new Date().toISOString()
+          id: `user_${Date.now()}`,
+          email: method === "email" ? contact : "user@buildwiseai.com",
+          phone: method === "phone" ? contact : null,
+          loginTime: new Date().toISOString(),
+          method: method
         };
         
         res.json({ 
@@ -2503,14 +2522,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(401).json({ 
           success: false, 
-          error: "Invalid username or password" 
+          error: "Invalid verification code" 
         });
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Verify code error:", error);
       res.status(500).json({ 
         success: false, 
-        error: "Login failed" 
+        error: "Code verification failed" 
       });
     }
   });
