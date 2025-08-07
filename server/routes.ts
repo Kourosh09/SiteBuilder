@@ -411,6 +411,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // === ZONING INTELLIGENCE ENDPOINTS ===
 
+  // PDF Report Generation endpoint
+  app.post("/api/reports/zoning", async (req, res) => {
+    try {
+      const { PDFReportGenerator } = await import("./pdf-generator");
+      const generator = new PDFReportGenerator();
+      
+      const reportData = {
+        ...req.body,
+        analysisDate: new Date().toLocaleDateString('en-CA')
+      };
+      
+      const pdfBuffer = generator.generateZoningReport(reportData);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Zoning-Report-${reportData.address.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF report:", error);
+      res.status(500).json({ message: "Failed to generate PDF report" });
+    }
+  });
+
   // Get zoning analysis
   app.post("/api/zoning/analysis", async (req, res) => {
     try {

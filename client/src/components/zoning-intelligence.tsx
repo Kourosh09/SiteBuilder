@@ -239,6 +239,67 @@ export default function ZoningIntelligence() {
     }
   };
 
+  const handleGeneratePDFReport = async () => {
+    if (!cityData) {
+      toast({
+        title: "No Analysis Data",
+        description: "Please run zoning analysis first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const reportData = {
+        address: analysisForm.address,
+        city: analysisForm.city,
+        coordinates: cityData.coordinates,
+        lotSize: parseFloat(analysisForm.lotSize),
+        frontage: parseFloat(analysisForm.frontage),
+        zoning: cityData.zoning,
+        developmentPotential: cityData.developmentPotential,
+        nearbyAmenities: cityData.nearbyAmenities,
+        marketContext: cityData.marketContext
+      };
+
+      const response = await fetch("/api/reports/zoning", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reportData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Handle PDF blob download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `BuildwiseAI-Zoning-Report-${analysisForm.address.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "PDF Report Downloaded",
+        description: "Your comprehensive zoning analysis report has been downloaded successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error generating PDF report:", error);
+      toast({
+        title: "PDF Generation Failed", 
+        description: error instanceof Error ? error.message : "Failed to generate PDF report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-CA', {
       style: 'currency',
@@ -1029,25 +1090,47 @@ export default function ZoningIntelligence() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <Button
-                      onClick={handleGenerateFeasibilityReport}
-                      disabled={loading}
-                      className="w-full bg-brand-blue hover:bg-brand-blue/90"
-                      size="lg"
-                      data-testid="button-generate-feasibility-report"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating Report...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-4 h-4 mr-2" />
-                          Generate Feasibility Report
-                        </>
-                      )}
-                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button
+                        onClick={handleGenerateFeasibilityReport}
+                        disabled={loading}
+                        className="bg-brand-blue hover:bg-brand-blue/90"
+                        size="lg"
+                        data-testid="button-generate-feasibility-report"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating Report...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Generate Text Report
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        onClick={handleGeneratePDFReport}
+                        disabled={loading}
+                        className="bg-emerald-600 hover:bg-emerald-600/90"
+                        size="lg"
+                        data-testid="button-generate-pdf-report"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Download PDF Report
+                          </>
+                        )}
+                      </Button>
+                    </div>
 
                     {feasibilityReport && (
                       <div className="space-y-4">
