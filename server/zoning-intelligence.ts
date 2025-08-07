@@ -17,10 +17,16 @@ export interface ZoningData {
   };
   parkingRequirements: string;
   specialRestrictions?: string[];
+  bill44Eligible: boolean;
+  bill44MaxUnits: number;
+  transitOriented: boolean;
+  multiplexEligible: boolean;
 }
 
 export interface DevelopmentPotential {
   maxUnits: number;
+  bill44MaxUnits: number;
+  recommendedUnits: number;
   suggestedUnitMix: {
     bedrooms: number;
     count: number;
@@ -31,6 +37,12 @@ export interface DevelopmentPotential {
   feasibilityScore: number;
   constraints: string[];
   opportunities: string[];
+  bill44Compliance: {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  };
 }
 
 export interface CityDataResult {
@@ -68,18 +80,23 @@ export class ZoningIntelligenceService {
   }
 
   /**
-   * Get comprehensive zoning and development analysis
+   * Get comprehensive zoning and development analysis (BC-focused with Bill 44 compliance)
    */
   async getZoningAnalysis(address: string, city: string, lotSize: number): Promise<CityDataResult> {
     try {
+      // Ensure BC location
+      if (!this.isBCLocation(city)) {
+        throw new Error("BuildwiseAI currently focuses on BC municipalities. Please enter a BC city.");
+      }
+
       // Get coordinates (simulated for now - would integrate with geocoding API)
       const coordinates = await this.geocodeAddress(address, city);
       
-      // Get zoning data (simulated - would integrate with municipal GIS APIs)
-      const zoning = await this.getZoningData(coordinates, city);
+      // Get zoning data with Bill 44 analysis
+      const zoning = await this.getZoningDataWithBill44(coordinates, city);
       
-      // Calculate development potential
-      const developmentPotential = await this.calculateDevelopmentPotential(zoning, lotSize, city);
+      // Calculate development potential including Bill 44 benefits
+      const developmentPotential = await this.calculateDevelopmentPotentialWithBill44(zoning, lotSize, city);
       
       // Get nearby amenities (simulated - would integrate with maps APIs)
       const nearbyAmenities = await this.getNearbyAmenities(coordinates);
@@ -98,7 +115,7 @@ export class ZoningIntelligenceService {
       
     } catch (error) {
       console.error("Zoning analysis error:", error);
-      throw new Error("Failed to analyze zoning and development potential");
+      throw new Error(error instanceof Error ? error.message : "Failed to analyze zoning and development potential");
     }
   }
 
@@ -230,59 +247,75 @@ export class ZoningIntelligenceService {
     };
   }
 
-  private async getZoningData(coordinates: { lat: number; lng: number }, city: string): Promise<ZoningData> {
-    // Simulate zoning lookup - would integrate with municipal GIS APIs
+  private async getZoningDataWithBill44(coordinates: { lat: number; lng: number }, city: string): Promise<ZoningData> {
+    // Simulate zoning lookup with Bill 44 analysis
     const zoningCodes = ['RS-1', 'RS-2', 'RS-3', 'RS-5', 'RS-7', 'RT-1', 'RT-2', 'RM-1', 'RM-2'];
     const randomZoning = zoningCodes[Math.floor(Math.random() * zoningCodes.length)];
     
     return this.zoningRules.get(randomZoning) || this.zoningRules.get('RS-1')!;
   }
 
-  private async calculateDevelopmentPotential(
+  private async calculateDevelopmentPotentialWithBill44(
     zoning: ZoningData,
     lotSize: number,
     city: string
   ): Promise<DevelopmentPotential> {
-    // Calculate maximum units based on zoning and lot size
-    const maxUnits = Math.min(
+    // Calculate maximum units based on traditional zoning
+    const traditionalMaxUnits = Math.min(
       Math.floor(lotSize * zoning.maxFAR / 800), // Assume 800 sq ft average unit
       zoning.maxDensity
     );
 
+    // Bill 44 analysis - enhanced density potential
+    const bill44MaxUnits = this.calculateBill44MaxUnits(zoning, lotSize, city);
+    
+    // Recommended units (higher of traditional or Bill 44)
+    const recommendedUnits = Math.max(traditionalMaxUnits, bill44MaxUnits);
+
     // Estimate gross floor area
-    const estimatedGFA = Math.min(lotSize * zoning.maxFAR, maxUnits * 900);
+    const estimatedGFA = Math.min(lotSize * zoning.maxFAR, recommendedUnits * 900);
 
-    // Suggest unit mix
-    const suggestedUnitMix = this.generateUnitMix(maxUnits);
+    // Suggest unit mix optimized for Bill 44
+    const suggestedUnitMix = this.generateUnitMixForBill44(recommendedUnits, zoning.bill44Eligible);
 
-    // Calculate estimated value (simplified)
+    // Calculate estimated value with Bill 44 market premium
     const cityMultipliers: Record<string, number> = {
       'vancouver': 1800,
       'burnaby': 1300,
       'richmond': 1400,
       'surrey': 1000,
-      'coquitlam': 1200
+      'coquitlam': 1200,
+      'maple ridge': 950,
+      'mission': 850,
+      'langley': 1050
     };
 
     const pricePerSqFt = cityMultipliers[city.toLowerCase()] || 1200;
-    const estimatedValue = estimatedGFA * pricePerSqFt;
+    const bill44Premium = zoning.bill44Eligible ? 1.15 : 1.0; // 15% premium for Bill 44 eligible
+    const estimatedValue = estimatedGFA * pricePerSqFt * bill44Premium;
 
-    // Calculate feasibility score
-    const feasibilityScore = this.calculateFeasibilityScore(zoning, lotSize, maxUnits, city);
+    // Calculate feasibility score with Bill 44 benefits
+    const feasibilityScore = this.calculateFeasibilityScoreWithBill44(zoning, lotSize, recommendedUnits, city);
 
-    // Identify constraints and opportunities
-    const constraints = this.identifyConstraints(zoning, lotSize);
-    const opportunities = this.identifyOpportunities(zoning, maxUnits, city);
+    // Identify constraints and opportunities including Bill 44
+    const constraints = this.identifyConstraintsWithBill44(zoning, lotSize);
+    const opportunities = this.identifyOpportunitiesWithBill44(zoning, recommendedUnits, city);
+
+    // Bill 44 compliance analysis
+    const bill44Compliance = this.analyzeBill44Compliance(zoning, lotSize, city);
 
     return {
-      maxUnits,
+      maxUnits: traditionalMaxUnits,
+      bill44MaxUnits,
+      recommendedUnits,
       suggestedUnitMix,
-      buildingType: this.determineBuildingType(maxUnits, zoning.zoningCode),
+      buildingType: this.determineBuildingType(recommendedUnits, zoning.zoningCode),
       estimatedGFA,
       estimatedValue,
       feasibilityScore,
       constraints,
-      opportunities
+      opportunities,
+      bill44Compliance
     };
   }
 
@@ -324,7 +357,7 @@ export class ZoningIntelligenceService {
   }
 
   private initializeZoningRules(): void {
-    // Initialize common BC zoning rules
+    // Initialize BC zoning rules with Bill 44 compliance
     const zoningRules: [string, ZoningData][] = [
       ['RS-1', {
         zoningCode: 'RS-1',
@@ -334,7 +367,11 @@ export class ZoningIntelligenceService {
         maxDensity: 1,
         permittedUses: ['Single-family dwelling', 'Home occupation'],
         setbacks: { front: 6, rear: 6, side: 1.2 },
-        parkingRequirements: '1 space per unit'
+        parkingRequirements: '1 space per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 4,
+        transitOriented: false,
+        multiplexEligible: true
       }],
       ['RS-2', {
         zoningCode: 'RS-2',
@@ -344,7 +381,39 @@ export class ZoningIntelligenceService {
         maxDensity: 2,
         permittedUses: ['Single-family dwelling', 'Secondary suite', 'Laneway house'],
         setbacks: { front: 6, rear: 6, side: 1.2 },
-        parkingRequirements: '1.5 spaces per unit'
+        parkingRequirements: '1.5 spaces per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 4,
+        transitOriented: false,
+        multiplexEligible: true
+      }],
+      ['RS-3', {
+        zoningCode: 'RS-3',
+        description: 'Duplex residential',
+        maxHeight: 10.7,
+        maxFAR: 0.80,
+        maxDensity: 2,
+        permittedUses: ['Duplex', 'Single-family dwelling'],
+        setbacks: { front: 6, rear: 6, side: 1.2 },
+        parkingRequirements: '1 space per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 4,
+        transitOriented: false,
+        multiplexEligible: true
+      }],
+      ['RS-5', {
+        zoningCode: 'RS-5',
+        description: 'Compact residential',
+        maxHeight: 10.7,
+        maxFAR: 0.85,
+        maxDensity: 3,
+        permittedUses: ['Single-family dwelling', 'Duplex', 'Triplex'],
+        setbacks: { front: 4.5, rear: 6, side: 1.2 },
+        parkingRequirements: '1 space per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 6,
+        transitOriented: false,
+        multiplexEligible: true
       }],
       ['RT-1', {
         zoningCode: 'RT-1',
@@ -354,7 +423,11 @@ export class ZoningIntelligenceService {
         maxDensity: 4,
         permittedUses: ['Townhouses', 'Row houses'],
         setbacks: { front: 4.5, rear: 6, side: 1.2 },
-        parkingRequirements: '1 space per unit'
+        parkingRequirements: '1 space per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 6,
+        transitOriented: true,
+        multiplexEligible: true
       }],
       ['RM-1', {
         zoningCode: 'RM-1',
@@ -364,13 +437,207 @@ export class ZoningIntelligenceService {
         maxDensity: 8,
         permittedUses: ['Apartment buildings', 'Townhouses'],
         setbacks: { front: 6, rear: 10.5, side: 2.4 },
-        parkingRequirements: '1 space per unit'
+        parkingRequirements: '1 space per unit',
+        bill44Eligible: true,
+        bill44MaxUnits: 8,
+        transitOriented: true,
+        multiplexEligible: true
       }]
     ];
 
     zoningRules.forEach(([code, data]) => {
       this.zoningRules.set(code, data);
     });
+  }
+
+  /**
+   * Check if location is in BC
+   */
+  private isBCLocation(city: string): boolean {
+    const bcCities = [
+      'vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'port coquitlam', 
+      'port moody', 'langley', 'maple ridge', 'mission', 'north vancouver', 
+      'west vancouver', 'delta', 'white rock', 'pitt meadows', 'new westminster',
+      'victoria', 'kelowna', 'kamloops', 'prince george', 'chilliwack', 'nanaimo'
+    ];
+    
+    return bcCities.some(bcCity => city.toLowerCase().includes(bcCity));
+  }
+
+  /**
+   * Calculate maximum units under Bill 44
+   */
+  private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, city: string): number {
+    if (!zoning.bill44Eligible) return zoning.maxDensity;
+    
+    // Base Bill 44 allowance
+    let bill44Units = zoning.bill44MaxUnits;
+    
+    // Larger lots get additional units
+    if (lotSize > 6000) bill44Units += 1;
+    if (lotSize > 8000) bill44Units += 1;
+    
+    // Transit-oriented zones get bonus
+    if (zoning.transitOriented) bill44Units += 2;
+    
+    // High-demand cities get enhanced allowance
+    const highDemandCities = ['vancouver', 'burnaby', 'richmond', 'surrey'];
+    if (highDemandCities.includes(city.toLowerCase())) {
+      bill44Units += 1;
+    }
+    
+    return Math.min(bill44Units, 8); // Cap at 8 units for practical purposes
+  }
+
+  /**
+   * Generate unit mix optimized for Bill 44
+   */
+  private generateUnitMixForBill44(maxUnits: number, bill44Eligible: boolean): { bedrooms: number; count: number }[] {
+    if (maxUnits <= 2) {
+      return [{ bedrooms: 3, count: maxUnits }];
+    }
+    
+    if (bill44Eligible) {
+      // Bill 44 encourages smaller, more affordable units
+      const mix = [];
+      let remaining = maxUnits;
+      
+      // 30% 1-bedroom, 50% 2-bedroom, 20% 3-bedroom for Bill 44
+      const oneBed = Math.floor(maxUnits * 0.3);
+      const twoBed = Math.floor(maxUnits * 0.5);
+      const threeBed = remaining - oneBed - twoBed;
+      
+      if (oneBed > 0) mix.push({ bedrooms: 1, count: oneBed });
+      if (twoBed > 0) mix.push({ bedrooms: 2, count: twoBed });
+      if (threeBed > 0) mix.push({ bedrooms: 3, count: threeBed });
+      
+      return mix;
+    }
+    
+    return this.generateUnitMix(maxUnits);
+  }
+
+  /**
+   * Analyze Bill 44 compliance and benefits
+   */
+  private analyzeBill44Compliance(zoning: ZoningData, lotSize: number, city: string): {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  } {
+    if (!zoning.bill44Eligible) {
+      return {
+        eligible: false,
+        benefits: [],
+        requirements: [],
+        incentives: []
+      };
+    }
+
+    const benefits = [
+      'Up to 4-6 units permitted on single-family lots',
+      'Streamlined approval process',
+      'Reduced parking requirements possible',
+      'Higher density than traditional zoning'
+    ];
+
+    if (zoning.transitOriented) {
+      benefits.push('Transit-oriented development bonus units');
+      benefits.push('Potential for further density increases');
+    }
+
+    const requirements = [
+      'Compliance with BC Building Code',
+      'Minimum unit size requirements',
+      'Accessible design standards',
+      'Fire safety and emergency access'
+    ];
+
+    if (lotSize < 5000) {
+      requirements.push('Compact design requirements for smaller lots');
+    }
+
+    const incentives = [
+      'Development cost charge reductions',
+      'Expedited permitting',
+      'Property tax incentives for rental units',
+      'Provincial housing funding eligibility'
+    ];
+
+    if (['vancouver', 'burnaby', 'richmond'].includes(city.toLowerCase())) {
+      incentives.push('Municipal density bonus programs');
+      incentives.push('Affordable housing contribution alternatives');
+    }
+
+    return {
+      eligible: true,
+      benefits,
+      requirements,
+      incentives
+    };
+  }
+
+  /**
+   * Calculate feasibility score with Bill 44 benefits
+   */
+  private calculateFeasibilityScoreWithBill44(zoning: ZoningData, lotSize: number, maxUnits: number, city: string): number {
+    let score = this.calculateFeasibilityScore(zoning, lotSize, maxUnits, city);
+    
+    // Bill 44 bonus points
+    if (zoning.bill44Eligible) {
+      score += 15; // Significant bonus for Bill 44 eligibility
+      
+      if (zoning.transitOriented) score += 10;
+      if (zoning.multiplexEligible) score += 8;
+      if (maxUnits >= 4) score += 5; // Density achievement bonus
+    }
+    
+    return Math.min(Math.max(score, 20), 98);
+  }
+
+  /**
+   * Identify constraints with Bill 44 considerations
+   */
+  private identifyConstraintsWithBill44(zoning: ZoningData, lotSize: number): string[] {
+    const constraints = this.identifyConstraints(zoning, lotSize);
+    
+    if (zoning.bill44Eligible) {
+      if (lotSize < 4000) {
+        constraints.push('Small lot size may limit Bill 44 unit count');
+      }
+      constraints.push('Bill 44 design standards must be met');
+      constraints.push('Minimum unit size requirements under Bill 44');
+    } else {
+      constraints.push('Not eligible for Bill 44 density bonuses');
+    }
+    
+    return constraints;
+  }
+
+  /**
+   * Identify opportunities with Bill 44 benefits
+   */
+  private identifyOpportunitiesWithBill44(zoning: ZoningData, maxUnits: number, city: string): string[] {
+    const opportunities = this.identifyOpportunities(zoning, maxUnits, city);
+    
+    if (zoning.bill44Eligible) {
+      opportunities.push('Bill 44 enables up to 4-6 units on single-family lots');
+      opportunities.push('Streamlined approval process under Bill 44');
+      opportunities.push('Access to provincial housing incentives');
+      
+      if (zoning.transitOriented) {
+        opportunities.push('Transit-oriented development bonuses available');
+      }
+      
+      if (maxUnits >= 4) {
+        opportunities.push('Strong rental income potential with multiple units');
+      }
+      
+      opportunities.push('Market premium for Bill 44-compliant developments');
+    }
+    
+    return opportunities;
   }
 
   private generateUnitMix(maxUnits: number): { bedrooms: number; count: number }[] {

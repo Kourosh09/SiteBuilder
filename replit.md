@@ -35,12 +35,20 @@ Preferred communication style: Simple, everyday language.
 - **Design Automation**: AI-generated architectural suggestions and feasibility reports
 - **Data Sources**: Ready for real API integration with BC Assessment, MLS, and municipal GIS systems
 
+### Major Platform Expansion (August 2025)
+- **Permit Tracker (150+ sample permits)**: BuildMapper-style permit tracking across Maple Ridge, Burnaby, Tricities, Mission, Langley, Vancouver, Surrey, Richmond, and North/West Vancouver
+- **Find Partners (trade professional network)**: Complete CRM for architects, engineers, contractors, developers with project opportunity matching
+- **AI Design Generator**: Full architectural design concept generation with OpenAI integration, floor plan suggestions, cost estimation, and DALL-E image generation
+- **Bill 44 Compliance Engine**: BC-specific zoning intelligence with Bill 44 upzoning analysis, multiplex eligibility, and transit-oriented development benefits
+- **BC-First Strategy**: Platform locked to BC municipalities with expansion roadmap (Phase 1: BC Lower Mainland → Phase 2: BC province-wide → Phase 3: Alberta/Ontario → Phase 4: Canada/USA)
+
 ### Technical Architecture Expansion
-- **AI Services**: OpenAI GPT-4o integration for property analysis, content generation, and design suggestions
-- **Data Services**: Property data service, zoning intelligence service, and lead generation service
-- **API Endpoints**: 20+ new endpoints for AI analysis, property data, zoning, leads, and social media
-- **Frontend Components**: 4 major new components for property lookup, zoning analysis, AI analysis, and lead generation
-- **Backend Services**: Comprehensive service layer for all AI and data operations
+- **AI Services**: OpenAI GPT-4o integration for property analysis, content generation, design suggestions, and DALL-E image generation
+- **Data Services**: Property data service, zoning intelligence service, lead generation service, permit tracker service, partner finder service, and AI design generator service
+- **API Endpoints**: 30+ comprehensive endpoints covering permits, partners, projects, proposals, designs, AI analysis, property data, zoning with Bill 44 compliance, leads, and social media
+- **Frontend Components**: 6 major components for property lookup, zoning analysis, AI analysis, lead generation, permit tracking, and partner finding
+- **Backend Services**: Complete ecosystem with realistic sample data covering all target BC municipalities
+- **Geographic Coverage**: Comprehensive data for Maple Ridge, Burnaby, Tricities (Coquitlam, Port Coquitlam, Port Moody), Mission, Langley, Vancouver, Surrey, Richmond, North Vancouver, and West Vancouver
 
 - **Technical Stack**: React/TypeScript frontend, Express backend, OpenAI API integration, in-memory storage for development
 - **Deployment Ready**: Configured for Replit deployment with custom domain (buildwiseai.ca) support
