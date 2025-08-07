@@ -22,6 +22,13 @@ Preferred communication style: Simple, everyday language.
   - 15% market premium for Bill 44-eligible properties
   - Transit-oriented development bonuses
 
+### Framer Marketing Integration (August 2025)
+- **Date**: August 7, 2025
+- **Status**: Framer marketing site connected to live dashboard
+- **Framer Project**: https://framer.com/projects/Website--9ApMcAmqBm7a9kFS33AI-hqII8
+- **Integration Strategy**: Framer for marketing, Replit for functional platform
+- **Live Data Connection**: Vancouver Open Data API integrated for real permits
+
 ### Complete BuildwiseAI Platform with Advanced AI Features
 - **Date**: August 2025
 - **Status**: Production-ready comprehensive real estate development platform
