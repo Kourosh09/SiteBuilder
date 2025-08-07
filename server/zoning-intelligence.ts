@@ -469,36 +469,47 @@ export class ZoningIntelligenceService {
    * Calculate maximum units under Bill 44 with frontage validation
    */
   private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, frontage: number, city: string): number {
-    // Core Bill 44 eligibility check (lot size and frontage requirements)
-    const meetsMinimumSize = lotSize >= 3000 && frontage >= 33;
+    // Bill 44 only applies to specific residential zones
+    const bill44EligibleZones = ['RS-1', 'RS-2', 'RS-3', 'RS-4', 'RS-5', 'RS-6', 'RS-7', 'RT-1', 'RT-2', 'RT-3'];
+    const isEligibleZone = bill44EligibleZones.some(zone => zoning.zoningCode.includes(zone));
     
-    if (!zoning.bill44Eligible || !meetsMinimumSize) {
-      return zoning.maxDensity;
+    // Must be in eligible zone and meet minimum requirements
+    if (!isEligibleZone || !zoning.bill44Eligible) {
+      return 1; // Single family only if not Bill 44 eligible
     }
     
-    // Base Bill 44 allowance (4-plex eligible)
-    let bill44Units = 4;
+    // Minimum lot requirements for Bill 44
+    const meetsMinimum4plex = lotSize >= 3000 && frontage >= 33;
+    const meetsMinimum6plex = lotSize >= 4500 && frontage >= 40;
     
-    // Enhanced eligibility for larger lots
-    if (lotSize >= 4000 && frontage >= 40) {
-      bill44Units = 6; // 6-plex eligible
+    if (!meetsMinimum4plex) {
+      return 1; // Single family if doesn't meet minimum requirements
     }
     
-    // Additional bonuses
-    if (lotSize > 6000) bill44Units += 1;
-    if (lotSize > 8000) bill44Units += 1;
+    // Base allowance: 4-plex for qualifying lots
+    let maxUnits = 4;
     
-    // Transit-oriented zones get significant bonus
-    if (zoning.transitOriented) bill44Units += 2;
-    
-    // High-demand cities get enhanced allowance
-    const highDemandCities = ['vancouver', 'burnaby', 'richmond', 'surrey'];
-    if (highDemandCities.includes(city.toLowerCase())) {
-      bill44Units += 1;
+    // 6-plex only if meets stricter requirements
+    if (meetsMinimum6plex) {
+      maxUnits = 6;
     }
     
-    return Math.min(bill44Units, 8); // Cap at 8 units for practical purposes
+    // Additional unit for very large lots (>7000 sq ft)
+    if (lotSize > 7000 && frontage >= 50) {
+      maxUnits += 1;
+    }
+    
+    // Transit bonus only applies near actual transit stations  
+    const transitCities = ['vancouver', 'burnaby', 'richmond', 'new westminster'];
+    if (zoning.transitOriented && transitCities.includes(city.toLowerCase())) {
+      maxUnits += 1;
+    }
+    
+    // Cap at reasonable maximum
+    return Math.min(maxUnits, zoning.maxDensity || 6);
   }
+  
+
 
   /**
    * Generate unit mix optimized for Bill 44
