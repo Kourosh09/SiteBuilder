@@ -1998,6 +1998,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Authentication endpoints
+  app.post("/api/auth/send-code", (req, res) => {
+    const { method, contact } = req.body;
+    
+    // In production, integrate with real SMS/email service
+    console.log(`Sending ${method} verification code to:`, contact);
+    
+    // For demo purposes, return success
+    res.json({ 
+      success: true, 
+      message: `Verification code sent to ${contact}` 
+    });
+  });
+
+  app.post("/api/auth/verify-code", (req, res) => {
+    const { method, contact, code } = req.body;
+    
+    // For demo purposes, accept any 6-digit code
+    if (code && code.length === 6) {
+      res.json({ 
+        success: true, 
+        user: { id: 'demo_user', contact, method },
+        token: 'demo_auth_token'
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: "Invalid verification code" 
+      });
+    }
+  });
+
+  app.get("/api/auth/verify-session", (req, res) => {
+    // For demo purposes, always return authenticated
+    // In production, verify actual session/token
+    res.json({ 
+      success: true, 
+      user: { id: 'demo_user' }
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
