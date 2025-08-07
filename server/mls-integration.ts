@@ -47,38 +47,50 @@ export class MLSService {
   
   constructor() {
     this.credentials = {
-      loginUrl: process.env.MLS_LOGIN_URL || '',
+      loginUrl: process.env.REBGV_LOGIN_URL || '',
       username: process.env.MLS_USERNAME || '',
       password: process.env.MLS_PASSWORD || '',
-      boardId: process.env.MLS_BOARD_ID || ''
+      boardId: process.env.MLS_BOARD_ID || 'REBGV'
     };
   }
 
-  // Authenticate with MLS system
+  // Authenticate with REBGV MLS system
   async authenticate(): Promise<string> {
+    if (!this.credentials.username || !this.credentials.password || !this.credentials.loginUrl) {
+      console.log("REBGV MLS credentials not configured, using fallback data");
+      throw new Error('MLS credentials not configured');
+    }
+
     try {
-      // RETS or REST API authentication
-      const response = await fetch(`${this.credentials.loginUrl}/auth`, {
+      console.log("🔐 Authenticating with REBGV MLS...");
+      
+      // Try direct login to REBGV system
+      const response = await fetch(this.credentials.loginUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'User-Agent': 'BuildwiseAI/1.0'
         },
-        body: JSON.stringify({
+        body: new URLSearchParams({
           username: this.credentials.username,
-          password: this.credentials.password
+          password: this.credentials.password,
+          login: 'Login'
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`MLS authentication failed: ${response.status}`);
+      if (response.ok) {
+        const setCookieHeader = response.headers.get('set-cookie');
+        if (setCookieHeader) {
+          console.log("✅ REBGV MLS authentication successful");
+          return setCookieHeader; // Return session cookie as token
+        }
       }
 
-      const auth = await response.json();
-      return auth.sessionToken || auth.access_token;
+      console.log("⚠️ REBGV MLS authentication failed, using fallback data");
+      throw new Error(`MLS authentication failed: ${response.status}`);
     } catch (error) {
-      console.error('MLS authentication error:', error);
-      throw new Error('Failed to authenticate with MLS system');
+      console.error('REBGV MLS authentication error:', error);
+      throw new Error('Failed to authenticate with REBGV MLS system');
     }
   }
 
