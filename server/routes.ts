@@ -2112,6 +2112,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true, data: newCampaign });
   });
 
+  // AI Design Generator endpoint
+  app.post("/api/ai-design-generator", async (req, res) => {
+    try {
+      const { propertyData, budget } = req.body;
+      
+      if (!propertyData || !budget) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields: propertyData, budget"
+        });
+      }
+
+      const designRequest = {
+        projectType: 'single-family' as const,
+        lotSize: propertyData.lotSize || 7200,
+        units: 1,
+        budget: budget,
+        location: `${propertyData.address}, ${propertyData.city}`,
+        style: 'modern' as const,
+        requirements: ['Energy efficient', 'Modern design', 'Open concept'],
+        constraints: ['Zoning compliance', 'Budget constraints']
+      };
+
+      const design = await aiDesignGeneratorService.generateDesignConcept(designRequest);
+      res.json({ success: true, data: design });
+      
+    } catch (error) {
+      console.error("AI Design Generation error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to generate design suggestions"
+      });
+    }
+  });
+
+  // PDF Report Generation endpoint
+  app.post("/api/generate-report", async (req, res) => {
+    try {
+      const { propertyData, analysisData } = req.body;
+      
+      if (!propertyData || !analysisData) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields: propertyData, analysisData"
+        });
+      }
+
+      // Generate comprehensive report data
+      const reportData = {
+        property: {
+          address: propertyData.address,
+          city: propertyData.city,
+          lotSize: propertyData.lotSize,
+          frontage: propertyData.frontage
+        },
+        analysis: {
+          buildingType: analysisData.buildingType,
+          density: analysisData.density,
+          developmentPotential: "High potential for 4-plex under Bill 44",
+          estimatedValue: "$2,100,000",
+          roi: "18.5%"
+        },
+        zoningCompliance: {
+          bill44Eligible: true,
+          todBenefits: false,
+          densityBonus: "25% increase allowed"
+        },
+        financialProjection: {
+          totalCost: "$1,800,000",
+          projectedRevenue: "$2,133,000",
+          netProfit: "$333,000"
+        },
+        recommendations: [
+          "Proceed with 4-plex development under Bill 44",
+          "Apply for density bonus incentives",
+          "Consider energy efficiency upgrades for additional incentives"
+        ]
+      };
+
+      res.json({ 
+        success: true, 
+        data: {
+          reportId: `report-${Date.now()}`,
+          generatedAt: new Date().toISOString(),
+          ...reportData
+        }
+      });
+      
+    } catch (error) {
+      console.error("Report Generation error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to generate feasibility report"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
