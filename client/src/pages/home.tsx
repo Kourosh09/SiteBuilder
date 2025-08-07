@@ -20,21 +20,8 @@ import Footer from "@/components/footer";
 export default function Home() {
   const [, navigate] = useLocation();
 
-  // Check if user is already logged in and redirect to dashboard
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/verify-session");
-        if (response.ok) {
-          navigate("/dashboard");
-        }
-      } catch (error) {
-        // User not logged in, stay on home page
-      }
-    };
-
-    checkAuth();
-  }, [navigate]);
+  // This is the public marketing homepage - no auto-redirect
+  // Users can access dashboard via login or navigation
 
   return (
     <div className="bg-white">
