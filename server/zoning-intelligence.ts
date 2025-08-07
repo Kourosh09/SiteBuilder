@@ -50,6 +50,18 @@ export interface DevelopmentPotential {
     requirements: string[];
     incentives: string[];
   };
+  bill47Compliance: {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  };
+  todCompliance: {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  };
 }
 
 export interface CityDataResult {
@@ -274,11 +286,21 @@ export class ZoningIntelligenceService {
       zoning.maxDensity
     );
 
-    // Bill 44 analysis - enhanced density potential
+    // Multi-policy analysis - enhanced density potential
     const bill44MaxUnits = this.calculateBill44MaxUnits(zoning, lotSize, frontage, city);
+    const bill47MaxUnits = this.calculateBill47MaxUnits(zoning, lotSize, city);
+    const todMaxUnits = this.calculateTODMaxUnits(zoning, lotSize, city);
     
-    // Recommended units (higher of traditional or Bill 44)
-    const recommendedUnits = Math.max(traditionalMaxUnits, bill44MaxUnits);
+    // Combined maximum considering all policies
+    const combinedMaxUnits = Math.max(
+      traditionalMaxUnits,
+      bill44MaxUnits,
+      bill47MaxUnits,
+      bill44MaxUnits + todMaxUnits
+    );
+    
+    // Recommended units (highest potential from all policies)
+    const recommendedUnits = combinedMaxUnits;
 
     // Estimate gross floor area
     const estimatedGFA = Math.min(lotSize * zoning.maxFAR, recommendedUnits * 900);
@@ -309,12 +331,17 @@ export class ZoningIntelligenceService {
     const constraints = this.identifyConstraintsWithBill44(zoning, lotSize);
     const opportunities = this.identifyOpportunitiesWithBill44(zoning, recommendedUnits, city);
 
-    // Bill 44 compliance analysis
+    // Multi-policy compliance analysis
     const bill44Compliance = this.analyzeBill44Compliance(zoning, lotSize, frontage, city);
+    const bill47Compliance = this.analyzeBill47Compliance(zoning, lotSize, city);
+    const todCompliance = this.analyzeTODCompliance(zoning, lotSize, city);
 
     return {
       maxUnits: traditionalMaxUnits,
       bill44MaxUnits: bill44MaxUnits,
+      bill47MaxUnits,
+      todMaxUnits,
+      combinedMaxUnits,
       recommendedUnits: recommendedUnits,
       suggestedUnitMix,
       buildingType: this.determineBuildingType(recommendedUnits, zoning.zoningCode),
@@ -323,7 +350,9 @@ export class ZoningIntelligenceService {
       feasibilityScore,
       constraints,
       opportunities,
-      bill44Compliance
+      bill44Compliance,
+      bill47Compliance,
+      todCompliance
     };
   }
 
@@ -378,7 +407,11 @@ export class ZoningIntelligenceService {
         parkingRequirements: '1 space per unit',
         bill44Eligible: true,
         bill44MaxUnits: 4,
+        bill47Eligible: true,
+        bill47MaxUnits: 3,
         transitOriented: false,
+        todZone: false,
+        todBonusUnits: 0,
         multiplexEligible: true
       }],
       ['RS-2', {
@@ -434,7 +467,11 @@ export class ZoningIntelligenceService {
         parkingRequirements: '1 space per unit',
         bill44Eligible: true,
         bill44MaxUnits: 6,
+        bill47Eligible: true,
+        bill47MaxUnits: 3,
         transitOriented: true,
+        todZone: true,
+        todBonusUnits: 2,
         multiplexEligible: true
       }],
       ['RM-1', {
@@ -470,6 +507,63 @@ export class ZoningIntelligenceService {
     ];
     
     return bcCities.some(bcCity => city.toLowerCase().includes(bcCity));
+  }
+
+  /**
+   * Calculate maximum units under Bill 47 (Secondary Suites and Accessory Dwelling Units)
+   */
+  private calculateBill47MaxUnits(zoning: ZoningData, lotSize: number, city: string): number {
+    // Bill 47 allows secondary suites and laneway homes province-wide
+    const bill47EligibleZones = ['RS-1', 'RS-2', 'RS-3', 'RS-4', 'RS-5', 'RS-6', 'RS-7', 'RT-1', 'RT-2'];
+    const isEligibleZone = bill47EligibleZones.some(zone => zoning.zoningCode.includes(zone));
+    
+    if (!isEligibleZone) {
+      return 1; // Single family only
+    }
+    
+    let bill47Units = 1; // Base single family
+    
+    // Secondary suite allowance (province-wide under Bill 47)
+    bill47Units += 1; // +1 for secondary suite
+    
+    // Accessory dwelling unit (laneway home) if lot size permits
+    if (lotSize >= 4500) { // Minimum lot size for ADU
+      bill47Units += 1; // +1 for laneway home/ADU
+    }
+    
+    return bill47Units; // Typically 2-3 units
+  }
+
+  /**
+   * Calculate TOD (Transit-Oriented Development) bonus units
+   */
+  private calculateTODMaxUnits(zoning: ZoningData, lotSize: number, city: string): number {
+    // TOD zones are typically within 800m of major transit stations
+    const todEligibleCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'new westminster'];
+    
+    if (!todEligibleCities.includes(city.toLowerCase()) || !zoning.transitOriented) {
+      return 0; // No TOD bonuses
+    }
+    
+    // Base TOD bonus varies by transit type and proximity
+    let todBonusUnits = 0;
+    
+    // SkyTrain station areas (within 400m)
+    if (['vancouver', 'burnaby', 'richmond', 'new westminster'].includes(city.toLowerCase())) {
+      todBonusUnits = 2; // Significant bonus near SkyTrain
+    }
+    
+    // Bus rapid transit areas (within 200m)
+    if (['surrey'].includes(city.toLowerCase())) {
+      todBonusUnits = 1; // Moderate bonus near BRT
+    }
+    
+    // Additional bonus for larger lots in TOD zones
+    if (lotSize > 6000) {
+      todBonusUnits += 1;
+    }
+    
+    return todBonusUnits;
   }
 
   /**
@@ -615,6 +709,125 @@ export class ZoningIntelligenceService {
       incentives.push('Municipal density bonus programs');
       incentives.push('Affordable housing contribution alternatives');
     }
+
+    return {
+      eligible: true,
+      benefits,
+      requirements,
+      incentives
+    };
+  }
+
+  /**
+   * Analyze Bill 47 compliance (Secondary Suites & ADUs)
+   */
+  private analyzeBill47Compliance(zoning: ZoningData, lotSize: number, city: string): {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  } {
+    const bill47EligibleZones = ['RS-1', 'RS-2', 'RS-3', 'RS-4', 'RS-5', 'RS-6', 'RS-7', 'RT-1', 'RT-2'];
+    const isEligibleZone = bill47EligibleZones.some(zone => zoning.zoningCode.includes(zone));
+    
+    if (!isEligibleZone) {
+      return {
+        eligible: false,
+        benefits: ['❌ Property not in eligible zone for Bill 47'],
+        requirements: ['Property must be in single-family or townhouse zone'],
+        incentives: []
+      };
+    }
+
+    const benefits = [
+      '✅ Property qualifies for Bill 47 secondary suite allowance',
+      '✅ Secondary suite permitted by-right (no permit required)',
+      '✅ Additional rental income opportunity'
+    ];
+
+    if (lotSize >= 4500) {
+      benefits.push('✅ Lot size permits accessory dwelling unit (laneway home)');
+      benefits.push('✅ Up to 3 total units possible (main + suite + ADU)');
+    }
+
+    const requirements = [
+      'Secondary suite must be within principal dwelling',
+      'Maximum 90 sq m (968 sq ft) for secondary suite',
+      'Separate entrance required for secondary suite',
+      'Parking requirements may apply'
+    ];
+
+    if (lotSize >= 4500) {
+      requirements.push('ADU maximum 90 sq m (968 sq ft)');
+      requirements.push('ADU must meet building code requirements');
+    }
+
+    const incentives = [
+      'No development permits required for secondary suites',
+      'Streamlined building permit process',
+      'Property tax assessment may include rental income potential'
+    ];
+
+    return {
+      eligible: true,
+      benefits,
+      requirements,
+      incentives
+    };
+  }
+
+  /**
+   * Analyze TOD (Transit-Oriented Development) compliance
+   */
+  private analyzeTODCompliance(zoning: ZoningData, lotSize: number, city: string): {
+    eligible: boolean;
+    benefits: string[];
+    requirements: string[];
+    incentives: string[];
+  } {
+    const todEligibleCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'new westminster'];
+    
+    if (!todEligibleCities.includes(city.toLowerCase()) || !zoning.transitOriented) {
+      return {
+        eligible: false,
+        benefits: ['❌ Property not in designated TOD zone'],
+        requirements: ['Property must be within 800m of major transit station'],
+        incentives: []
+      };
+    }
+
+    const benefits = [
+      '✅ Property qualifies for TOD density bonuses',
+      '✅ Reduced parking requirements near transit',
+      '✅ Additional building height allowances possible'
+    ];
+
+    // SkyTrain vs BRT benefits
+    if (['vancouver', 'burnaby', 'richmond', 'new westminster'].includes(city.toLowerCase())) {
+      benefits.push('✅ SkyTrain station proximity provides maximum TOD benefits');
+      benefits.push('✅ Up to 2 additional density bonus units');
+    } else {
+      benefits.push('✅ Bus rapid transit provides moderate TOD benefits');
+      benefits.push('✅ Up to 1 additional density bonus unit');
+    }
+
+    if (lotSize > 6000) {
+      benefits.push('✅ Large lot qualifies for enhanced TOD bonuses');
+    }
+
+    const requirements = [
+      'Must be within designated TOD zone boundaries',
+      'Enhanced urban design standards apply',
+      'Sustainable transportation features required',
+      'Higher density design standards'
+    ];
+
+    const incentives = [
+      'Development cost charge reductions for TOD projects',
+      'Expedited permitting for transit-supportive development',
+      'Potential municipal tax incentives',
+      'Access to federal/provincial transit-oriented funding'
+    ];
 
     return {
       eligible: true,

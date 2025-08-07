@@ -442,7 +442,7 @@ export default function ZoningIntelligence() {
               ) : (
                 <>
                   <Zap className="w-4 h-4 mr-2" />
-                  Analyze Bill 44 Eligibility & Development Potential
+                  Analyze Bill 44, Bill 47 & TOD Development Potential
                 </>
               )}
             </Button>
@@ -573,28 +573,55 @@ export default function ZoningIntelligence() {
                         </Badge>
                       </div>
 
-                      {/* Bill 44 Unit Comparison */}
-                      <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-blue-50 to-emerald-50 rounded-lg border border-brand-blue/20">
-                        <div className="space-y-2 text-center">
-                          <p className="text-sm font-medium text-neutral-600">Traditional Zoning</p>
-                          <p className="text-xl font-bold text-neutral-600" data-testid="text-max-units">
-                            {cityData.developmentPotential.maxUnits} units
-                          </p>
-                          <Badge variant="outline" className="text-xs">Current Zoning</Badge>
+                      {/* Multi-Policy Unit Comparison */}
+                      <div className="grid grid-cols-2 gap-6">
+                        {/* First row - Traditional vs Bill 44 */}
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-brand-blue/20">
+                          <div className="space-y-2 text-center">
+                            <p className="text-sm font-medium text-neutral-600">Traditional Zoning</p>
+                            <p className="text-xl font-bold text-neutral-600" data-testid="text-max-units">
+                              {cityData.developmentPotential.maxUnits} units
+                            </p>
+                            <Badge variant="outline" className="text-xs">Current</Badge>
+                          </div>
+                          <div className="space-y-2 text-center">
+                            <p className="text-sm font-medium text-neutral-600">Bill 44 Potential</p>
+                            <p className="text-2xl font-bold text-brand-blue" data-testid="text-bill44-units">
+                              {cityData.developmentPotential.bill44MaxUnits} units
+                            </p>
+                            <Badge variant="default" className="text-xs bg-brand-blue">Multiplex</Badge>
+                          </div>
                         </div>
-                        <div className="space-y-2 text-center">
-                          <p className="text-sm font-medium text-neutral-600">Bill 44 Eligible</p>
-                          <p className="text-2xl font-bold text-brand-blue" data-testid="text-bill44-units">
-                            {cityData.developmentPotential.bill44MaxUnits} units
-                          </p>
-                          <Badge variant="default" className="text-xs bg-brand-blue">Enhanced</Badge>
+
+                        {/* Second row - Bill 47 vs TOD */}
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-gradient-to-r from-emerald-50 to-purple-50 rounded-lg border border-emerald-300/30">
+                          <div className="space-y-2 text-center">
+                            <p className="text-sm font-medium text-neutral-600">Bill 47 Potential</p>
+                            <p className="text-2xl font-bold text-emerald-600" data-testid="text-bill47-units">
+                              {cityData.developmentPotential.bill47MaxUnits} units
+                            </p>
+                            <Badge variant="default" className="text-xs bg-emerald-600">Suites + ADU</Badge>
+                          </div>
+                          <div className="space-y-2 text-center">
+                            <p className="text-sm font-medium text-neutral-600">TOD Bonus</p>
+                            <p className="text-2xl font-bold text-purple-600" data-testid="text-tod-units">
+                              +{cityData.developmentPotential.todMaxUnits} units
+                            </p>
+                            <Badge variant="default" className="text-xs bg-purple-600">Transit</Badge>
+                          </div>
                         </div>
-                        <div className="space-y-2 text-center">
-                          <p className="text-sm font-medium text-neutral-600">🎯 Recommended</p>
-                          <p className="text-2xl font-bold text-emerald-600" data-testid="text-recommended-units">
-                            {cityData.developmentPotential.recommendedUnits} units
+                      </div>
+
+                      {/* Combined Maximum */}
+                      <div className="p-4 bg-gradient-to-r from-emerald-100 to-emerald-200 rounded-lg border-2 border-emerald-400/50">
+                        <div className="text-center space-y-2">
+                          <p className="text-sm font-medium text-emerald-700">🎯 Maximum Combined Potential</p>
+                          <p className="text-3xl font-bold text-emerald-800" data-testid="text-combined-units">
+                            {cityData.developmentPotential.combinedMaxUnits} units
                           </p>
-                          <Badge variant="default" className="text-xs bg-emerald-600">Optimal</Badge>
+                          <Badge variant="default" className="text-sm bg-emerald-600 px-3 py-1">
+                            Highest Policy Benefit
+                          </Badge>
                         </div>
                       </div>
                       
@@ -665,6 +692,116 @@ export default function ZoningIntelligence() {
                                   {cityData.developmentPotential.bill44Compliance.incentives.map((incentive, index) => (
                                     <div key={index} className="text-sm text-emerald-600" data-testid={`bill44-incentive-${index}`}>
                                       💰 {incentive}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bill 47 Compliance Analysis */}
+                      {cityData.developmentPotential.bill47Compliance && (
+                        <div className="space-y-4 p-4 bg-neutral-50 rounded-lg border">
+                          <div className="flex items-center gap-2">
+                            <Home className="w-5 h-5 text-emerald-600" />
+                            <h4 className="font-semibold text-emerald-600">Bill 47 Compliance Analysis</h4>
+                            <Badge 
+                              variant={cityData.developmentPotential.bill47Compliance.eligible ? "default" : "secondary"}
+                              className={cityData.developmentPotential.bill47Compliance.eligible ? "bg-emerald-600" : ""}
+                            >
+                              {cityData.developmentPotential.bill47Compliance.eligible ? "✅ Eligible" : "❌ Not Eligible"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-sm font-medium text-neutral-600 mb-2">Benefits & Requirements</p>
+                              <div className="space-y-1">
+                                {cityData.developmentPotential.bill47Compliance.benefits.map((benefit, index) => (
+                                  <div key={index} className="text-sm" data-testid={`bill47-benefit-${index}`}>
+                                    {benefit}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {cityData.developmentPotential.bill47Compliance.requirements.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Requirements</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.bill47Compliance.requirements.map((requirement, index) => (
+                                    <div key={index} className="text-sm text-neutral-600" data-testid={`bill47-requirement-${index}`}>
+                                      • {requirement}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {cityData.developmentPotential.bill47Compliance.incentives.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Incentives</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.bill47Compliance.incentives.map((incentive, index) => (
+                                    <div key={index} className="text-sm text-emerald-600" data-testid={`bill47-incentive-${index}`}>
+                                      ✓ {incentive}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TOD Compliance Analysis */}
+                      {cityData.developmentPotential.todCompliance && (
+                        <div className="space-y-4 p-4 bg-neutral-50 rounded-lg border">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-purple-600" />
+                            <h4 className="font-semibold text-purple-600">TOD (Transit-Oriented Development) Analysis</h4>
+                            <Badge 
+                              variant={cityData.developmentPotential.todCompliance.eligible ? "default" : "secondary"}
+                              className={cityData.developmentPotential.todCompliance.eligible ? "bg-purple-600" : ""}
+                            >
+                              {cityData.developmentPotential.todCompliance.eligible ? "✅ Eligible" : "❌ Not Eligible"}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-sm font-medium text-neutral-600 mb-2">Benefits & Requirements</p>
+                              <div className="space-y-1">
+                                {cityData.developmentPotential.todCompliance.benefits.map((benefit, index) => (
+                                  <div key={index} className="text-sm" data-testid={`tod-benefit-${index}`}>
+                                    {benefit}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {cityData.developmentPotential.todCompliance.requirements.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Requirements</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.todCompliance.requirements.map((requirement, index) => (
+                                    <div key={index} className="text-sm text-neutral-600" data-testid={`tod-requirement-${index}`}>
+                                      • {requirement}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {cityData.developmentPotential.todCompliance.incentives.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-neutral-600 mb-2">Incentives</p>
+                                <div className="space-y-1">
+                                  {cityData.developmentPotential.todCompliance.incentives.map((incentive, index) => (
+                                    <div key={index} className="text-sm text-purple-600" data-testid={`tod-incentive-${index}`}>
+                                      ✓ {incentive}
                                     </div>
                                   ))}
                                 </div>
