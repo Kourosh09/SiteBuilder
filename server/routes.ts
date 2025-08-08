@@ -413,9 +413,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { PDFReportGenerator } = await import("./pdf-generator");
       const generator = new PDFReportGenerator();
       
+      // Ensure required fields are present with defaults
       const reportData = {
-        ...req.body,
-        analysisDate: new Date().toLocaleDateString('en-CA')
+        address: req.body.address || "Property Address",
+        city: req.body.city || "City",
+        lotSize: req.body.lotSize || 5000,
+        frontage: req.body.frontage || 50,
+        coordinates: req.body.coordinates || { lat: 49.2827, lng: -123.1207 },
+        zoning: req.body.zoning || {
+          zoningCode: "RS-1",
+          description: "Single-family residential",
+          maxHeight: 10.7,
+          maxFAR: 0.7,
+          maxDensity: 1,
+          setbacks: { front: 6, rear: 6, side: 1.2 },
+          parkingRequirements: "1 space per unit",
+          permittedUses: ["Single-family dwelling"]
+        },
+        developmentPotential: req.body.developmentPotential || {
+          maxUnits: 1,
+          recommendedUnits: 4,
+          buildingType: "Single Family",
+          estimatedValue: 1000000
+        },
+        analysisDate: new Date().toLocaleDateString('en-CA'),
+        ...req.body
       };
       
       const pdfBuffer = generator.generateZoningReport(reportData);
@@ -476,6 +498,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error("Design suggestions error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to generate design suggestions" 
+      });
+    }
+  });
+
+  // AI Design Generator endpoint (alternative path)
+  app.post("/api/ai/design-suggestions", async (req, res) => {
+    try {
+      const { propertyType, lotSize, budget, style } = req.body;
+      
+      if (!propertyType || !lotSize) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: propertyType, lotSize" 
+        });
+      }
+
+      // Create complete zoning and development data for the AI service
+      const mockZoningData = {
+        zoningCode: "RS-1",
+        description: "Single-family residential",
+        maxFAR: 0.7,
+        maxHeight: 10.7,
+        maxDensity: propertyType === "single-family" ? 1 : 4,
+        permittedUses: ["Single-family dwelling", "Secondary suite"],
+        setbacks: { front: 6, rear: 6, side: 1.2 },
+        parkingRequirements: "1 space per unit",
+        bill44Eligible: true,
+        bill44MaxUnits: 4,
+        bill47Eligible: true,
+        bill47MaxUnits: 4,
+        transitOriented: false,
+        todZone: false,
+        todBonusUnits: 0,
+        multiplexEligible: true
+      };
+
+      const mockDevelopmentPotential = {
+        maxUnits: propertyType === "single-family" ? 1 : 4,
+        bill44MaxUnits: 4,
+        bill47MaxUnits: 4,
+        todMaxUnits: 0,
+        combinedMaxUnits: 4,
+        recommendedUnits: propertyType === "single-family" ? 1 : 4,
+        suggestedUnitMix: [
+          { bedrooms: 1, count: 1 },
+          { bedrooms: 2, count: 2 },
+          { bedrooms: 3, count: 1 }
+        ],
+        buildingType: propertyType === "single-family" ? "Single Family" : "Multi-Family",
+        estimatedGFA: lotSize * 0.7,
+        estimatedValue: budget || 1500000,
+        feasibilityScore: 85,
+        constraints: ["Height restrictions", "Setback requirements"],
+        opportunities: ["Multi-unit potential", "Bill 44 benefits"]
+      };
+
+      const suggestions = await zoningIntelligenceService.generateDesignSuggestions(
+        mockZoningData, 
+        lotSize, 
+        mockDevelopmentPotential, 
+        budget
+      );
+      
+      res.json({ success: true, data: suggestions });
+      
+    } catch (error) {
+      console.error("AI Design suggestions error:", error);
       res.status(500).json({ 
         success: false, 
         error: error instanceof Error ? error.message : "Failed to generate design suggestions" 

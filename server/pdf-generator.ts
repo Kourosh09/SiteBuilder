@@ -131,7 +131,7 @@ export class PDFReportGenerator {
     
     const summaryData = [
       ['Property Address:', `${data.address}, ${data.city}`],
-      ['Lot Size:', `${data.lotSize.toLocaleString()} sq ft`],
+      ['Lot Size:', `${(data.lotSize || 0).toLocaleString()} sq ft`],
       ['Frontage:', `${data.frontage} ft`],
       ['Coordinates:', `${data.coordinates.lat.toFixed(6)}, ${data.coordinates.lng.toFixed(6)}`],
       ['Zoning Code:', data.zoning.zoningCode],
@@ -175,14 +175,20 @@ export class PDFReportGenerator {
   private addDevelopmentPotential(data: ZoningReportData): void {
     this.addSectionTitle('Development Potential Analysis');
     
+    if (!data.developmentPotential) {
+      this.doc.text('Development potential analysis not available.', this.margin, this.currentY);
+      this.currentY += 20;
+      return;
+    }
+    
     // Unit Potential Comparison
     const unitData = [
-      ['Traditional Zoning:', `${data.developmentPotential.maxUnits} units`],
-      ['Bill 44 Potential:', `${data.developmentPotential.bill44MaxUnits} units`],
-      ['Bill 47 Potential:', `${data.developmentPotential.bill47MaxUnits} units`],
-      ['TOD Bonus:', `+${data.developmentPotential.todMaxUnits} units`],
-      ['Combined Maximum:', `${data.developmentPotential.combinedMaxUnits} units`],
-      ['Recommended:', `${data.developmentPotential.recommendedUnits} units`]
+      ['Traditional Zoning:', `${data.developmentPotential.maxUnits || 0} units`],
+      ['Bill 44 Potential:', `${data.developmentPotential.bill44MaxUnits || 0} units`],
+      ['Bill 47 Potential:', `${data.developmentPotential.bill47MaxUnits || 0} units`],
+      ['TOD Bonus:', `+${data.developmentPotential.todMaxUnits || 0} units`],
+      ['Combined Maximum:', `${data.developmentPotential.combinedMaxUnits || 0} units`],
+      ['Recommended:', `${data.developmentPotential.recommendedUnits || 0} units`]
     ];
 
     this.addTable(unitData, 2);
@@ -190,10 +196,10 @@ export class PDFReportGenerator {
     // Development Details
     this.currentY += 10;
     const detailsData = [
-      ['Building Type:', data.developmentPotential.buildingType],
-      ['Estimated GFA:', `${data.developmentPotential.estimatedGFA.toLocaleString()} sq ft`],
-      ['Estimated Value:', `$${data.developmentPotential.estimatedValue.toLocaleString()}`],
-      ['Feasibility Score:', `${data.developmentPotential.feasibilityScore}/100`]
+      ['Building Type:', data.developmentPotential.buildingType || 'Single Family'],
+      ['Estimated GFA:', `${(data.developmentPotential.estimatedGFA || 0).toLocaleString()} sq ft`],
+      ['Estimated Value:', `$${(data.developmentPotential.estimatedValue || 0).toLocaleString()}`],
+      ['Feasibility Score:', `${data.developmentPotential.feasibilityScore || 0}/100`]
     ];
 
     this.addTable(detailsData, 2);
@@ -205,10 +211,15 @@ export class PDFReportGenerator {
     this.currentY += 8;
     
     this.doc.setFont('helvetica', 'normal');
-    data.developmentPotential.suggestedUnitMix.forEach(unit => {
-      this.doc.text(`• ${unit.count}x ${unit.bedrooms}-bedroom units`, this.margin + 10, this.currentY);
+    if (data.developmentPotential.suggestedUnitMix && data.developmentPotential.suggestedUnitMix.length > 0) {
+      data.developmentPotential.suggestedUnitMix.forEach(unit => {
+        this.doc.text(`• ${unit.count}x ${unit.bedrooms}-bedroom units`, this.margin + 10, this.currentY);
+        this.currentY += 6;
+      });
+    } else {
+      this.doc.text('• Unit mix analysis not available', this.margin + 10, this.currentY);
       this.currentY += 6;
-    });
+    }
     
     this.currentY += 15;
   }
@@ -217,17 +228,30 @@ export class PDFReportGenerator {
     this.checkPageSpace(100);
     this.addSectionTitle('Housing Policy Analysis');
     
-    // Bill 44 Analysis
-    this.addPolicySection('Bill 44 (Multiplex Development)', data.developmentPotential.bill44Compliance, '#0d6efd');
+    // Only add policy sections if they exist
+    if (data.developmentPotential?.bill44Compliance) {
+      this.addPolicySection('Bill 44 (Multiplex Development)', data.developmentPotential.bill44Compliance, '#0d6efd');
+    }
     
-    // Bill 47 Analysis  
-    this.addPolicySection('Bill 47 (Secondary Suites & ADUs)', data.developmentPotential.bill47Compliance, '#198754');
+    if (data.developmentPotential?.bill47Compliance) {
+      this.addPolicySection('Bill 47 (Secondary Suites & ADUs)', data.developmentPotential.bill47Compliance, '#198754');
+    }
     
-    // TOD Analysis
-    this.addPolicySection('TOD (Transit-Oriented Development)', data.developmentPotential.todCompliance, '#6f42c1');
+    // TOD Analysis (if available)
+    if (data.developmentPotential?.todCompliance) {
+      this.addPolicySection('TOD (Transit-Oriented Development)', data.developmentPotential.todCompliance, '#6f42c1');
+    }
+    
+    // Add fallback if no compliance data available
+    if (!data.developmentPotential?.bill44Compliance && !data.developmentPotential?.bill47Compliance && !data.developmentPotential?.todCompliance) {
+      this.doc.text('Housing policy analysis not available for this property.', this.margin, this.currentY);
+      this.currentY += 20;
+    }
   }
 
   private addPolicySection(title: string, compliance: any, color: string): void {
+    if (!compliance) return;
+    
     this.checkPageSpace(60);
     
     // Policy title with colored background
@@ -245,11 +269,11 @@ export class PDFReportGenerator {
     
     // Eligibility status
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text(`Status: ${compliance.eligible ? '✓ Eligible' : '✗ Not Eligible'}`, this.margin, this.currentY);
+    this.doc.text(`Status: ${compliance?.eligible ? '✓ Eligible' : '✗ Not Eligible'}`, this.margin, this.currentY);
     this.currentY += 10;
     
     // Benefits
-    if (compliance.benefits.length > 0) {
+    if (compliance.benefits && compliance.benefits.length > 0) {
       this.doc.setFont('helvetica', 'bold');
       this.doc.text('Benefits:', this.margin, this.currentY);
       this.currentY += 6;
@@ -275,7 +299,7 @@ export class PDFReportGenerator {
     
     if (data.marketContext) {
       const financialData = [
-        ['Average Home Prices:', `$${data.marketContext.averageHomePrices.toLocaleString()}`],
+        ['Average Home Prices:', `$${(data.marketContext?.averageHomePrices || 0).toLocaleString()}`],
         ['Construction Costs:', `$${data.marketContext.constructionCosts}/sq ft`],
         ['Sale Velocity:', data.marketContext.saleVelocity],
         ['Target Demographics:', data.marketContext.demographics]
@@ -291,6 +315,12 @@ export class PDFReportGenerator {
     this.checkPageSpace(100);
     this.addSectionTitle('Development Recommendations');
     
+    if (!data.developmentPotential) {
+      this.doc.text('Development recommendations not available.', this.margin, this.currentY);
+      this.currentY += 20;
+      return;
+    }
+    
     // Opportunities
     this.doc.setFont('helvetica', 'bold');
     this.doc.text('Opportunities:', this.margin, this.currentY);
@@ -298,13 +328,18 @@ export class PDFReportGenerator {
     
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
-    data.developmentPotential.opportunities.forEach(opportunity => {
-      const lines = this.wrapText(opportunity, this.pageWidth - 2 * this.margin - 20);
-      lines.forEach(line => {
-        this.doc.text(`• ${line}`, this.margin + 5, this.currentY);
-        this.currentY += 5;
+    if (data.developmentPotential.opportunities && data.developmentPotential.opportunities.length > 0) {
+      data.developmentPotential.opportunities.forEach(opportunity => {
+        const lines = this.wrapText(opportunity, this.pageWidth - 2 * this.margin - 20);
+        lines.forEach(line => {
+          this.doc.text(`• ${line}`, this.margin + 5, this.currentY);
+          this.currentY += 5;
+        });
       });
-    });
+    } else {
+      this.doc.text('• No specific opportunities identified', this.margin + 5, this.currentY);
+      this.currentY += 5;
+    }
     
     this.currentY += 10;
     
@@ -316,13 +351,20 @@ export class PDFReportGenerator {
     
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
-    data.developmentPotential.constraints.forEach(constraint => {
-      const lines = this.wrapText(constraint, this.pageWidth - 2 * this.margin - 20);
-      lines.forEach(line => {
-        this.doc.text(`• ${line}`, this.margin + 5, this.currentY);
-        this.currentY += 5;
+    if (data.developmentPotential.constraints && data.developmentPotential.constraints.length > 0) {
+      data.developmentPotential.constraints.forEach(constraint => {
+        const lines = this.wrapText(constraint, this.pageWidth - 2 * this.margin - 20);
+        lines.forEach(line => {
+          this.doc.text(`• ${line}`, this.margin + 5, this.currentY);
+          this.currentY += 5;
+        });
       });
-    });
+    } else {
+      this.doc.text('• No major constraints identified', this.margin + 5, this.currentY);
+      this.currentY += 5;
+    }
+    
+    this.currentY += 15;
   }
 
   private addFooter(): void {
