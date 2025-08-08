@@ -10,15 +10,16 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white min-h-screen flex items-center">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 text-white">
-              AI-Powered Financial Management for{" "}
-              <span className="text-yellow-400 font-extrabold drop-shadow-lg">Real Estate Developers</span>
+    <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white pt-20 pb-12 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight mb-6 text-white">
+              <span className="block mb-2">AI-Powered Financial</span>
+              <span className="block mb-2">Management for</span>
+              <span className="text-yellow-400 font-extrabold drop-shadow-lg block">Real Estate Developers</span>
             </h1>
-            <p className="text-xl text-blue-100 mb-8 leading-relaxed font-medium max-w-2xl">
+            <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed font-medium max-w-2xl">
               Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
@@ -49,13 +50,16 @@ export default function HeroSection() {
               </div>
             </div>
           </div>
-          <div className="lg:pl-8">
-            <img
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=800"
-              alt="Modern city skyline with construction development"
-              className="rounded-2xl shadow-2xl w-full h-auto"
-              data-testid="img-hero-cityscape"
-            />
+          <div className="lg:pl-8 mt-8 lg:mt-0">
+            <div className="relative">
+              <img
+                src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+                alt="Modern city skyline with construction development"
+                className="rounded-2xl shadow-2xl w-full h-auto max-h-96 object-cover"
+                data-testid="img-hero-cityscape"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/30 to-transparent rounded-2xl"></div>
+            </div>
           </div>
         </div>
       </div>
