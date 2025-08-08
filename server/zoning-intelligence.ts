@@ -322,7 +322,7 @@ export class ZoningIntelligenceService {
     const bill47MaxUnits = this.calculateBill47MaxUnits(zoning, lotSize, city);
     const todMaxUnits = this.calculateTODMaxUnits(zoning, lotSize, city);
     
-    // Combined maximum considering all policies
+    // Combined maximum considering all policies - FIXED CONSISTENCY
     const combinedMaxUnits = Math.max(
       traditionalMaxUnits,
       bill44MaxUnits,
@@ -330,8 +330,14 @@ export class ZoningIntelligenceService {
       bill44MaxUnits + todMaxUnits
     );
     
-    // Recommended units (highest potential from all policies)
-    const recommendedUnits = combinedMaxUnits;
+    // Use Bill 44 as primary recommendation for consistency - CRITICAL FIX
+    const recommendedUnits = bill44MaxUnits;
+    
+    console.log(`🔧 BILL 44 CONSISTENCY CHECK for ${lotSize} sq ft lot:`);
+    console.log(`  - Traditional Max Units: ${traditionalMaxUnits}`);
+    console.log(`  - Bill 44 Max Units: ${bill44MaxUnits}`);
+    console.log(`  - Combined Max Units: ${combinedMaxUnits}`);
+    console.log(`  - RECOMMENDED UNITS: ${recommendedUnits} (using Bill 44 as primary)`);
 
     // Estimate gross floor area
     const estimatedGFA = Math.min(lotSize * zoning.maxFAR, recommendedUnits * 900);
@@ -881,10 +887,14 @@ export class ZoningIntelligenceService {
       return 1; // Single family if municipality doesn't meet criteria
     }
     
-    // Official Bill 44 Thresholds:
+    // Official Bill 44 Thresholds - FIXED FOR CONSISTENCY:
+    // Must meet 280 m² minimum lot size first
+    if (lotSizeM2 < 280) {
+      return 1; // Below minimum threshold
+    }
+    
     // Standard: Up to 4 units
     // Near Rapid Transit: Up to 6 units
-    
     let maxUnits = 4; // Standard Bill 44 allowance - up to 4 units
     
     // Check for rapid transit proximity for 6-unit allowance
