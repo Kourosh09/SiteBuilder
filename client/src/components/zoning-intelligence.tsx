@@ -388,7 +388,7 @@ export default function ZoningIntelligence() {
                       variant={parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "default" : "secondary"}
                       className={parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "bg-emerald-600" : ""}
                     >
-                      {parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "✅ Meets 280 m² minimum" : "❌ Below 280 m² minimum"}
+                      {parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "✅ Bill 44 Eligible" : "❌ Below 280 m² minimum"}
                     </Badge>
                   </div>
                   <div>
@@ -411,14 +411,12 @@ export default function ZoningIntelligence() {
                         const lotSizeM2 = lotSizeSqFt * 0.092903; // Convert to m²
                         const frontage = parseInt(analysisForm.frontage);
                         
-                        // Official Bill 44 calculation based on BC regulations
-                        if (lotSizeM2 < 280) {
-                          return "3-unit Minimum";
-                        } else if (lotSizeM2 >= 280) {
-                          // Transit cities can get 6 units, others get 4
-                          const transitCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'new westminster'];
-                          const hasTransit = transitCities.includes(analysisForm.city.toLowerCase());
-                          return hasTransit ? "Up to 6 units" : "4-unit Minimum";
+                        // Official Bill 44 calculation - up to 4 units, 6 if near rapid transit
+                        if (lotSizeM2 >= 280) {
+                          // Rapid transit cities can get 6 units, others get 4
+                          const rapidTransitCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'new westminster'];
+                          const hasRapidTransit = rapidTransitCities.includes(analysisForm.city.toLowerCase());
+                          return hasRapidTransit ? "Up to 6 units" : "Up to 4 units";
                         }
                         return "Not Eligible";
                       })()}

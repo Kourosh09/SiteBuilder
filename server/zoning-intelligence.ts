@@ -881,21 +881,16 @@ export class ZoningIntelligenceService {
       return 1; // Single family if municipality doesn't meet criteria
     }
     
-    // Official BC Government Thresholds:
-    // < 280 m² = Minimum 3 units
-    // ≥ 280 m² = Minimum 4 units
-    // ≥ 280 m² + Near Transit = Up to 6 units
+    // Official Bill 44 Thresholds:
+    // Standard: Up to 4 units
+    // Near Rapid Transit: Up to 6 units
     
-    let maxUnits = 3; // Base minimum for small lots
+    let maxUnits = 4; // Standard Bill 44 allowance - up to 4 units
     
-    if (lotSizeM2 >= 280) {
-      maxUnits = 4; // 4 units for lots ≥ 280 m² (≈ 3,014 sq ft)
-      
-      // Check for transit proximity for 6-unit allowance
-      const hasFrequentTransit = this.hasFrequentTransitService(city);
-      if (hasFrequentTransit) {
-        maxUnits = 6; // Up to 6 units near frequent transit
-      }
+    // Check for rapid transit proximity for 6-unit allowance
+    const hasRapidTransit = this.hasFrequentTransitService(city);
+    if (hasRapidTransit) {
+      maxUnits = 6; // Up to 6 units near rapid transit
     }
     
     return Math.min(maxUnits, 6); // Cap at 6 units for Bill 44
