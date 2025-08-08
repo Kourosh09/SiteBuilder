@@ -46,25 +46,25 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                   Features
                 </button>
                 <button
+                  onClick={() => scrollToSection("landowner-jv")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-landowner-jv"
+                >
+                  Land Owner JV
+                </button>
+                <button
+                  onClick={() => scrollToSection("development-network")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-development-network"
+                >
+                  Join BC's Premier Development Network
+                </button>
+                <button
                   onClick={() => scrollToSection("calculator")}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                   data-testid="nav-calculator"
                 >
                   Calculator
-                </button>
-                <button
-                  onClick={() => scrollToSection("pricing")}
-                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-                  data-testid="nav-pricing"
-                >
-                  Pricing
-                </button>
-                <button
-                  onClick={() => scrollToSection("about")}
-                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-                  data-testid="nav-about"
-                >
-                  About
                 </button>
                 <button
                   onClick={onLoginClick}
@@ -107,6 +107,20 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                 Features
               </button>
               <button
+                onClick={() => scrollToSection("landowner-jv")}
+                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
+                data-testid="mobile-nav-landowner-jv"
+              >
+                Land Owner JV
+              </button>
+              <button
+                onClick={() => scrollToSection("development-network")}
+                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
+                data-testid="mobile-nav-development-network"
+              >
+                Join BC Development Network
+              </button>
+              <button
                 onClick={onLoginClick}
                 className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
                 data-testid="mobile-nav-dashboard"
@@ -119,20 +133,6 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                 data-testid="mobile-nav-calculator"
               >
                 Calculator
-              </button>
-              <button
-                onClick={() => scrollToSection("pricing")}
-                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
-                data-testid="mobile-nav-pricing"
-              >
-                Pricing
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
-                data-testid="mobile-nav-about"
-              >
-                About
               </button>
               <Button
                 onClick={() => scrollToSection("contact")}
