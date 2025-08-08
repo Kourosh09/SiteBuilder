@@ -18,6 +18,7 @@ import Pricing from "@/components/pricing";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
 import LoginModal from "@/components/login-modal";
+import PartnerFinder from "@/components/partner-finder";
 
 interface HomeProps {
   onAuthenticated: () => void;
@@ -38,6 +39,7 @@ export default function Home({ onAuthenticated }: HomeProps) {
       <ZoningIntelligence />
       <AIPropertyAnalyzer />
       <MarketingAutomationShowcase />
+      <PartnerFinder />
       <ContractorSignupSection />
       <CalculatorDemo />
       <ProductShowcase />

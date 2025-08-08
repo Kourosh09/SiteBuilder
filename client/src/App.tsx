@@ -11,8 +11,10 @@ import Dashboard from "@/components/dashboard";
 
 function Router() {
   const [, setLocation] = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const handleAuthentication = () => {
+    setIsAuthenticated(true);
     // Redirect to dashboard after successful login
     setLocation('/dashboard');
   };
@@ -23,7 +25,7 @@ function Router() {
         <Home onAuthenticated={handleAuthentication} />
       </Route>
       <Route path="/dashboard">
-        <Dashboard />
+        {isAuthenticated ? <Dashboard /> : <Home onAuthenticated={handleAuthentication} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
