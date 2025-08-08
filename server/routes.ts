@@ -3293,6 +3293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (address.includes('Burnaby')) return 'Burnaby';
     if (address.includes('Richmond')) return 'Richmond';
     if (address.includes('Surrey')) return 'Surrey';
+    if (address.includes('Maple Ridge')) return 'Maple Ridge';
     return 'Vancouver';
   }
 
