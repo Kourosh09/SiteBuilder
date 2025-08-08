@@ -181,7 +181,9 @@ export class PropertyDataService {
             }));
           }
         } catch (mlsError) {
-          console.log("MLS API connection failed - using market-based fallback data");
+          console.error("❌ CRITICAL: MLS API connection failed:", mlsError);
+          console.log("🚨 RETURNING EMPTY DATA - No authentic MLS data available");
+          return [];  // Return empty instead of fake data
         }
       } else {
         console.log("MLS credentials not configured");

@@ -163,8 +163,10 @@ export class DDFService {
       });
 
       if (!response.ok) {
-        console.log("DDF API not available, using market intelligence fallback");
-        return this.getFallbackComparables(filters.city || 'Vancouver');
+        const errorText = await response.text();
+        console.error(`❌ DDF API Error ${response.status}: ${errorText}`);
+        console.log("📞 Contact CREA for DDF API endpoint configuration");
+        throw new Error(`DDF API returned ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
