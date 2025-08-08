@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,31 +10,20 @@ import Home from "@/pages/home";
 import Dashboard from "@/components/dashboard";
 
 function Router() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setLocation] = useLocation();
   
-  useEffect(() => {
-    // For now, always start with marketing homepage (clear any cached auth)
-    localStorage.removeItem('buildwise_authenticated');
-    setIsAuthenticated(false);
-  }, []);
-
-  useEffect(() => {
-    // Save authentication state to localStorage when it changes
-    localStorage.setItem('buildwise_authenticated', isAuthenticated.toString());
-  }, [isAuthenticated]);
-
   const handleAuthentication = () => {
-    setIsAuthenticated(true);
+    // Redirect to dashboard after successful login
+    setLocation('/dashboard');
   };
   
   return (
     <Switch>
-      <Route path="/" exact>
-        {isAuthenticated ? (
-          <Dashboard />
-        ) : (
-          <Home onAuthenticated={handleAuthentication} />
-        )}
+      <Route path="/">
+        <Home onAuthenticated={handleAuthentication} />
+      </Route>
+      <Route path="/dashboard">
+        <Dashboard />
       </Route>
       <Route component={NotFound} />
     </Switch>
