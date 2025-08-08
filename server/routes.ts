@@ -3145,6 +3145,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Development optimization analysis endpoint
+  app.post("/api/development/optimize", async (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "SessionId required for development optimization" 
+        });
+      }
+      
+      const { developmentOptimizationService } = await import("./development-optimization");
+      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(sessionId);
+      
+      res.json({ 
+        success: true, 
+        data: optimizedPlan,
+        message: `Generated ${optimizedPlan.scenarios.length} development scenarios with city-compliant designs`
+      });
+      
+    } catch (error) {
+      console.error("Development optimization error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to optimize development" 
+      });
+    }
+  });
+
+  // AI-powered construction design generation
+  app.post("/api/construction/design", async (req, res) => {
+    try {
+      const { sessionId, scenarioName } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "SessionId required for construction design" 
+        });
+      }
+      
+      // Get optimized development plan
+      const { developmentOptimizationService } = await import("./development-optimization");
+      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(sessionId);
+      
+      // Find requested scenario or use recommended
+      let targetScenario = optimizedPlan.recommendedScenario;
+      if (scenarioName) {
+        const foundScenario = optimizedPlan.scenarios.find(s => s.scenarioName === scenarioName);
+        if (foundScenario) targetScenario = foundScenario;
+      }
+      
+      // Generate AI construction design
+      const { aiDesignGeneratorService } = await import("./ai-design-generator");
+      
+      // Get property session for context
+      const { propertySessionManager } = await import("./property-session");
+      const session = propertySessionManager.getSession(sessionId);
+      
+      const designRequest = {
+        projectType: this.mapToProjectType(targetScenario.totalUnits),
+        lotSize: optimizedPlan.propertyMetrics.lotSize,
+        units: targetScenario.totalUnits,
+        budget: targetScenario.financials.totalProjectCost,
+        location: optimizedPlan.propertyAddress,
+        style: this.mapToDesignStyle(optimizedPlan.aiDesignRecommendations.architecturalStyle),
+        requirements: [
+          ...targetScenario.designFeatures,
+          ...optimizedPlan.aiDesignRecommendations.sustainabilityFeatures
+        ],
+        constraints: [
+          ...optimizedPlan.aiDesignRecommendations.designConstraints,
+          `Maximum height: ${targetScenario.buildingHeight}m`,
+          `Land coverage: ${targetScenario.landCoverage * 100}%`,
+          `Construction type: ${targetScenario.constructionType}`
+        ],
+        address: optimizedPlan.propertyAddress,
+        city: this.extractCityFromAddress(optimizedPlan.propertyAddress),
+        zoning: optimizedPlan.propertyMetrics.currentZoning
+      };
+      
+      const constructionDesign = await aiDesignGeneratorService.generateDesignConcept(designRequest);
+      
+      const response = {
+        developmentScenario: targetScenario,
+        cityCompliance: optimizedPlan.citySpecificRequirements,
+        aiDesign: constructionDesign,
+        municipalIntegration: {
+          zoningCompliant: targetScenario.compliance.zoningCompliant,
+          bylawCompliant: targetScenario.compliance.municipalBylawsCompliant,
+          buildingCodeCompliant: targetScenario.compliance.buildingCodeCompliant,
+          accessibilityCompliant: targetScenario.compliance.accessibilityCompliant
+        },
+        implementationPlan: {
+          estimatedTimeline: targetScenario.financials.constructionDuration,
+          permitRequirements: optimizedPlan.citySpecificRequirements.developmentPermitRequired ? 
+            'Development permit required' : 'Building permit only',
+          keyMilestones: [
+            'Development permit application',
+            'Building permit submission', 
+            'Construction start',
+            'Occupancy permit'
+          ]
+        }
+      };
+      
+      res.json({ 
+        success: true, 
+        data: response,
+        message: "City-compliant construction design generated with full regulatory analysis"
+      });
+      
+    } catch (error) {
+      console.error("Construction design generation error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to generate construction design" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

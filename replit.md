@@ -8,6 +8,8 @@ BuildwiseAI is a web application designed to streamline financial management for
 
 **MUNICIPAL DATA INTEGRATION (AutoProp-Style)**: Comprehensive integration with real BC municipal zoning codes, bylaws, and building requirements similar to AutoProp's data aggregation approach. Currently supports Vancouver, Burnaby, Richmond, and Surrey with complete zoning regulations, applicable bylaws, and building code requirements. Municipal data enhances AI design generation with real regulatory constraints and opportunities.
 
+**DEVELOPMENT OPTIMIZATION ENGINE**: Advanced analysis system that evaluates all integrated data sources (BC Assessment, MLS, municipal zoning, bylaws, building codes) to generate optimized development scenarios with financial analysis, compliance scoring, and city-compliant construction designs. Automatically determines best development possibilities and generates AI-powered architectural recommendations that meet all municipal requirements.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
