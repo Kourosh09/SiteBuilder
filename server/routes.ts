@@ -15,6 +15,16 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    res.json({ 
+      success: true, 
+      status: "healthy", 
+      timestamp: new Date().toISOString(),
+      service: "BuildwiseAI API"
+    });
+  });
+  
   // Lead submission endpoint
   app.post("/api/leads", async (req, res) => {
     try {
