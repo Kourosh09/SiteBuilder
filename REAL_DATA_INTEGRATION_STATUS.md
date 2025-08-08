@@ -12,15 +12,17 @@
   2. Use property data aggregators like Teranet, Altus, or Real Estate Wire
   3. Implement web scraping of bc-assessment.ca (requires legal compliance)
 
-### MLS Integration (REBGV)
-**Status**: ⚠️ Needs REBGV-Specific Setup
-- Your MLS credentials are configured correctly in environment variables
-- REBGV uses RETS (Real Estate Transaction Standard) protocol
-- The current implementation tries generic RETS endpoints
-- **Real Solution**: You need:
-  1. REBGV-specific RETS login URL (contact REBGV directly)
-  2. Your member ID and specific access permissions
-  3. REBGV's resource metadata and field mappings
+### MLS Integration via REALTOR.ca DDF
+**Status**: ✅ Official Path Identified - REALTOR.ca Data Distribution Facility
+- **Official Registration**: https://ddf.realtor.ca/Distribution/Destinations/RegisterDestination.aspx
+- REALTOR.ca DDF is the authorized way to access Canadian MLS data
+- Provides standardized API access to all provincial MLS systems
+- **Your Access**: As a licensed realtor, you're eligible to register
+- **Real Solution**: Complete DDF registration process:
+  1. Register your application at the DDF portal
+  2. Get approved for data access permissions
+  3. Receive official API credentials and endpoints
+  4. Implement using DDF's standardized data format
 
 ## Recommended Immediate Actions
 
@@ -32,15 +34,20 @@
    - Real Estate Wire
    - Municipal open data portals
 
-### For MLS Data (You're a Licensed Realtor)
-1. **Contact REBGV directly**: 
-   - Phone: 604-730-3000
-   - Ask for RETS integration support
-   - Request proper RETS login URL and documentation
-2. **Required Information**:
-   - Your REBGV member number
-   - Specific RETS access permissions
-   - Field mapping documentation
+### For MLS Data (Official REALTOR.ca DDF Process)
+1. **Register with REALTOR.ca DDF**:
+   - Visit: https://ddf.realtor.ca/Distribution/Destinations/RegisterDestination.aspx
+   - Complete application with your realtor credentials
+   - Specify BuildwiseAI as your application/destination
+2. **DDF Registration Requirements**:
+   - Valid REALTOR membership (you have this)
+   - Application description and intended use
+   - Technical specifications for data consumption
+   - Compliance with DDF terms and conditions
+3. **Post-Approval**:
+   - Receive official DDF API credentials
+   - Access standardized Canadian MLS data feed
+   - Implement using DDF's documented API endpoints
 
 ## Current Fallback Data Quality
 - Using realistic market-based calculations
