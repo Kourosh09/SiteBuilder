@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePropertyData } from "@/hooks/usePropertyData";
 
 interface CalculationData {
   landPrice: string;
@@ -23,6 +24,7 @@ interface CalculationData {
 
 export default function CalculatorDemo() {
   const { toast } = useToast();
+  const { propertyData, hasPropertyData } = usePropertyData();
   const [formData, setFormData] = useState({
     landPrice: "750000",
     lotSize: "8000",
@@ -31,6 +33,17 @@ export default function CalculatorDemo() {
     salePrice: "850",
     softCosts: "15"
   });
+
+  // Auto-populate form from stored property data
+  useEffect(() => {
+    if (hasPropertyData && propertyData) {
+      setFormData(prev => ({
+        ...prev,
+        landPrice: propertyData.currentValue?.toString() || "750000",
+        lotSize: propertyData.lotSize.toString(),
+      }));
+    }
+  }, [hasPropertyData, propertyData]);
 
   const [results, setResults] = useState({
     buildableArea: "4,800 sqft",
@@ -121,6 +134,19 @@ export default function CalculatorDemo() {
           <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
             See how BuildwiseAI can instantly analyze your next development opportunity.
           </p>
+          
+          {/* Property Session Status Banner */}
+          {hasPropertyData && propertyData && (
+            <div className="mt-8 max-w-2xl mx-auto bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <div className="flex items-center justify-center gap-2 text-emerald-700">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="font-medium">Calculator Auto-Populated</span>
+              </div>
+              <p className="text-sm text-emerald-600 mt-1">
+                Data from {propertyData.address}, {propertyData.city} is now loaded
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="bg-gradient-to-br from-neutral-50 to-gray-100 rounded-2xl p-8 lg:p-12">

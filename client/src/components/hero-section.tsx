@@ -1,15 +1,35 @@
 import { Button } from "@/components/ui/button";
-import { Check, Play } from "lucide-react";
+import { Check, Play, Search } from "lucide-react";
+import { usePropertyData } from "@/hooks/usePropertyData";
 
 interface HeroSectionProps {
   onGetStarted?: () => void;
 }
 
 export default function HeroSection({ onGetStarted }: HeroSectionProps) {
+  const { setPropertyData } = usePropertyData();
+  
   const scrollToContact = () => {
     const element = document.getElementById("contact");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const demoProperty = () => {
+    // Set demo property data that will auto-populate all calculators
+    setPropertyData({
+      address: "1234 Main Street",
+      city: "Vancouver",
+      currentValue: 1850000,
+      lotSize: 7200,
+      currentUse: "single-family",
+      proposedUse: "multi-family"
+    });
+    
+    // Navigate to dashboard after setting data
+    if (onGetStarted) {
+      onGetStarted();
     }
   };
 
@@ -28,8 +48,16 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <Button
-                onClick={onGetStarted || scrollToContact}
+                onClick={demoProperty}
                 className="bg-yellow-500 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-400 transition-colors shadow-lg"
+                data-testid="button-property-demo"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Try Demo Property
+              </Button>
+              <Button
+                onClick={onGetStarted || scrollToContact}
+                className="bg-emerald-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-emerald-400 transition-colors shadow-lg"
                 data-testid="button-start-trial"
               >
                 Start Free Trial

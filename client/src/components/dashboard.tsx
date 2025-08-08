@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { usePropertySession } from "@/hooks/usePropertySession";
 import { 
   Building, 
   MapPin, 
@@ -42,6 +43,7 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  // const { propertyData, hasPropertyData } = usePropertySession();
   
   // Mock trial status - would come from API in real implementation
   const trialStatus = {

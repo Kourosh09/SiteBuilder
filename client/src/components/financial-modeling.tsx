@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { usePropertyData } from "@/hooks/usePropertyData";
 
 interface ProjectFinancials {
   id: string;
@@ -73,6 +74,7 @@ export default function FinancialModeling() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("create");
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const { propertyData, hasPropertyData } = usePropertyData();
   
   const [newProject, setNewProject] = useState({
     projectName: "",
@@ -83,6 +85,22 @@ export default function FinancialModeling() {
     units: "",
     targetSqFtPerUnit: ""
   });
+
+  // Auto-populate form from stored property data
+  useEffect(() => {
+    if (hasPropertyData && propertyData) {
+      setNewProject(prev => ({
+        ...prev,
+        projectName: `${propertyData.address} Development`,
+        address: `${propertyData.address}, ${propertyData.city}`,
+        purchasePrice: propertyData.currentValue?.toString() || "",
+        lotSize: propertyData.lotSize.toString(),
+        developmentType: propertyData.proposedUse === "multi-family" ? "Duplex" : "Single Family",
+        units: propertyData.proposedUse === "multi-family" ? "2" : "1",
+        targetSqFtPerUnit: "1500"
+      }));
+    }
+  }, [hasPropertyData, propertyData]);
 
   // Fetch projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery({

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePropertyData } from "@/hooks/usePropertyData";
 import { apiRequest } from "@/lib/queryClient";
 
 interface PropertyAnalysisResult {
@@ -53,6 +54,21 @@ export default function AIPropertyAnalyzer() {
     proposedUse: "multi-family"
   });
   const { toast } = useToast();
+  const { propertyData, hasPropertyData, setPropertyData } = usePropertyData();
+
+  // Auto-populate form from stored property data
+  useEffect(() => {
+    if (hasPropertyData && propertyData) {
+      setFormData({
+        address: propertyData.address,
+        city: propertyData.city,
+        currentValue: propertyData.currentValue?.toString() || "",
+        lotSize: propertyData.lotSize.toString(),
+        currentUse: propertyData.currentUse,
+        proposedUse: propertyData.proposedUse
+      });
+    }
+  }, [hasPropertyData, propertyData]);
 
   const handleDownloadPDF = async () => {
     if (!analysis) return;
@@ -127,9 +143,20 @@ export default function AIPropertyAnalyzer() {
 
       if (result.success) {
         setAnalysis(result.analysis);
+        
+        // Store property data for use in other calculators
+        setPropertyData({
+          address: formData.address,
+          city: formData.city,
+          currentValue: formData.currentValue ? parseFloat(formData.currentValue) : undefined,
+          lotSize: parseFloat(formData.lotSize),
+          currentUse: formData.currentUse,
+          proposedUse: formData.proposedUse
+        });
+        
         toast({
           title: "Analysis Complete",
-          description: "AI has generated your property development analysis."
+          description: "AI has generated your property development analysis. Data will now auto-populate in other calculators."
         });
       } else {
         throw new Error(result.error || "Analysis failed");
