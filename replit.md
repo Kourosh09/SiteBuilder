@@ -2,13 +2,22 @@
 
 ## Overview
 
-BuildwiseAI is a web application designed to streamline financial management for real estate developers and investors. It provides AI-powered tools for feasibility analysis, development budgeting, joint venture structuring, and automated investor reporting. The platform targets small to mid-size real estate developers, offering efficient, specialized financial management solutions. It is built as a single-page application with a React frontend and an Express backend. BuildwiseAI is production-ready, featuring a complete AI-powered real estate development platform, a fully functional contractor marketplace, and is configured for secure deployment. It incorporates the latest 2025 BC housing regulations, including SSMUH compliance analysis and Bill 47 TOA analysis, and integrates with the official DDF Web API v1.0 for real-time MLS data.
+BuildwiseAI is a comprehensive AI-powered real estate development platform for the BC market that transforms property development from complex guesswork into data-driven decisions. The platform integrates BC Assessment data, MLS listings, AutoProp-style municipal zoning/bylaw databases, and AI-generated construction designs with a complete contractor marketplace. BuildwiseAI is production-ready with a fully functional marketing ecosystem including interactive landing pages, automated lead capture, email nurturing sequences, and comprehensive social media strategy. The system demonstrates complete workflow from property address input to city-compliant development plans with contractor proposals and project timelines.
 
 **PROPERTY DATA PERSISTENCE SYSTEM**: All property information from initial search (BC Assessment data, MLS comparables, market analysis) automatically flows through all subsequent analyses and calculations without manual re-entry. The PropertySessionManager creates unique sessions that carry data through zoning analysis, AI analysis, financial calculations, design suggestions, and PDF report generation.
 
 **MUNICIPAL DATA INTEGRATION (AutoProp-Style)**: Comprehensive integration with real BC municipal zoning codes, bylaws, and building requirements similar to AutoProp's data aggregation approach. Currently supports Vancouver, Burnaby, Richmond, and Surrey with complete zoning regulations, applicable bylaws, and building code requirements. Municipal data enhances AI design generation with real regulatory constraints and opportunities.
 
 **DEVELOPMENT OPTIMIZATION ENGINE**: Advanced analysis system that evaluates all integrated data sources (BC Assessment, MLS, municipal zoning, bylaws, building codes) to generate optimized development scenarios with financial analysis, compliance scoring, and city-compliant construction designs. Automatically determines best development possibilities and generates AI-powered architectural recommendations that meet all municipal requirements.
+
+**COMPLETE MARKETING ECOSYSTEM**: Comprehensive lead generation and conversion system including:
+- Interactive property demo with real-time AI analysis
+- Automated lead capture with CRM integration and scoring
+- Email automation sequences with personalized property data
+- Professional marketing video production framework
+- Multi-platform social media strategy (LinkedIn, YouTube, Instagram, Facebook)
+- Contractor marketplace with proposal submissions and project timelines
+- Analytics tracking with conversion optimization
 
 ## User Preferences
 

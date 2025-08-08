@@ -614,7 +614,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const suggestions = await zoningIntelligenceService.generateDesignSuggestions(
-        { ...mockZoningData, ssmuhCompliant: false, ssmuhDetails: null }, 
+        { ...mockZoningData, ssmuhCompliant: false, ssmuhDetails: {
+          secondarySuiteAllowed: false,
+          detachedADUAllowed: false,
+          minUnitsRequired: 1,
+          maxUnitsAllowed: 4,
+          frequentTransitService: false,
+          urbanContainmentBoundary: true,
+          parcelSize: 4000,
+          municipalityPopulation: 631486
+        } }, 
         lotSize, 
         mockDevelopmentPotential, 
         budget
@@ -3065,8 +3074,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get zoning intelligence analysis
       const { zoningIntelligenceService } = await import("./zoning-intelligence");
-      const zoningAnalysis = await zoningIntelligenceService.getZoningAnalysis(
-        address, city, lotSize || session?.bcAssessment?.lotSize || 4000, 40
+      const zoningAnalysis = await zoningIntelligenceService.analyzeProperty(
+        address, city
       );
       
       const comprehensiveData = {
@@ -3211,7 +3220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         units: targetScenario.totalUnits,
         budget: targetScenario.financials.totalProjectCost,
         location: optimizedPlan.propertyAddress,
-        style: mapToDesignStyle(optimizedPlan.aiDesignRecommendations.architecturalStyle),
+        style: mapToDesignStyle(optimizedPlan.aiDesignRecommendations.architecturalStyle) as "modern" | "traditional" | "craftsman" | "contemporary" | "minimalist" | "rustic",
         requirements: [
           ...targetScenario.designFeatures,
           ...optimizedPlan.aiDesignRecommendations.sustainabilityFeatures
