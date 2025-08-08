@@ -10,13 +10,18 @@ import Home from "@/pages/home";
 import Dashboard from "@/components/dashboard";
 
 function Router() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Check localStorage for authentication state
-    return localStorage.getItem('buildwise_authenticated') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Save authentication state to localStorage
+    // Check localStorage for authentication state on initial load
+    const savedAuth = localStorage.getItem('buildwise_authenticated');
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save authentication state to localStorage when it changes
     localStorage.setItem('buildwise_authenticated', isAuthenticated.toString());
   }, [isAuthenticated]);
 
