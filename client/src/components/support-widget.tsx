@@ -129,16 +129,17 @@ export function SupportWidget() {
 
   return (
     <>
-      {/* Floating Support Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Support Button - Bottom Right */}
+      <div className="fixed bottom-6 right-6 z-[9999]">
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button
               size="lg"
-              className="rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700"
+              className="rounded-full h-16 w-16 shadow-xl hover:shadow-2xl transition-all duration-300 bg-blue-600 hover:bg-blue-700 border-2 border-white animate-pulse"
               data-testid="button-support-widget"
+              title="Need Help? Click for Support"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+              {isOpen ? <X className="h-7 w-7 text-white" /> : <MessageCircle className="h-7 w-7 text-white" />}
             </Button>
           </DialogTrigger>
           
