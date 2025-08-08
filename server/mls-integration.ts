@@ -413,7 +413,7 @@ export class DDFService {
       'west vancouver': 2500000
     };
     
-    return cityPrices[city.toLowerCase()] || 1200000;
+    return cityPrices[city?.toLowerCase() || 'vancouver'] || 1200000;
   }
 }
 
