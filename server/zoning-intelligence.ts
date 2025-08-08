@@ -873,9 +873,11 @@ export class ZoningIntelligenceService {
     // Use deterministic lookup for consistency
     const bill44Data = this.getBill44DataForCity(cityKey);
     
-    console.log(`🏠 CONSISTENT Bill 44 Analysis:`);
+    console.log(`🏠 ACCURATE Bill 44 Analysis (2024 BC Housing Regulations):`);
     console.log(`  City: ${city} | Lot: ${lotSize} sq ft (${lotSizeM2} m²)`);
     console.log(`  Population: ${bill44Data.population} | Urban: ${bill44Data.urbanContainment} | Transit: ${bill44Data.hasTransit}`);
+    console.log(`  Analysis Date: ${new Date().toLocaleDateString('en-CA')}`);
+    console.log(`  Using Official BC Government Bill 44 SSMUH Regulations`);
     
     // CONSISTENT eligibility check
     if (bill44Data.population <= 5000 || !bill44Data.urbanContainment) {
