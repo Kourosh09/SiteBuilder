@@ -37,13 +37,6 @@ export default function Home({ onAuthenticated }: HomeProps) {
       <LandownerJVSection />
       <DevelopmentNetworkSection />
       <HowItWorks />
-      <PropertyLookup />
-      <ZoningIntelligence />
-      <AIPropertyAnalyzer />
-      <MarketingAutomationShowcase />
-      <PartnerFinder />
-      <ContractorSignupSection />
-      <CalculatorDemo />
       <ProductShowcase />
       <AboutFounder />
       <Testimonials />

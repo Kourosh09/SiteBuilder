@@ -25,6 +25,9 @@ BuildwiseAI is a comprehensive AI-powered real estate development platform for t
 Preferred communication style: Simple, everyday language.
 User prefers email/SMS code verification over username/password system.
 User is a licensed realtor with REBGV credentials.
+Business model: Premium dashboard with 7-day trial for paying customers ($197/month).
+Main website should focus on marketing materials and service descriptions only.
+All valuable builder tools should be behind premium dashboard for trial/paying customers.
 
 ## System Architecture
 

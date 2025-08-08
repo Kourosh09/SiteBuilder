@@ -19,12 +19,12 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
           <div className="flex flex-col justify-center">
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight mb-6 text-white">
-              <span className="block mb-2">AI-Powered Financial</span>
-              <span className="block mb-2">Management for</span>
-              <span className="text-yellow-400 font-extrabold drop-shadow-lg block">Real Estate Developers</span>
+              <span className="block mb-2">Professional BC</span>
+              <span className="block mb-2">Development Analysis</span>
+              <span className="text-yellow-400 font-extrabold drop-shadow-lg block">Platform</span>
             </h1>
             <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed font-medium max-w-2xl">
-              Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
+              The only platform built specifically for BC development professionals. Access comprehensive property analysis, municipal compliance data across 9 BC cities, and connect with premier architects, engineers, and contractors.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <Button
@@ -46,7 +46,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 text-sm text-blue-200">
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <span>Free 14-day trial</span>
+                <span>7-day free trial</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-400 flex-shrink-0" />

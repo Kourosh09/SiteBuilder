@@ -31,6 +31,7 @@ import LeadGenerationDashboard from "./lead-generation-dashboard";
 import CalculatorDemo from "./calculator-demo";
 import ContractorSignupSection from "./contractor-signup-section";
 import Partners from "@/pages/Partners";
+import TrialBanner from "./trial-banner";
 
 interface DashboardStats {
   totalProjects: number;
@@ -42,12 +43,24 @@ interface DashboardStats {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   
+  // Mock trial status - would come from API in real implementation
+  const trialStatus = {
+    isTrialActive: true,
+    daysRemaining: 5,
+    planType: 'trial'
+  };
+  
   // Mock stats - would come from API in real implementation
   const stats: DashboardStats = {
     totalProjects: 12,
     activePermits: 8,
     leadsGenerated: 156,
     propertiesAnalyzed: 89
+  };
+
+  const handleUpgrade = () => {
+    // In real implementation, this would redirect to payment processing
+    window.open('https://buy.stripe.com/test_your_payment_link', '_blank');
   };
 
   const quickActions = [
@@ -126,6 +139,14 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Trial Banner */}
+        {trialStatus.isTrialActive && (
+          <TrialBanner 
+            daysRemaining={trialStatus.daysRemaining} 
+            onUpgrade={handleUpgrade} 
+          />
+        )}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="overflow-x-auto">
             <TabsList className="grid w-full min-w-fit grid-cols-9 gap-1">
