@@ -166,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Property Data Lookup endpoint (BC Assessment + MLS)
+  // Property Data Lookup endpoint (BC Assessment + MLS) - Creates session
   app.post("/api/property/lookup", async (req, res) => {
     try {
       const { address, city } = req.body;
@@ -179,7 +179,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const propertyData = await propertyDataService.getPropertyData(address, city);
-      res.json({ success: true, data: propertyData });
+      
+      // Create property session for data persistence
+      const { propertySessionManager } = await import("./property-session");
+      const session = propertySessionManager.createSession(address, city, propertyData);
+      
+      res.json({ 
+        success: true, 
+        data: propertyData,
+        sessionId: session.id
+      });
       
     } catch (error) {
       console.error("Property lookup error:", error);
@@ -407,38 +416,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // === ZONING INTELLIGENCE ENDPOINTS ===
 
-  // PDF Report Generation endpoint
+  // PDF Report Generation endpoint - Uses session data if available
   app.post("/api/reports/zoning", async (req, res) => {
     try {
       const { PDFReportGenerator } = await import("./pdf-generator");
       const generator = new PDFReportGenerator();
       
-      // Ensure required fields are present with defaults
-      const reportData = {
-        address: req.body.address || "Property Address",
-        city: req.body.city || "City",
-        lotSize: req.body.lotSize || 5000,
-        frontage: req.body.frontage || 50,
-        coordinates: req.body.coordinates || { lat: 49.2827, lng: -123.1207 },
-        zoning: req.body.zoning || {
-          zoningCode: "RS-1",
-          description: "Single-family residential",
-          maxHeight: 10.7,
-          maxFAR: 0.7,
-          maxDensity: 1,
-          setbacks: { front: 6, rear: 6, side: 1.2 },
-          parkingRequirements: "1 space per unit",
-          permittedUses: ["Single-family dwelling"]
-        },
-        developmentPotential: req.body.developmentPotential || {
-          maxUnits: 1,
-          recommendedUnits: 4,
-          buildingType: "Single Family",
-          estimatedValue: 1000000
-        },
-        analysisDate: new Date().toLocaleDateString('en-CA'),
-        ...req.body
-      };
+      let reportData: any;
+      
+      // If sessionId provided, use comprehensive session data
+      if (req.body.sessionId) {
+        const { propertySessionManager } = await import("./property-session");
+        const sessionData = propertySessionManager.generateReportData(req.body.sessionId);
+        
+        if (sessionData) {
+          reportData = sessionData;
+        } else {
+          return res.status(400).json({ 
+            success: false, 
+            error: "Session not found. Please perform property lookup first." 
+          });
+        }
+      } else {
+        // Use provided data with defaults
+        reportData = {
+          address: req.body.address || "Property Address",
+          city: req.body.city || "City",
+          lotSize: req.body.lotSize || 5000,
+          frontage: req.body.frontage || 50,
+          coordinates: req.body.coordinates || { lat: 49.2827, lng: -123.1207 },
+          zoning: req.body.zoning || {
+            zoningCode: "RS-1",
+            description: "Single-family residential",
+            maxHeight: 10.7,
+            maxFAR: 0.7,
+            maxDensity: 1,
+            setbacks: { front: 6, rear: 6, side: 1.2 },
+            parkingRequirements: "1 space per unit",
+            permittedUses: ["Single-family dwelling"]
+          },
+          developmentPotential: req.body.developmentPotential || {
+            maxUnits: 1,
+            recommendedUnits: 4,
+            buildingType: "Single Family",
+            estimatedValue: 1000000
+          },
+          analysisDate: new Date().toLocaleDateString('en-CA'),
+          ...req.body
+        };
+      }
       
       const pdfBuffer = generator.generateZoningReport(reportData);
       
@@ -451,19 +477,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get zoning analysis
+  // Get zoning analysis - Uses session data if available
   app.post("/api/zoning/analysis", async (req, res) => {
     try {
-      const { address, city, lotSize, frontage } = req.body;
+      const { address, city, lotSize, frontage, sessionId } = req.body;
       
-      if (!address || !city || !lotSize || !frontage) {
+      let analysisAddress = address;
+      let analysisCity = city;
+      let analysisLotSize = lotSize;
+      let analysisFrontage = frontage;
+      
+      // If sessionId provided, use session data
+      if (sessionId) {
+        const { propertySessionManager } = await import("./property-session");
+        const propertyData = propertySessionManager.getPropertyForAnalysis(sessionId);
+        
+        if (propertyData) {
+          analysisAddress = propertyData.address;
+          analysisCity = propertyData.city;
+          analysisLotSize = propertyData.lotSize || lotSize;
+          analysisFrontage = frontage || 40; // Default frontage
+        }
+      }
+      
+      if (!analysisAddress || !analysisCity || !analysisLotSize) {
         return res.status(400).json({ 
           success: false, 
-          error: "Missing required fields: address, city, lotSize, frontage" 
+          error: "Missing required fields: address, city, lotSize. Provide sessionId or complete property data." 
         });
       }
 
-      const analysis = await zoningIntelligenceService.getZoningAnalysisWithBill44(address, city, lotSize, frontage);
+      const analysis = await zoningIntelligenceService.getZoningAnalysisWithBill44(
+        analysisAddress, 
+        analysisCity, 
+        analysisLotSize, 
+        analysisFrontage || 40
+      );
+      
+      // Update session with zoning analysis
+      if (sessionId) {
+        const { propertySessionManager } = await import("./property-session");
+        propertySessionManager.addZoningAnalysis(sessionId, analysis);
+      }
+      
       res.json({ success: true, data: analysis });
       
     } catch (error) {

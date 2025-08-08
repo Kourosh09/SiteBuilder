@@ -4,6 +4,8 @@
 
 BuildwiseAI is a web application designed to streamline financial management for real estate developers and investors. It provides AI-powered tools for feasibility analysis, development budgeting, joint venture structuring, and automated investor reporting. The platform targets small to mid-size real estate developers, offering efficient, specialized financial management solutions. It is built as a single-page application with a React frontend and an Express backend. BuildwiseAI is production-ready, featuring a complete AI-powered real estate development platform, a fully functional contractor marketplace, and is configured for secure deployment. It incorporates the latest 2025 BC housing regulations, including SSMUH compliance analysis and Bill 47 TOA analysis, and integrates with the official DDF Web API v1.0 for real-time MLS data.
 
+**PROPERTY DATA PERSISTENCE SYSTEM**: All property information from initial search (BC Assessment data, MLS comparables, market analysis) automatically flows through all subsequent analyses and calculations without manual re-entry. The PropertySessionManager creates unique sessions that carry data through zoning analysis, AI analysis, financial calculations, design suggestions, and PDF report generation.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

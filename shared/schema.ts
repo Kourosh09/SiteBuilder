@@ -60,6 +60,52 @@ export type Lead = typeof leads.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type Calculation = typeof calculationResults.$inferSelect;
 
+// Property Session Data - carries through all analyses
+export interface PropertySessionData {
+  id: string;
+  address: string;
+  city: string;
+  coordinates?: { lat: number; lng: number };
+  
+  // BC Assessment Data
+  bcAssessment?: {
+    pid: string;
+    landValue: number;
+    improvementValue: number;
+    totalAssessedValue: number;
+    lotSize: number;
+    zoning?: string;
+    propertyType: string;
+    yearBuilt?: number;
+    buildingArea?: number;
+    legalDescription?: string;
+  };
+  
+  // MLS Data
+  mlsComparables?: any[];
+  marketAnalysis?: {
+    averagePricePerSqFt: number;
+    marketTrend: 'rising' | 'falling' | 'stable';
+    averageDaysOnMarket: number;
+    priceRange: { min: number; max: number };
+  };
+  
+  // Zoning Analysis
+  zoningAnalysis?: any;
+  
+  // AI Analysis Results  
+  aiAnalysis?: any;
+  
+  // Financial Calculations
+  financialAnalysis?: any;
+  
+  // Design Suggestions
+  designSuggestions?: any[];
+  
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // AI Analysis schemas
 export interface PropertyAnalysisInput {
   address: string;
@@ -68,6 +114,7 @@ export interface PropertyAnalysisInput {
   lotSize: number;
   currentUse?: string;
   proposedUse?: string;
+  sessionData?: PropertySessionData;
 }
 
 export interface PropertyAnalysisResult {
