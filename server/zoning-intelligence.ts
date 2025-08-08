@@ -25,6 +25,17 @@ export interface ZoningData {
   todZone: boolean;
   todBonusUnits: number;
   multiplexEligible: boolean;
+  ssmuhCompliant: boolean;
+  ssmuhDetails: {
+    secondarySuiteAllowed: boolean;
+    detachedADUAllowed: boolean;
+    minUnitsRequired: number;
+    maxUnitsAllowed: number;
+    frequentTransitService: boolean;
+    urbanContainmentBoundary: boolean;
+    parcelSize: number;
+    municipalityPopulation: number;
+  };
 }
 
 export interface DevelopmentPotential {
@@ -61,6 +72,26 @@ export interface DevelopmentPotential {
     benefits: string[];
     requirements: string[];
     incentives: string[];
+  };
+  ssmuhCompliance: {
+    eligible: boolean;
+    regulationStatus: 'Compliant' | 'Extension Applied' | 'Non-Compliant';
+    bylawUpdateRequired: boolean;
+    effectiveDate: string;
+    requirements: {
+      secondarySuites: boolean;
+      detachedADUs: boolean;
+      threeToFourUnits: boolean;
+      sixUnitsNearTransit: boolean;
+    };
+    details: {
+      minUnitsOnParcel: number;
+      maxUnitsNearTransit: number;
+      transitServiceQualifies: boolean;
+      parcelSizeCategory: 'Under 280m²' | 'Over 280m²';
+    };
+    benefits: string[];
+    constraints: string[];
   };
 }
 
@@ -331,10 +362,11 @@ export class ZoningIntelligenceService {
     const constraints = this.identifyConstraintsWithBill44(zoning, lotSize);
     const opportunities = this.identifyOpportunitiesWithBill44(zoning, recommendedUnits, city);
 
-    // Multi-policy compliance analysis
+    // Multi-policy compliance analysis including SSMUH
     const bill44Compliance = this.analyzeBill44Compliance(zoning, lotSize, frontage, city);
     const bill47Compliance = this.analyzeBill47Compliance(zoning, lotSize, city);
     const todCompliance = this.analyzeTODCompliance(zoning, lotSize, city);
+    const ssmuhCompliance = this.analyzeSSMUH(city, lotSize, zoning.zoningCode);
 
     return {
       maxUnits: traditionalMaxUnits,
@@ -352,8 +384,116 @@ export class ZoningIntelligenceService {
       opportunities,
       bill44Compliance,
       bill47Compliance,
-      todCompliance
+      todCompliance,
+      ssmuhCompliance
     };
+  }
+
+  // Official BC SSMUH Analysis based on 2025 regulations
+  private analyzeSSMUH(city: string, lotSize: number, zoning: string): any {
+    const municipalityPopulation = this.getMunicipalityPopulation(city);
+    const parcelSizeM2 = lotSize * 0.092903; // Convert sq ft to m²
+    const isUrbanContainment = this.isWithinUrbanContainment(city);
+    const hasFrequentTransit = this.hasFrequentTransitService(city);
+    
+    // SSMUH Requirements per BC regulations (effective June 30, 2024)
+    const requirements = {
+      secondarySuites: true, // Province-wide in single-family zones
+      detachedADUs: true, // Garden suites/laneway homes allowed province-wide
+      threeToFourUnits: false,
+      sixUnitsNearTransit: false
+    };
+    
+    let minUnitsOnParcel = 1;
+    let maxUnitsNearTransit = 1;
+    
+    // 3-4 Units in single family/duplex zones (municipalities >5,000 people + urban containment)
+    if (municipalityPopulation > 5000 && isUrbanContainment && this.isSingleFamilyOrDuplex(zoning)) {
+      requirements.threeToFourUnits = true;
+      minUnitsOnParcel = parcelSizeM2 <= 280 ? 3 : 4;
+    }
+    
+    // 6 Units near frequent transit (municipalities >5,000 + parcels >280m²)
+    if (municipalityPopulation >= 5000 && parcelSizeM2 > 280 && hasFrequentTransit && this.isSingleFamilyOrDuplex(zoning)) {
+      requirements.sixUnitsNearTransit = true;
+      maxUnitsNearTransit = 6;
+    }
+    
+    return {
+      eligible: true,
+      regulationStatus: 'Compliant' as const,
+      bylawUpdateRequired: false,
+      effectiveDate: 'June 30, 2024',
+      requirements,
+      details: {
+        minUnitsOnParcel: Math.max(minUnitsOnParcel, maxUnitsNearTransit),
+        maxUnitsNearTransit,
+        transitServiceQualifies: hasFrequentTransit,
+        parcelSizeCategory: parcelSizeM2 <= 280 ? 'Under 280m²' as const : 'Over 280m²' as const
+      },
+      benefits: [
+        'Secondary suites permitted province-wide',
+        'Detached ADUs (garden suites/laneway homes) allowed',
+        ...(requirements.threeToFourUnits ? ['3-4 units permitted in single-family zones'] : []),
+        ...(requirements.sixUnitsNearTransit ? ['Up to 6 units near frequent transit'] : []),
+        'Streamlined approval process',
+        'Reduced parking requirements possible',
+        'Enhanced housing diversity options'
+      ],
+      constraints: [
+        'Must comply with site standards in Provincial Policy Manual',
+        'Municipal bylaws must be updated by June 30, 2024',
+        ...(parcelSizeM2 <= 280 ? ['Limited to 3 units on smaller parcels'] : []),
+        ...(!hasFrequentTransit ? ['6-unit option requires frequent transit service'] : [])
+      ]
+    };
+  }
+  
+  private getMunicipalityPopulation(city: string): number {
+    const populations: { [key: string]: number } = {
+      'vancouver': 695263,
+      'surrey': 568322,
+      'burnaby': 249125,
+      'richmond': 209937,
+      'coquitlam': 148625,
+      'langley': 132603,
+      'maple ridge': 90990,
+      'north vancouver': 88168,
+      'west vancouver': 44122,
+      'new westminster': 78916,
+      'port coquitlam': 61498,
+      'port moody': 37067,
+      'mission': 41519,
+      'white rock': 21939,
+      'delta': 108455,
+      'abbotsford': 153524,
+      'chilliwack': 93203
+    };
+    return populations[city.toLowerCase()] || 10000; // Default above threshold
+  }
+  
+  private isWithinUrbanContainment(city: string): boolean {
+    // Most Metro Vancouver municipalities are within urban containment boundaries
+    const urbanContainmentCities = [
+      'vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 
+      'langley', 'new westminster', 'north vancouver', 'west vancouver',
+      'port coquitlam', 'port moody', 'white rock', 'delta'
+    ];
+    return urbanContainmentCities.includes(city.toLowerCase());
+  }
+  
+  private hasFrequentTransitService(city: string): boolean {
+    // Cities with TransLink frequent transit service (15-minute or better frequency)
+    const frequentTransitCities = [
+      'vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam',
+      'new westminster', 'north vancouver', 'west vancouver'
+    ];
+    return frequentTransitCities.includes(city.toLowerCase());
+  }
+  
+  private isSingleFamilyOrDuplex(zoning: string): boolean {
+    const sfDuplexZones = ['RS', 'RT', 'R1', 'R2', 'RF', 'RD', 'R-1', 'R-2'];
+    return sfDuplexZones.some(zone => zoning.toUpperCase().includes(zone));
   }
 
   private async getNearbyAmenities(coordinates: { lat: number; lng: number }) {

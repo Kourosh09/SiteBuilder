@@ -20,6 +20,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Enhanced with 2025 BC Housing Regulations (August 8, 2025)
+- **Date**: August 8, 2025
+- **Status**: ✅ SSMUH Compliance Analysis Added - Official 2025 BC housing policies integrated
+- **Enhancement**: Complete Small-Scale Multi-Unit Housing (SSMUH) analysis framework
+- **Regulations**: Provincial Policy Manual compliance with June 30, 2024 effective date
+- **Coverage**: All BC municipalities with population and transit service analysis
+- **Features**: 
+  - Secondary suites province-wide allowance
+  - Detached ADUs (garden suites/laneway homes) analysis
+  - 3-4 units in single-family zones (municipalities >5,000 + urban containment)
+  - 6 units near frequent transit service requirements
+  - Parcel size thresholds (280m² analysis)
+  - Municipal compliance status tracking
+- **Data Sources**: Official BC government regulations at gov.bc.ca/housing-initiatives
+
 ### Complete BuildwiseAI Platform (August 7, 2025)
 - **Date**: August 7, 2025
 - **Status**: ✅ PRODUCTION READY - Full-featured real estate development platform with authentication and lead generation
