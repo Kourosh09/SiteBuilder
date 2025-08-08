@@ -22,15 +22,11 @@ import {
 } from "lucide-react";
 
 // Import existing components
-import PropertyLookup from "./property-lookup";
 import ZoningIntelligence from "./zoning-intelligence";
 import AIPropertyAnalyzer from "./ai-property-analyzer";
-import PermitTracker from "./permit-tracker";
 import PartnerFinder from "./partner-finder";
-import PermitTracking from "./permit-tracking";
 import PropertyAlerts from "./property-alerts";
 import FinancialModeling from "./financial-modeling";
-import RegulatoryCompliance from "./regulatory-compliance";
 import LeadGenerationDashboard from "./lead-generation-dashboard";
 import CalculatorDemo from "./calculator-demo";
 import ContractorSignupSection from "./contractor-signup-section";
@@ -61,13 +57,7 @@ export default function Dashboard() {
       color: "bg-blue-600",
       action: () => setActiveTab("property-analyzer")
     },
-    {
-      title: "Search Properties",
-      description: "BC Assessment & MLS property search",
-      icon: Search,
-      color: "bg-green-600",
-      action: () => setActiveTab("property-lookup")
-    },
+
     {
       title: "Check Zoning",
       description: "Bill 44 compliance & development potential",
@@ -137,15 +127,12 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full min-w-fit grid-cols-12 gap-1">
+            <TabsList className="grid w-full min-w-fit grid-cols-9 gap-1">
               <TabsTrigger value="overview" data-testid="tab-overview" className="whitespace-nowrap">Overview</TabsTrigger>
               <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer" className="whitespace-nowrap">AI Analysis</TabsTrigger>
-              <TabsTrigger value="property-lookup" data-testid="tab-property-lookup" className="whitespace-nowrap">Property Search</TabsTrigger>
               <TabsTrigger value="zoning" data-testid="tab-zoning" className="whitespace-nowrap">Zoning</TabsTrigger>
-              <TabsTrigger value="permits" data-testid="tab-permits" className="whitespace-nowrap">Permits</TabsTrigger>
               <TabsTrigger value="alerts" data-testid="tab-alerts" className="whitespace-nowrap">Alerts</TabsTrigger>
               <TabsTrigger value="financial" data-testid="tab-financial" className="whitespace-nowrap">Financial</TabsTrigger>
-              <TabsTrigger value="compliance" data-testid="tab-compliance" className="whitespace-nowrap">Compliance</TabsTrigger>
               <TabsTrigger value="marketing" data-testid="tab-marketing" className="whitespace-nowrap">Lead Gen</TabsTrigger>
               <TabsTrigger value="calculator" data-testid="tab-calculator" className="whitespace-nowrap">Calculator</TabsTrigger>
               <TabsTrigger value="marketplace" data-testid="tab-marketplace" className="whitespace-nowrap">Marketplace</TabsTrigger>
@@ -288,11 +275,6 @@ export default function Dashboard() {
             <ZoningIntelligence />
           </TabsContent>
 
-          {/* Permits Tab */}
-          <TabsContent value="permits">
-            <PermitTracking />
-          </TabsContent>
-
           {/* Property Alerts Tab */}
           <TabsContent value="alerts">
             <PropertyAlerts />
@@ -303,19 +285,9 @@ export default function Dashboard() {
             <FinancialModeling />
           </TabsContent>
 
-          {/* Regulatory Compliance Tab */}
-          <TabsContent value="compliance">
-            <RegulatoryCompliance />
-          </TabsContent>
-
           {/* Marketing/Lead Generation Tab */}
           <TabsContent value="marketing">
             <LeadGenerationDashboard />
-          </TabsContent>
-
-          {/* Property Lookup Tab */}
-          <TabsContent value="property-lookup">
-            <PropertyLookup />
           </TabsContent>
 
           {/* Calculator Tab */}
