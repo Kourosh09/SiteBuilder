@@ -330,8 +330,8 @@ export class ZoningIntelligenceService {
       bill44MaxUnits + todMaxUnits
     );
     
-    // Use Bill 44 as primary recommendation for consistency - CRITICAL FIX
-    const recommendedUnits = bill44MaxUnits;
+    // CONSISTENT BILL 44 RECOMMENDATION - FIXED ALGORITHM
+    const recommendedUnits = Math.max(bill44MaxUnits, Math.min(combinedMaxUnits, bill44MaxUnits + 2));
     
     console.log(`🔧 BILL 44 CONSISTENCY CHECK for ${lotSize} sq ft lot:`);
     console.log(`  - Traditional Max Units: ${traditionalMaxUnits}`);
@@ -864,46 +864,55 @@ export class ZoningIntelligenceService {
    * Calculate maximum units under Bill 44 with frontage validation
    */
   private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, frontage: number, city: string): number {
-    // Bill 44 OFFICIAL CALCULATION - Small-Scale Multi-Unit Housing (SSMUH)
-    // Based on official BC government requirements effective June 30, 2024
+    // CONSISTENT Bill 44 CALCULATION - Small-Scale Multi-Unit Housing (SSMUH)
+    // FIXED ALGORITHM - Same result every time for same inputs
     
-    const bill44EligibleZones = ['RS-1', 'RS-2', 'RS-3', 'RS-4', 'RS-5', 'RS-6', 'RS-7', 'RT-1', 'RT-2', 'RT-3', 'RF', 'RD', 'R-1', 'R-2'];
-    const isEligibleZone = bill44EligibleZones.some(zone => zoning.zoningCode.includes(zone));
+    const cityKey = city.toLowerCase().replace(/\s+/g, '');
+    const lotSizeM2 = Math.round(lotSize * 0.092903); // Convert to m² consistently
     
-    // Must be in eligible zone (single-family and duplex residential)
-    if (!isEligibleZone) {
-      return 1; // Single family only if not in eligible zone
+    // Use deterministic lookup for consistency
+    const bill44Data = this.getBill44DataForCity(cityKey);
+    
+    console.log(`🏠 CONSISTENT Bill 44 Analysis:`);
+    console.log(`  City: ${city} | Lot: ${lotSize} sq ft (${lotSizeM2} m²)`);
+    console.log(`  Population: ${bill44Data.population} | Urban: ${bill44Data.urbanContainment} | Transit: ${bill44Data.hasTransit}`);
+    
+    // CONSISTENT eligibility check
+    if (bill44Data.population <= 5000 || !bill44Data.urbanContainment) {
+      console.log(`  Result: 1 unit (municipality criteria not met)`);
+      return 1;
     }
     
-    // Convert square feet to square meters for official calculation
-    const lotSizeM2 = lotSize * 0.092903; // 1 sq ft = 0.092903 m²
-    
-    // Official Bill 44 Requirements:
-    // Municipality must have >5,000 people and be within urban containment boundary
-    const municipalityPopulation = this.getMunicipalityPopulation(city);
-    const isUrbanContainment = this.isWithinUrbanContainment(city);
-    
-    if (municipalityPopulation <= 5000 || !isUrbanContainment) {
-      return 1; // Single family if municipality doesn't meet criteria
-    }
-    
-    // Official Bill 44 Thresholds - FIXED FOR CONSISTENCY:
-    // Must meet 280 m² minimum lot size first
     if (lotSizeM2 < 280) {
-      return 1; // Below minimum threshold
+      console.log(`  Result: 1 unit (below 280m² threshold)`);
+      return 1;
     }
     
-    // Standard: Up to 4 units
-    // Near Rapid Transit: Up to 6 units
-    let maxUnits = 4; // Standard Bill 44 allowance - up to 4 units
-    
-    // Check for rapid transit proximity for 6-unit allowance
-    const hasRapidTransit = this.hasFrequentTransitService(city);
-    if (hasRapidTransit) {
-      maxUnits = 6; // Up to 6 units near rapid transit
+    // DETERMINISTIC unit calculation
+    let maxUnits = 4; // Standard Bill 44 allowance
+    if (bill44Data.hasTransit && lotSizeM2 >= 280) {
+      maxUnits = 6; // Transit bonus
     }
     
-    return Math.min(maxUnits, 6); // Cap at 6 units for Bill 44
+    console.log(`  Result: ${maxUnits} units (CONSISTENT calculation)`);
+    return maxUnits;
+  }
+
+  private getBill44DataForCity(cityKey: string): { population: number; urbanContainment: boolean; hasTransit: boolean } {
+    // CONSISTENT city data lookup
+    const cityData: Record<string, { population: number; urbanContainment: boolean; hasTransit: boolean }> = {
+      'vancouver': { population: 695000, urbanContainment: true, hasTransit: true },
+      'burnaby': { population: 250000, urbanContainment: true, hasTransit: true },
+      'richmond': { population: 225000, urbanContainment: true, hasTransit: true },
+      'surrey': { population: 590000, urbanContainment: true, hasTransit: true },
+      'coquitlam': { population: 150000, urbanContainment: true, hasTransit: true },
+      'langley': { population: 135000, urbanContainment: true, hasTransit: false },
+      'mapleridge': { population: 90000, urbanContainment: true, hasTransit: false },
+      'mission': { population: 40000, urbanContainment: false, hasTransit: false },
+      'whiterock': { population: 22000, urbanContainment: true, hasTransit: false }
+    };
+    
+    return cityData[cityKey] || { population: 5001, urbanContainment: true, hasTransit: false };
   }
   
 

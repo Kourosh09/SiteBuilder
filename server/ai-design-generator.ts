@@ -55,6 +55,13 @@ export class AIDesignGeneratorService {
    */
   async generateDesignConcept(request: DesignRequest): Promise<DesignOutput> {
     try {
+      // Check OpenAI API key availability
+      if (!process.env.OPENAI_API_KEY) {
+        console.error("OpenAI API key not configured for design generation");
+        throw new Error("AI design generation unavailable - OpenAI API key required");
+      }
+
+      console.log(`🎨 Generating AI design concept for ${request.projectType} in ${request.location}`);
       const conceptPrompt = this.buildConceptPrompt(request);
       
       const response = await openai.chat.completions.create({
@@ -62,14 +69,16 @@ export class AIDesignGeneratorService {
         messages: [
           {
             role: "system",
-            content: "You are a senior architect and development consultant with expertise in Canadian residential design, BC building codes, and cost-effective construction methods."
+            content: "You are a senior architect and development consultant with expertise in Canadian residential design, BC building codes, and cost-effective construction methods. Always respond with valid JSON."
           },
           {
             role: "user",
             content: conceptPrompt
           }
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        max_tokens: 2000,
+        temperature: 0.7
       });
 
       const responseContent = response.choices[0].message.content;
@@ -81,8 +90,9 @@ export class AIDesignGeneratorService {
       try {
         conceptData = JSON.parse(responseContent);
       } catch (parseError) {
-        console.error("JSON parsing failed:", parseError, "Content:", responseContent);
-        throw new Error("Invalid JSON response from OpenAI");
+        console.error("JSON parsing failed:", parseError);
+        console.error("Raw OpenAI response:", responseContent);
+        throw new Error("AI Design Generator: Invalid JSON response from OpenAI - check API limits and response format");
       }
 
       // Generate image prompts for visualization
@@ -111,9 +121,15 @@ export class AIDesignGeneratorService {
       return design;
 
     } catch (error) {
-      console.error("Design generation error:", error);
+      console.error("AI Design Generator Error:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        hasApiKey: !!process.env.OPENAI_API_KEY,
+        requestType: request.projectType,
+        location: request.location
+      });
       
-      // Return fallback design concept if OpenAI fails
+      // ENHANCED fallback design concept if OpenAI fails
       const fallbackDesign: DesignOutput = {
         id: this.generateId(),
         projectName: `${request.projectType} Development - ${request.location}`,
