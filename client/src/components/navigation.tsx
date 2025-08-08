@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Menu, X } from "lucide-react";
 
 export default function Navigation() {
@@ -14,67 +15,76 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-brand-blue">BuildwiseAI</h1>
-            </div>
+    <nav className="bg-white border-b shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-neutral-900">BuildwiseAI</h1>
+            <p className="text-neutral-600 mt-1">AI-powered real estate development platform</p>
           </div>
-          
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
-              <button
-                onClick={() => scrollToSection("features")}
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-features"
-              >
-                Features
-              </button>
-              <a
-                href="/login"
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-dashboard"
-              >
-                Dashboard
-              </a>
-              <button
-                onClick={() => scrollToSection("calculator")}
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-calculator"
-              >
-                Calculator
-              </button>
-              <button
-                onClick={() => scrollToSection("pricing")}
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-pricing"
-              >
-                Pricing
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-about"
-              >
-                About
-              </button>
-              <a
-                href="/login"
-                className="text-neutral-600 hover:text-brand-blue px-3 py-2 text-sm font-medium transition-colors"
-                data-testid="nav-login"
-              >
-                Login
-              </a>
-              <Button
-                onClick={() => scrollToSection("contact")}
-                className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                data-testid="button-get-started"
-              >
-                Get Started
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Badge variant="default" className="bg-blue-600">
+                BC Focused
+              </Badge>
+              <Badge variant="outline">
+                Bill 44 Ready
+              </Badge>
+            </div>
+            
+            <div className="hidden md:block">
+              <div className="flex items-center space-x-6">
+                <button
+                  onClick={() => scrollToSection("features")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-features"
+                >
+                  Features
+                </button>
+                <a
+                  href="/login"
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-dashboard"
+                >
+                  Dashboard
+                </a>
+                <button
+                  onClick={() => scrollToSection("calculator")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-calculator"
+                >
+                  Calculator
+                </button>
+                <button
+                  onClick={() => scrollToSection("pricing")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-pricing"
+                >
+                  Pricing
+                </button>
+                <button
+                  onClick={() => scrollToSection("about")}
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-about"
+                >
+                  About
+                </button>
+                <a
+                  href="/login"
+                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                  data-testid="nav-login"
+                >
+                  Login
+                </a>
+                <Button
+                  onClick={() => scrollToSection("contact")}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  data-testid="button-get-started"
+                >
+                  Get Started
               </Button>
             </div>
+          </div>
           </div>
           
           <div className="md:hidden">
