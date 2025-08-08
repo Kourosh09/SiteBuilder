@@ -13,11 +13,9 @@ function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Check localStorage for authentication state on initial load
-    const savedAuth = localStorage.getItem('buildwise_authenticated');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
+    // For now, always start with marketing homepage (clear any cached auth)
+    localStorage.removeItem('buildwise_authenticated');
+    setIsAuthenticated(false);
   }, []);
 
   useEffect(() => {
