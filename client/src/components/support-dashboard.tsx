@@ -29,7 +29,7 @@ export function SupportDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages = [], isLoading } = useQuery<SupportMessage[]>({
     queryKey: ['/api/support/messages'],
   });
 
@@ -77,7 +77,7 @@ export function SupportDashboard() {
   };
 
   const getStats = () => {
-    const stats = messages.reduce((acc: any, msg: SupportMessage) => {
+    const stats = (messages as SupportMessage[]).reduce((acc: any, msg: SupportMessage) => {
       acc.total++;
       acc[msg.status] = (acc[msg.status] || 0) + 1;
       acc[msg.priority] = (acc[msg.priority] || 0) + 1;
