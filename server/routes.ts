@@ -2948,6 +2948,203 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Municipal data endpoints - like AutoProp's comprehensive data access
+  app.get("/api/municipal/cities", async (req, res) => {
+    try {
+      const { municipalDataService } = await import("./municipal-data-service");
+      const supportedCities = municipalDataService.getSupportedCities();
+      
+      res.json({ 
+        success: true, 
+        data: supportedCities,
+        message: "Supported BC municipalities with comprehensive zoning data"
+      });
+      
+    } catch (error) {
+      console.error("Municipal cities error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to retrieve municipal data" 
+      });
+    }
+  });
+
+  app.get("/api/municipal/:city/zoning/:code", async (req, res) => {
+    try {
+      const { city, code } = req.params;
+      const { municipalDataService } = await import("./municipal-data-service");
+      
+      const zoningData = await municipalDataService.getZoningData(city, code);
+      const bylaws = await municipalDataService.getApplicableBylaws(city, code);
+      const buildingCode = await municipalDataService.getBuildingCodeRequirements(city);
+      
+      if (!zoningData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: `Zoning code ${code} not found for ${city}` 
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        data: {
+          zoning: zoningData,
+          bylaws: bylaws,
+          buildingCode: buildingCode,
+          lastUpdated: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error("Municipal zoning data error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to retrieve zoning data" 
+      });
+    }
+  });
+
+  app.get("/api/municipal/:city/bylaws", async (req, res) => {
+    try {
+      const { city } = req.params;
+      const { category } = req.query;
+      
+      const { municipalDataService } = await import("./municipal-data-service");
+      let bylaws = await municipalDataService.getApplicableBylaws(city, 'ALL');
+      
+      // Filter by category if specified
+      if (category) {
+        bylaws = bylaws.filter(bylaw => bylaw.category === category);
+      }
+      
+      res.json({ 
+        success: true, 
+        data: bylaws,
+        count: bylaws.length,
+        availableCategories: ['zoning', 'building', 'subdivision', 'tree', 'parking', 'heritage', 'environmental']
+      });
+      
+    } catch (error) {
+      console.error("Municipal bylaws error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to retrieve bylaw data" 
+      });
+    }
+  });
+
+  // Enhanced property analysis with municipal compliance
+  app.post("/api/property/comprehensive-analysis", async (req, res) => {
+    try {
+      const { address, city, lotSize, propertyType } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Address and city are required" 
+        });
+      }
+      
+      // Get property session if exists
+      const { propertySessionManager } = await import("./property-session");
+      let session = null;
+      
+      if (req.body.sessionId) {
+        session = propertySessionManager.getSession(req.body.sessionId);
+      }
+      
+      // Determine zoning from property data or session
+      let zoning = 'RS-1'; // Default
+      if (session?.bcAssessment?.zoning) {
+        zoning = session.bcAssessment.zoning;
+      }
+      
+      // Get comprehensive municipal analysis
+      const { municipalDataService } = await import("./municipal-data-service");
+      const analysis = await municipalDataService.getComprehensiveRegulatoryAnalysis(city, zoning);
+      
+      // Get zoning intelligence analysis
+      const { zoningIntelligenceService } = await import("./zoning-intelligence");
+      const zoningAnalysis = await zoningIntelligenceService.analyzeZoning(
+        address, city, lotSize || session?.bcAssessment?.lotSize || 4000, 40
+      );
+      
+      const comprehensiveData = {
+        propertyDetails: {
+          address,
+          city,
+          lotSize: lotSize || session?.bcAssessment?.lotSize,
+          propertyType: propertyType || session?.bcAssessment?.propertyType,
+          sessionData: session ? {
+            bcAssessment: session.bcAssessment,
+            mlsComparables: session.mlsComparables,
+            marketAnalysis: session.marketAnalysis
+          } : null
+        },
+        municipalCompliance: analysis,
+        zoningAnalysis: zoningAnalysis,
+        designRecommendations: {
+          maxUnits: zoningAnalysis.developmentPotential?.maxUnits || 1,
+          recommendedDesign: analysis.zoning ? 
+            this.generateDesignRecommendation(analysis, lotSize || 4000) : 
+            "Design recommendations available with zoning data",
+          constraintsForAI: analysis.designConstraints,
+          opportunities: analysis.opportunities
+        },
+        dataIntegration: {
+          bcAssessment: !!session?.bcAssessment,
+          mlsData: !!session?.mlsComparables,
+          municipalZoning: !!analysis.zoning,
+          bylawCompliance: analysis.bylaws.length > 0,
+          buildingCode: !!analysis.buildingCode
+        }
+      };
+      
+      res.json({ success: true, data: comprehensiveData });
+      
+    } catch (error) {
+      console.error("Comprehensive analysis error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Analysis failed" 
+      });
+    }
+  });
+
+  // AutoProp-style comprehensive property report
+  app.post("/api/property/autoprop-report", async (req, res) => {
+    try {
+      const { address, city, sessionId } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Address and city are required for comprehensive report" 
+        });
+      }
+      
+      const { autoPropIntegrationService } = await import("./autoprop-integration");
+      const comprehensiveReport = await autoPropIntegrationService.generateComprehensiveReport(
+        address, 
+        city, 
+        sessionId
+      );
+      
+      res.json({ 
+        success: true, 
+        data: comprehensiveReport,
+        message: "AutoProp-style comprehensive property analysis complete"
+      });
+      
+    } catch (error) {
+      console.error("AutoProp report generation error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to generate comprehensive report" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

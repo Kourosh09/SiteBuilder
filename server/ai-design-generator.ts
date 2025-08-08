@@ -12,6 +12,9 @@ export interface DesignRequest {
   style: 'modern' | 'traditional' | 'craftsman' | 'contemporary' | 'minimalist' | 'rustic';
   requirements: string[];
   constraints: string[];
+  address?: string;
+  city?: string;
+  zoning?: string;
 }
 
 export interface DesignOutput {
@@ -62,7 +65,23 @@ export class AIDesignGeneratorService {
       }
 
       console.log(`🎨 Generating AI design concept for ${request.projectType} in ${request.location}`);
-      const conceptPrompt = this.buildConceptPrompt(request);
+      
+      // Get municipal compliance data for design constraints
+      let municipalConstraints: any = null;
+      if (request.city && request.zoning) {
+        try {
+          const { municipalDataService } = await import('./municipal-data-service');
+          municipalConstraints = await municipalDataService.getComprehensiveRegulatoryAnalysis(
+            request.city, 
+            request.zoning
+          );
+          console.log(`📋 Integrated municipal compliance for ${request.city} ${request.zoning}`);
+        } catch (error) {
+          console.log('Municipal data not available, using general design guidelines');
+        }
+      }
+      
+      const conceptPrompt = this.buildConceptPrompt(request, municipalConstraints);
       
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -352,7 +371,7 @@ export class AIDesignGeneratorService {
   /**
    * Private helper methods
    */
-  private buildConceptPrompt(request: DesignRequest): string {
+  private buildConceptPrompt(request: DesignRequest, municipalConstraints?: any): string {
     return `Create a comprehensive architectural design concept for:
 
     Project Type: ${request.projectType}
