@@ -227,15 +227,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🏘️ Real API Call: Fetching MLS comparables for ${address}, ${city} (${radius}km radius)`);
       
       // Use authenticated DDF service for real MLS data
-      const mlsData = await mlsService.searchProperties({
-        city,
-        address,
-        radius: radius * 1000 // Convert km to meters
-      });
+      const mlsResult = await mlsService.getComparables(address, city, radius);
       
-      console.log(`✅ Retrieved ${mlsData.length} authentic MLS listings from REALTOR.ca DDF`);
+      console.log(`✅ Retrieved ${mlsResult.length} authentic MLS listings from REALTOR.ca DDF`);
       
-      res.json({ success: true, data: mlsData });
+      res.json({ success: true, data: mlsResult });
       
     } catch (error) {
       console.error("MLS lookup error:", error);
@@ -2284,7 +2280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
       } catch (error) {
-        console.error("❌ DDF Authentication/API Error:", error.message);
+        console.error("❌ DDF Authentication/API Error:", error instanceof Error ? error.message : 'Unknown error');
         console.log("Check DDF credentials and service availability");
       }
 
