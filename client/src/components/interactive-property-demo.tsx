@@ -142,6 +142,10 @@ export default function InteractivePropertyDemo() {
                     <SelectItem value="Richmond">Richmond</SelectItem>
                     <SelectItem value="Surrey">Surrey</SelectItem>
                     <SelectItem value="Maple Ridge">Maple Ridge</SelectItem>
+                    <SelectItem value="Coquitlam">Coquitlam</SelectItem>
+                    <SelectItem value="Port Coquitlam">Port Coquitlam</SelectItem>
+                    <SelectItem value="Port Moody">Port Moody</SelectItem>
+                    <SelectItem value="Mission">Mission</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

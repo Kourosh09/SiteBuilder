@@ -3294,6 +3294,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (address.includes('Richmond')) return 'Richmond';
     if (address.includes('Surrey')) return 'Surrey';
     if (address.includes('Maple Ridge')) return 'Maple Ridge';
+    if (address.includes('Coquitlam') && !address.includes('Port')) return 'Coquitlam';
+    if (address.includes('Port Coquitlam')) return 'Port Coquitlam';
+    if (address.includes('Port Moody')) return 'Port Moody';
+    if (address.includes('Mission')) return 'Mission';
     return 'Vancouver';
   }
 
