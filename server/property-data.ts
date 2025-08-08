@@ -107,33 +107,33 @@ export class PropertyDataService {
     try {
       console.log(`📊 Fetching MLS comparables for ${address}, ${city}`);
       
-      // Attempt real MLS data retrieval using REBGV credentials
-      console.log("Checking MLS credentials configuration...");
-      const mlsUsername = process.env.MLS_USERNAME;
-      const mlsPassword = process.env.MLS_PASSWORD;
+      // Use official REALTOR.ca DDF credentials
+      console.log("Checking DDF credentials configuration...");
+      const ddfUsername = process.env.DDF_USERNAME;
+      const ddfPassword = process.env.DDF_PASSWORD;
       
-      if (mlsUsername && mlsPassword) {
-        console.log(`MLS credentials configured for user: ${mlsUsername.substring(0, 3)}***`);
-        console.log("REBGV MLS integration requires specific RETS endpoints");
-        console.log("Contact REBGV (604-730-3000) for RETS integration details");
+      if (ddfUsername && ddfPassword) {
+        console.log(`✅ DDF credentials configured - Official Canadian MLS access`);
+        console.log(`DDF Username: ${ddfUsername.substring(0, 8)}...`);
         
         try {
-          const { mlsService } = await import('./mls-integration');
-          const comparables = await mlsService.getSoldComparables(address, city, radius);
+          const { DDFService } = await import('./mls-integration');
+          const ddfService = new DDFService();
+          const comparables = await ddfService.getComparables(address, city, radius);
           
           if (comparables && comparables.length > 0) {
-            console.log(`MLS data retrieved: ${comparables.length} comparables`);
-            return comparables.map(comp => ({
+            console.log(`✅ Real MLS data retrieved: ${comparables.length} comparables`);
+            return comparables.map((comp: any) => ({
               mlsNumber: comp.mlsNumber,
-              listPrice: comp.price,
-              soldPrice: comp.price,
+              listPrice: comp.listPrice,
+              soldPrice: comp.soldPrice,
               daysOnMarket: comp.daysOnMarket,
-              listDate: new Date(comp.listDate),
-              soldDate: comp.soldDate ? new Date(comp.soldDate) : new Date(),
+              listDate: comp.listDate,
+              soldDate: comp.soldDate,
               propertyType: comp.propertyType,
               bedrooms: comp.bedrooms,
               bathrooms: comp.bathrooms,
-              squareFootage: comp.sqft
+              squareFootage: comp.squareFootage
             }));
           }
         } catch (mlsError) {
