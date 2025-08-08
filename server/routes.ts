@@ -10,7 +10,7 @@ import { permitTrackerService } from "./permit-tracker";
 import { partnerFinderService } from "./partner-finder";
 import { aiDesignGeneratorService } from "./ai-design-generator";
 import { getVancouverPermits, searchVancouverPermitsByAddress, getVancouverPermitStats } from "./vancouver-open-data";
-import { mlsService } from "./mls-integration";
+import { mlsService, ddfService } from "./mls-integration";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -2246,7 +2246,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MLS Property Search endpoint
+  // MLS Search endpoint (simplified)
+  app.get("/api/mls/search", async (req, res) => {
+    try {
+      const { city, limit = 10 } = req.query;
+      
+      if (!city) {
+        return res.status(400).json({
+          success: false,
+          error: "City parameter required"
+        });
+      }
+
+      const listings = await ddfService.getPropertyListings({
+        city: city as string,
+        status: 'Active',
+        limit: parseInt(limit as string)
+      });
+
+      res.json({ 
+        success: true, 
+        listings,
+        total: listings.length,
+        city: city as string
+      });
+    } catch (error) {
+      console.error("MLS search error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to search MLS listings" 
+      });
+    }
+  });
+
+  // MLS Property Data endpoint  
   app.get("/api/property-data/search", async (req, res) => {
     try {
       const { address, city } = req.query;
@@ -2274,9 +2307,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           propertyType: 'all'
         });
         
-        if (mlsData && mlsData.length > 0) {
-          console.log(`✅ SUCCESS: Retrieved ${mlsData.length} authentic MLS listings from DDF`);
-          return res.json({ success: true, data: { listings: mlsData, totalCount: mlsData.length, searchCriteria: { address, city } } });
+        if (mlsData && mlsData.listings && mlsData.listings.length > 0) {
+          console.log(`✅ SUCCESS: Retrieved ${mlsData.listings.length} authentic MLS listings from DDF`);
+          return res.json({ success: true, data: { listings: mlsData.listings, totalCount: mlsData.listings.length, searchCriteria: { address, city } } });
         }
         
       } catch (error) {

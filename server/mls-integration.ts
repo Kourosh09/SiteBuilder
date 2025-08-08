@@ -140,7 +140,15 @@ export class DDFService {
         odataFilters.push(`PropertyType eq '${filters.propertyType}'`);
       }
       if (filters.status) {
-        odataFilters.push(`StandardStatus eq '${filters.status}'`);
+        // Use proper DDF enumeration values
+        const statusMapping: { [key: string]: string } = {
+          'Active': 'Active',
+          'Sold': 'Sold',
+          'Closed': 'Sold',
+          'Pending': 'Pending'
+        };
+        const mappedStatus = statusMapping[filters.status] || 'Sold';
+        odataFilters.push(`StandardStatus eq '${mappedStatus}'`);
       }
       
       if (odataFilters.length > 0) {
