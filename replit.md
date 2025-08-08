@@ -17,6 +17,7 @@ BuildwiseAI is a comprehensive AI-powered real estate development platform for t
 - Professional marketing video production framework
 - Multi-platform social media strategy (LinkedIn, YouTube, Instagram, Facebook)
 - Contractor marketplace with proposal submissions and project timelines
+- Premium Partner & Trade Professionals directory for paying customers
 - Analytics tracking with conversion optimization
 
 ## User Preferences
@@ -53,7 +54,7 @@ User is a licensed realtor with REBGV credentials.
 
 ### Core Platform Features & Design
 - **Authentication**: Email/SMS verification system with protected dashboard access.
-- **Dashboard Interface**: 9-tab interface including: Overview, AI Analysis (OpenAI integration), Zoning (Bill 44/47/TOD compliance), Permits (150+ municipal), Alerts (MLS-style notifications), Financial (ROI/cash flow), Compliance, Lead Gen, and Partners.
+- **Dashboard Interface**: 9-tab interface including: Overview, AI Analysis (OpenAI integration), Zoning (Bill 44/47/TOD compliance), Permits (150+ municipal), Alerts (MLS-style notifications), Financial (ROI/cash flow), Compliance, Lead Gen, Marketplace (contractor signup), and Partners (premium directory).
 - **AI Services**: OpenAI GPT-4o integration for property analysis, content generation, design suggestions, and DALL-E image generation.
 - **Data Services**: Property data service, zoning intelligence service, lead generation service, permit tracker service, partner finder service, and AI design generator service.
 - **API Endpoints**: Over 30 endpoints covering various functionalities.

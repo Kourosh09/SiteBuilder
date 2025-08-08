@@ -30,6 +30,7 @@ import FinancialModeling from "./financial-modeling";
 import LeadGenerationDashboard from "./lead-generation-dashboard";
 import CalculatorDemo from "./calculator-demo";
 import ContractorSignupSection from "./contractor-signup-section";
+import Partners from "@/pages/Partners";
 
 interface DashboardStats {
   totalProjects: number;
@@ -300,9 +301,9 @@ export default function Dashboard() {
             <ContractorSignupSection />
           </TabsContent>
 
-          {/* Partners Tab */}
+          {/* Partners Tab - Premium Feature */}
           <TabsContent value="partners">
-            <PartnerFinder />
+            <Partners />
           </TabsContent>
         </Tabs>
       </div>

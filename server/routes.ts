@@ -3524,6 +3524,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partners & Trade Professionals (Premium Feature)
+  app.get('/api/partners', async (req, res) => {
+    try {
+      const { partnerFinderService } = await import("./partner-finder");
+      const { searchTerm, type, city, specialty, minRating, verified } = req.query;
+      
+      const partners = await partnerFinderService.searchPartners({
+        searchTerm: searchTerm as string,
+        type: type as string,
+        city: city as string,
+        specialty: specialty as string,
+        minRating: minRating ? parseFloat(minRating as string) : undefined,
+        verified: verified === 'true'
+      });
+      
+      res.json(partners);
+    } catch (error) {
+      console.error("Error fetching partners:", error);
+      res.status(500).json({ message: "Failed to fetch partners" });
+    }
+  });
+
+  app.get('/api/partners/:id', async (req, res) => {
+    try {
+      const { partnerFinderService } = await import("./partner-finder");
+      const partner = await partnerFinderService.getPartnerById(req.params.id);
+      
+      if (!partner) {
+        return res.status(404).json({ message: "Partner not found" });
+      }
+      
+      res.json(partner);
+    } catch (error) {
+      console.error("Error fetching partner:", error);
+      res.status(500).json({ message: "Failed to fetch partner" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
