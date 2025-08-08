@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
 import FeaturesOverview from "@/components/features-overview";
@@ -16,17 +15,19 @@ import Testimonials from "@/components/testimonials";
 import Pricing from "@/components/pricing";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
+import LoginModal from "@/components/login-modal";
 
-export default function Home() {
-  const [, navigate] = useLocation();
+interface HomeProps {
+  onAuthenticated: () => void;
+}
 
-  // This is the public marketing homepage - no auto-redirect
-  // Users can access dashboard via login or navigation
+export default function Home({ onAuthenticated }: HomeProps) {
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <div className="bg-white">
-      <Navigation />
-      <HeroSection />
+      <Navigation onLoginClick={() => setShowLogin(true)} />
+      <HeroSection onGetStarted={() => setShowLogin(true)} />
       <FeaturesOverview />
       <HowItWorks />
       <PropertyLookup />
@@ -38,9 +39,18 @@ export default function Home() {
       <ProductShowcase />
       <AboutFounder />
       <Testimonials />
-      <Pricing />
+      <Pricing onGetStarted={() => setShowLogin(true)} />
       <ContactSection />
       <Footer />
+      
+      <LoginModal 
+        isOpen={showLogin} 
+        onClose={() => setShowLogin(false)}
+        onSuccess={() => {
+          setShowLogin(false);
+          onAuthenticated();
+        }}
+      />
     </div>
   );
 }

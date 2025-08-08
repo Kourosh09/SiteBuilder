@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
-export default function Pricing() {
+interface PricingProps {
+  onGetStarted?: () => void;
+}
+
+export default function Pricing({ onGetStarted }: PricingProps) {
   const plans = [
     {
       name: "Starter",
@@ -110,7 +114,7 @@ export default function Pricing() {
               </ul>
 
               <Button
-                onClick={scrollToContact}
+                onClick={plan.name === "Enterprise" ? scrollToContact : (onGetStarted || scrollToContact)}
                 variant={plan.buttonVariant}
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
                   plan.buttonVariant === "default" 

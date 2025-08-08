@@ -3,7 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, X } from "lucide-react";
 
-export default function Navigation() {
+interface NavigationProps {
+  onLoginClick?: () => void;
+}
+
+export default function Navigation({ onLoginClick }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
@@ -41,13 +45,13 @@ export default function Navigation() {
                 >
                   Features
                 </button>
-                <a
-                  href="/login"
+                <button
+                  onClick={onLoginClick}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                   data-testid="nav-dashboard"
                 >
                   Dashboard
-                </a>
+                </button>
                 <button
                   onClick={() => scrollToSection("calculator")}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
@@ -69,13 +73,13 @@ export default function Navigation() {
                 >
                   About
                 </button>
-                <a
-                  href="/login"
+                <button
+                  onClick={onLoginClick}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                   data-testid="nav-login"
                 >
                   Login
-                </a>
+                </button>
                 <Button
                   onClick={() => scrollToSection("contact")}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"

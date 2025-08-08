@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Check, Play } from "lucide-react";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  onGetStarted?: () => void;
+}
+
+export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   const scrollToContact = () => {
     const element = document.getElementById("contact");
     if (element) {
@@ -24,7 +28,7 @@ export default function HeroSection() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <Button
-                onClick={scrollToContact}
+                onClick={onGetStarted || scrollToContact}
                 className="bg-yellow-500 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-400 transition-colors shadow-lg"
                 data-testid="button-start-trial"
               >
