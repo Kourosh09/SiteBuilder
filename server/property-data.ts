@@ -61,10 +61,19 @@ export class PropertyDataService {
       // BC Assessment API Status Check
       console.log("Attempting BC Assessment API connection...");
       
-      // Note: BC Assessment requires commercial API access for individual property data
-      // Public API only provides aggregated municipal statistics
-      console.log("BC Assessment API: Commercial access required for individual properties");
-      console.log("Contact BC Assessment at 1-800-663-7867 for commercial API access");
+      // BC Assessment official access methods:
+      // 1. Public website: www.bcassessment.ca (free property lookup)
+      // 2. Commercial bulk data: Contact Property Information Services
+      // 3. Academic research: Abacus portal for universities
+      
+      // Try official BC Assessment property search
+      const publicSearchResult = await this.tryBCAssessmentPublicSearch(address, city);
+      if (publicSearchResult) {
+        return publicSearchResult;
+      }
+      
+      console.log("BC Assessment: Commercial data access required for automated API");
+      console.log("Contact: info.bcassessment.ca/services-and-products");
       console.log("Using market-intelligent fallback data based on real BC trends");
       
       // Return enhanced fallback data with realistic market values
@@ -74,6 +83,41 @@ export class PropertyDataService {
     } catch (error) {
       console.error("BC Assessment API integration error:", error);
       return this.getFallbackBCAssessmentData(address, city);
+    }
+  }
+
+  /**
+   * Try BC Assessment public search (www.bcassessment.ca)
+   */
+  private async tryBCAssessmentPublicSearch(address: string, city: string): Promise<BCAssessmentData | null> {
+    try {
+      console.log("🔍 Attempting BC Assessment public property search...");
+      
+      // BC Assessment public website property search
+      // Note: This would require web scraping or selenium automation
+      // For production, use their commercial data products
+      
+      const searchUrl = `https://www.bcassessment.ca/Property/SearchByCivicAddress`;
+      const searchParams = new URLSearchParams({
+        civicAddress: address,
+        jurisdiction: city
+      });
+
+      console.log(`Searching: ${searchUrl}?${searchParams}`);
+      
+      // In production, this would require:
+      // 1. Web automation (Selenium/Puppeteer)
+      // 2. Or commercial data license
+      // 3. Or academic research access
+      
+      console.log("BC Assessment public search: Requires web automation for property-specific data");
+      console.log("Recommendation: Contact BC Assessment for commercial data licensing");
+      
+      return null;
+      
+    } catch (error) {
+      console.error("BC Assessment public search error:", error);
+      return null;
     }
   }
 

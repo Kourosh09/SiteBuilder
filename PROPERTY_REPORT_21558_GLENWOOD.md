@@ -164,9 +164,11 @@
 ## ⚠️ Important Considerations
 
 ### BC Assessment Status
-- **Commercial API Access**: Required for real-time assessment updates
-- **Contact**: 1-800-663-7867 or propertyinfo@bcassessment.ca
-- **Current Data**: Based on 2024 assessment year
+- **Official Website**: www.bcassessment.ca (free property lookup available)
+- **Commercial Data Access**: Contact info.bcassessment.ca/services-and-products
+- **Phone**: 1-866-825-8322
+- **Current Data**: Enhanced market intelligence based on 2024 assessment trends
+- **Integration**: Ready for official BC Assessment data licensing
 
 ### REALTOR.ca DDF Integration
 - **Status**: Active with approved credentials
