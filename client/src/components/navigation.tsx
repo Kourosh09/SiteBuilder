@@ -46,13 +46,6 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                   Features
                 </button>
                 <button
-                  onClick={onLoginClick}
-                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-                  data-testid="nav-dashboard"
-                >
-                  Dashboard
-                </button>
-                <button
                   onClick={() => scrollToSection("calculator")}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                   data-testid="nav-calculator"
@@ -76,9 +69,9 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                 <button
                   onClick={onLoginClick}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-                  data-testid="nav-login"
+                  data-testid="nav-dashboard"
                 >
-                  Login
+                  Dashboard
                 </button>
                 <Button
                   onClick={() => scrollToSection("contact")}
@@ -113,13 +106,13 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
               >
                 Features
               </button>
-              <a
-                href="/login"
+              <button
+                onClick={onLoginClick}
                 className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
                 data-testid="mobile-nav-dashboard"
               >
                 Dashboard
-              </a>
+              </button>
               <button
                 onClick={() => scrollToSection("calculator")}
                 className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-brand-blue"
