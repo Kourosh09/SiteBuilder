@@ -66,7 +66,13 @@ export class PermitTrackerService {
    * Search permits with filters
    */
   searchPermits(filters: PermitSearchFilters = {}): PermitData[] {
+    // Initialize with all permits
     let filteredPermits = [...this.permits];
+    
+    // Return all permits if no filters are provided
+    if (!filters || Object.keys(filters).length === 0) {
+      return filteredPermits.sort((a, b) => b.applicationDate.getTime() - a.applicationDate.getTime());
+    }
 
     // City filter
     if (filters.city) {

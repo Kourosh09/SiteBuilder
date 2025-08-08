@@ -485,6 +485,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // === PERMIT TRACKER ENDPOINTS ===
 
+  // Get all permits (with optional query params for filtering)
+  app.get("/api/permits", async (req, res) => {
+    try {
+      const filters: any = {};
+      
+      // Extract query parameters for filtering - only add if they have actual values
+      if (req.query.searchTerm && req.query.searchTerm !== '') {
+        filters.searchTerm = req.query.searchTerm as string;
+      }
+      if (req.query.status && req.query.status !== '') {
+        filters.status = req.query.status as string;
+      }
+      if (req.query.permitType && req.query.permitType !== '') {
+        filters.permitType = req.query.permitType as string;
+      }
+      if (req.query.city && req.query.city !== '') {
+        filters.city = req.query.city as string;
+      }
+      
+      // If no actual filters, pass empty object to get all permits
+      const permits = permitTrackerService.searchPermits(Object.keys(filters).length > 0 ? filters : {});
+      res.json({ success: true, data: permits });
+      
+    } catch (error) {
+      console.error("Get permits error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to get permits" 
+      });
+    }
+  });
+
   // Search permits
   app.post("/api/permits/search", async (req, res) => {
     try {
@@ -529,6 +561,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         error: error instanceof Error ? error.message : "Failed to get insights" 
+      });
+    }
+  });
+
+  // Get milestones (for permit tracking dashboard)
+  app.get("/api/milestones", async (req, res) => {
+    try {
+      // Return sample milestones for demo
+      const milestones = [
+        {
+          id: "ms_001",
+          permitId: "permit_001",
+          title: "Site Plan Approval",
+          description: "City planning department review",
+          status: "completed",
+          dueDate: "2025-01-15",
+          completedDate: "2025-01-10"
+        },
+        {
+          id: "ms_002", 
+          permitId: "permit_001",
+          title: "Building Permit Issuance",
+          description: "Final building permit approval",
+          status: "in_progress",
+          dueDate: "2025-02-01",
+          completedDate: null
+        }
+      ];
+      res.json({ success: true, data: milestones });
+    } catch (error) {
+      console.error("Get milestones error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to get milestones" 
+      });
+    }
+  });
+
+  // Get dashboard stats (for permit tracking dashboard)
+  app.get("/api/dashboard/permit-stats", async (req, res) => {
+    try {
+      const stats = {
+        totalPermits: permitTrackerService.getDevelopmentInsights().totalPermits,
+        activePermits: permitTrackerService.getDevelopmentInsights().activeProjects,
+        totalValue: permitTrackerService.getDevelopmentInsights().totalValue,
+        avgProcessingTime: 45 // days
+      };
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      console.error("Get permit stats error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to get permit stats" 
       });
     }
   });
