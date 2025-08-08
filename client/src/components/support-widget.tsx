@@ -92,6 +92,10 @@ export function SupportWidget() {
     };
 
     setChatMessages(prev => [...prev, userMessage]);
+    
+    // Record the visitor message
+    recordVisitorMessage(newMessage, 'chat');
+    
     setNewMessage('');
 
     // Simulate support response
@@ -104,6 +108,21 @@ export function SupportWidget() {
       };
       setChatMessages(prev => [...prev, supportResponse]);
     }, 1500);
+  };
+
+  // Record visitor messages for follow-up
+  const recordVisitorMessage = async (message: string, type: 'chat' | 'form') => {
+    try {
+      await apiRequest('/api/support/visitor-messages', 'POST', {
+        message,
+        type,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+    } catch (error) {
+      console.log('Message recording failed (non-critical):', error);
+    }
   };
 
   const getAutoResponse = (message: string): string => {
@@ -124,6 +143,10 @@ export function SupportWidget() {
 
   const handleSubmitMessage = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Record the form message
+    recordVisitorMessage(`${messageForm.subject}: ${messageForm.message}`, 'form');
+    
     submitMessageMutation.mutate(messageForm);
   };
 
@@ -135,11 +158,11 @@ export function SupportWidget() {
           <DialogTrigger asChild>
             <Button
               size="lg"
-              className="rounded-full h-16 w-16 shadow-xl hover:shadow-2xl transition-all duration-300 bg-blue-600 hover:bg-blue-700 border-2 border-white animate-pulse"
+              className="rounded-full h-12 w-12 shadow-md hover:shadow-lg transition-all duration-200 bg-slate-600 hover:bg-slate-700 border border-slate-500 opacity-80 hover:opacity-100"
               data-testid="button-support-widget"
               title="Need Help? Click for Support"
             >
-              {isOpen ? <X className="h-7 w-7 text-white" /> : <MessageCircle className="h-7 w-7 text-white" />}
+              {isOpen ? <X className="h-5 w-5 text-white" /> : <MessageCircle className="h-5 w-5 text-white" />}
             </Button>
           </DialogTrigger>
           

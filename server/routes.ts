@@ -2722,6 +2722,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Record visitor messages for follow-up
+  app.post("/api/support/visitor-messages", async (req, res) => {
+    try {
+      const { message, type, timestamp, userAgent, url } = req.body;
+      
+      const visitorMessage = {
+        id: Math.random().toString(36).substr(2, 9),
+        message,
+        type, // 'chat' or 'form'
+        timestamp,
+        userAgent,
+        url,
+        ip: req.ip || req.connection.remoteAddress,
+        recorded: new Date()
+      };
+      
+      // Log visitor message (in production, save to database for follow-up)
+      console.log('📝 VISITOR MESSAGE RECORDED:');
+      console.log('=================================');
+      console.log(`Type: ${type}`);
+      console.log(`Message: ${message}`);
+      console.log(`URL: ${url}`);
+      console.log(`Time: ${timestamp}`);
+      console.log(`IP: ${visitorMessage.ip}`);
+      console.log('=================================');
+      
+      // In real implementation, save to database for admin dashboard
+      // storage.recordVisitorMessage(visitorMessage);
+      
+      res.json({ success: true, message: 'Message recorded successfully' });
+    } catch (error) {
+      console.error("Visitor message recording error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to record message" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
