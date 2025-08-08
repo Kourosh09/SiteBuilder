@@ -92,17 +92,18 @@ export class DevelopmentOptimizationService {
       throw new Error('Property session not found. Please run property lookup first.');
     }
     
-    // Get municipal compliance data
+    // Get municipal compliance data  
     const { municipalDataService } = await import('./municipal-data-service');
-    const city = this.extractCity(session.bcAssessment?.address || '');
+    const address = session.propertyAddress || 'Unknown Address';
+    const city = this.extractCity(address);
     const zoning = session.bcAssessment?.zoning || 'RS-1';
     
     const municipalAnalysis = await municipalDataService.getComprehensiveRegulatoryAnalysis(city, zoning);
     
     // Get zoning intelligence
     const { zoningIntelligenceService } = await import('./zoning-intelligence');
-    const zoningAnalysis = await zoningIntelligenceService.analyzeZoning(
-      session.bcAssessment?.address || '',
+    const zoningAnalysis = await zoningIntelligenceService.getZoningAnalysis(
+      address,
       city,
       session.bcAssessment?.lotSize || 4000,
       40
@@ -133,7 +134,7 @@ export class DevelopmentOptimizationService {
     );
     
     const optimizedPlan: OptimizedDevelopmentPlan = {
-      propertyAddress: session.bcAssessment?.address || 'Unknown',
+      propertyAddress: address,
       analysisDate: new Date(),
       dataSourcesUsed: {
         bcAssessment: !!session.bcAssessment,

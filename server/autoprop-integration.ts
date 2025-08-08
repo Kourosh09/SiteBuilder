@@ -114,7 +114,7 @@ export class AutoPropIntegrationService {
     
     // Get zoning intelligence analysis
     const { zoningIntelligenceService } = await import('./zoning-intelligence');
-    const zoningAnalysis = await zoningIntelligenceService.analyzeZoning(
+    const zoningAnalysis = await zoningIntelligenceService.getZoningAnalysis(
       address, 
       city, 
       session.bcAssessment?.lotSize || 4000, 

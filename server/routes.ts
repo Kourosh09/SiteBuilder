@@ -3065,7 +3065,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get zoning intelligence analysis
       const { zoningIntelligenceService } = await import("./zoning-intelligence");
-      const zoningAnalysis = await zoningIntelligenceService.analyzeZoning(
+      const zoningAnalysis = await zoningIntelligenceService.getZoningAnalysis(
         address, city, lotSize || session?.bcAssessment?.lotSize || 4000, 40
       );
       
@@ -3206,12 +3206,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = propertySessionManager.getSession(sessionId);
       
       const designRequest = {
-        projectType: this.mapToProjectType(targetScenario.totalUnits),
+        projectType: mapToProjectType(targetScenario.totalUnits),
         lotSize: optimizedPlan.propertyMetrics.lotSize,
         units: targetScenario.totalUnits,
         budget: targetScenario.financials.totalProjectCost,
         location: optimizedPlan.propertyAddress,
-        style: this.mapToDesignStyle(optimizedPlan.aiDesignRecommendations.architecturalStyle),
+        style: mapToDesignStyle(optimizedPlan.aiDesignRecommendations.architecturalStyle),
         requirements: [
           ...targetScenario.designFeatures,
           ...optimizedPlan.aiDesignRecommendations.sustainabilityFeatures
@@ -3223,7 +3223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `Construction type: ${targetScenario.constructionType}`
         ],
         address: optimizedPlan.propertyAddress,
-        city: this.extractCityFromAddress(optimizedPlan.propertyAddress),
+        city: extractCityFromAddress(optimizedPlan.propertyAddress),
         zoning: optimizedPlan.propertyMetrics.currentZoning
       };
       
@@ -3266,6 +3266,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Helper functions for construction design
+  function mapToProjectType(units: number): string {
+    if (units === 1) return 'single-family';
+    if (units === 2) return 'duplex';
+    if (units <= 4) return 'small-multiplex';
+    return 'apartment-building';
+  }
+
+  function mapToDesignStyle(architecturalStyle: string): string {
+    return architecturalStyle.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  function extractCityFromAddress(address: string): string {
+    if (address.includes('Vancouver')) return 'Vancouver';
+    if (address.includes('Burnaby')) return 'Burnaby';
+    if (address.includes('Richmond')) return 'Richmond';
+    if (address.includes('Surrey')) return 'Surrey';
+    return 'Vancouver';
+  }
 
   const httpServer = createServer(app);
   return httpServer;
