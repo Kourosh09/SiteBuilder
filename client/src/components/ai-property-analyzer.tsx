@@ -373,97 +373,273 @@ export default function AIPropertyAnalyzer() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-neutral-600">AI Confidence</span>
                     <Badge 
-                      variant="secondary" 
-                      className={getConfidenceColor(analysis.confidence)}
-                      data-testid="badge-confidence"
+                      variant={analysis.confidence > 80 ? "default" : "secondary"}
+                      className={analysis.confidence > 80 ? "bg-emerald-100 text-emerald-800" : ""}
                     >
                       {analysis.confidence}%
                     </Badge>
                   </div>
 
-                  <Separator />
-
-                  {/* Financial Summary */}
-                  <div>
-                    <h4 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4" />
-                      Financial Summary
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-neutral-600">Estimated Costs</p>
-                        <p className="font-semibold" data-testid="text-estimated-costs">
-                          {formatCurrency(analysis.financialSummary.estimatedCosts)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-neutral-600">Projected Revenue</p>
-                        <p className="font-semibold" data-testid="text-projected-revenue">
-                          {formatCurrency(analysis.financialSummary.projectedRevenue)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-neutral-600">Net Profit</p>
-                        <p className="font-semibold text-emerald-700" data-testid="text-ai-net-profit">
-                          {formatCurrency(analysis.financialSummary.netProfit)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-neutral-600">ROI</p>
-                        <p className={`font-semibold ${getROIColor(analysis.financialSummary.roi)}`} data-testid="text-ai-roi">
-                          {analysis.financialSummary.roi.toFixed(1)}%
-                        </p>
-                      </div>
+                  {/* Feasibility Score */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-neutral-600">Feasibility Score</span>
+                    <div className="text-2xl font-bold text-brand-blue">
+                      {analysis.feasibilityScore}/10
                     </div>
                   </div>
 
-                  <Separator />
-
-                  {/* Market Analysis */}
-                  <div>
-                    <h4 className="font-semibold text-neutral-900 mb-3">Market Analysis</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Market Demand:</span>
-                        <span data-testid="text-market-demand">{analysis.marketAnalysis.marketDemand}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Comparable Sales:</span>
-                        <span data-testid="text-comparable-sales">{analysis.marketAnalysis.comparableSales}</span>
-                      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Property Details Section */}
+            {analysis.propertyDetails && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-800">
+                    <MapPin className="w-5 h-5" />
+                    Property Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-600 font-medium">Assessed Value:</span>
+                      <div className="font-semibold">{formatCurrency(analysis.propertyDetails.assessedValue)}</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Land Value:</span>
+                      <div className="font-semibold">{formatCurrency(analysis.propertyDetails.landValue)}</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Lot Size:</span>
+                      <div className="font-semibold">{analysis.propertyDetails.lotSize?.toLocaleString()} sqft</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Zoning:</span>
+                      <div className="font-semibold">{analysis.propertyDetails.currentZoning}</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Year Built:</span>
+                      <div className="font-semibold">{analysis.propertyDetails.yearBuilt}</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Floor Area:</span>
+                      <div className="font-semibold">{analysis.propertyDetails.floorArea?.toLocaleString()} sqft</div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            )}
 
-                  <Separator />
-
-                  {/* Recommendations */}
-                  <div>
-                    <h4 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                      {analysis.recommendations.goNoGo.toLowerCase().includes('proceed') ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                      )}
-                      Recommendation
-                    </h4>
-                    <p className="text-sm text-neutral-700 mb-3" data-testid="text-recommendation">
-                      {analysis.recommendations.goNoGo}
-                    </p>
-                    
-                    {analysis.recommendations.optimizations.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium text-neutral-600 mb-2">Key Optimizations:</p>
-                        <ul className="text-sm text-neutral-700 space-y-1">
-                          {analysis.recommendations.optimizations.slice(0, 3).map((opt, index) => (
-                            <li key={index} className="flex items-start gap-2" data-testid={`text-optimization-${index}`}>
-                              <span className="w-1 h-1 bg-neutral-400 rounded-full mt-2 flex-shrink-0"></span>
-                              {opt}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+            {/* Development Potential */}
+            <Card className="border-brand-blue">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-brand-blue">
+                  <Building className="w-5 h-5" />
+                  Development Potential
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Recommendation:</span>
+                    <Badge variant="secondary">{analysis.developmentPotential.scenario || analysis.developmentPotential.recommended}</Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Description:</span>
+                    <span className="font-medium text-sm text-right max-w-48">{analysis.developmentPotential.description}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Max Units:</span>
+                    <span className="font-semibold">{analysis.developmentPotential.maxUnits || analysis.developmentPotential.units}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Est. Value:</span>
+                    <span className="font-semibold text-emerald-600">
+                      {formatCurrency(analysis.developmentPotential.estimatedValue)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">ROI:</span>
+                    <span className="font-semibold text-emerald-600">{analysis.developmentPotential.roi}%</span>
+                  </div>
+                  {analysis.developmentPotential.timeline && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-600">Timeline:</span>
+                      <span className="font-semibold">{analysis.developmentPotential.timeline}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Financial Projection */}
+            <Card className="border-emerald-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-emerald-700">
+                  <TrendingUp className="w-5 h-5" />
+                  Financial Projection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Est. Development Cost:</span>
+                    <span className="font-semibold">
+                      {formatCurrency(analysis.financialProjection.estimatedCost)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Projected Revenue:</span>
+                    <span className="font-semibold text-emerald-600">
+                      {formatCurrency(analysis.financialProjection.projectedRevenue)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">ROI:</span>
+                    <span className={`font-bold text-lg ${getROIColor(analysis.financialProjection.roi)}`}>
+                      {analysis.financialProjection.roi}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-600">Breakeven:</span>
+                    <span className="font-semibold">{analysis.financialProjection.breakeven} months</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Market Comparables */}
+            {analysis.marketComparables && analysis.marketComparables.length > 0 && (
+              <Card className="border-orange-200 bg-orange-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-800">
+                    <MapPin className="w-5 h-5" />
+                    Market Comparables
+                  </CardTitle>
+                  <CardDescription className="text-orange-600">
+                    Recent sales within 0.5km of your property
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {analysis.marketComparables.slice(0, 3).map((comp: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{comp.address}</div>
+                          <div className="text-xs text-neutral-600">
+                            {comp.sqft?.toLocaleString()} sqft • {comp.lotSize?.toLocaleString()} lot
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-orange-700">{formatCurrency(comp.price)}</div>
+                          <div className="text-xs text-neutral-600">${comp.pricePerSqft}/sqft</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {analysis.marketAnalysis && (
+                    <div className="mt-4 pt-3 border-t border-orange-200">
+                      <div className="text-sm text-orange-700">
+                        <strong>Market Trend:</strong> {analysis.marketAnalysis.marketTrend}
+                      </div>
+                      <div className="text-sm text-orange-700">
+                        <strong>Average Price:</strong> {formatCurrency(analysis.marketAnalysis.averagePrice)}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+                  {/* Compliance Scores */}
+                  <Card className="border-yellow-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-yellow-700">
+                        <Shield className="w-5 h-5" />
+                        Compliance Assessment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-700">
+                            {analysis.compliance.zoningCompliance}%
+                          </div>
+                          <div className="text-sm text-neutral-600">Zoning</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-700">
+                            {analysis.compliance.buildingCodeCompliance}%
+                          </div>
+                          <div className="text-sm text-neutral-600">Building Code</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-700">
+                            {analysis.compliance.environmentalClearance}%
+                          </div>
+                          <div className="text-sm text-neutral-600">Environmental</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Risk Factors */}
+                  <Card className="border-red-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-700">
+                        <AlertTriangle className="w-5 h-5" />
+                        Risk Assessment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {analysis.riskFactors?.map((risk: any, index: number) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <Badge 
+                              variant={risk.risk === 'Low' ? 'default' : risk.risk === 'Medium' ? 'secondary' : 'destructive'}
+                              className={`${
+                                risk.risk === 'Low' 
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                                  : risk.risk === 'Medium'
+                                  ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                  : 'bg-red-100 text-red-800 border-red-300'
+                              }`}
+                            >
+                              {risk.risk}
+                            </Badge>
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{risk.category}</div>
+                              <div className="text-xs text-neutral-600">{risk.description}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Next Steps */}
+                  <Card className="border-blue-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-blue-700">
+                        <CheckCircle className="w-5 h-5" />
+                        Recommended Next Steps
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {analysis.nextSteps?.map((step: string, index: number) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1 text-sm text-neutral-700">
+                              {step}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </CardContent>
