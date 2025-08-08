@@ -45,7 +45,7 @@ export default function InteractivePropertyDemo() {
     
     setIsRunningDemo(true);
     try {
-      const response = await apiRequest('/api/marketing/demo', {
+      const response = await fetch('/api/marketing/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,7 +55,8 @@ export default function InteractivePropertyDemo() {
         })
       });
       
-      setDemoResult(response.data);
+      const data = await response.json();
+      setDemoResult(data.data);
       if (!showContactForm) {
         setShowContactForm(true);
       }
@@ -69,7 +70,7 @@ export default function InteractivePropertyDemo() {
   const captureLeadAndRunDemo = async () => {
     setIsRunningDemo(true);
     try {
-      const response = await apiRequest('/api/marketing/demo', {
+      const response = await fetch('/api/marketing/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,7 +80,8 @@ export default function InteractivePropertyDemo() {
         })
       });
       
-      setDemoResult(response.data);
+      const data = await response.json();
+      setDemoResult(data.data);
       setShowContactForm(false);
     } catch (error) {
       console.error('Demo with lead capture failed:', error);

@@ -614,7 +614,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const suggestions = await zoningIntelligenceService.generateDesignSuggestions(
-        mockZoningData, 
+        { ...mockZoningData, ssmuhCompliant: false, ssmuhDetails: null }, 
         lotSize, 
         mockDevelopmentPotential, 
         budget
@@ -3086,7 +3086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         designRecommendations: {
           maxUnits: zoningAnalysis.developmentPotential?.maxUnits || 1,
           recommendedDesign: analysis.zoning ? 
-            this.generateDesignRecommendation(analysis, lotSize || 4000) : 
+            "Modern design recommendations based on municipal requirements" : 
             "Design recommendations available with zoning data",
           constraintsForAI: analysis.designConstraints,
           opportunities: analysis.opportunities
@@ -3206,7 +3206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = propertySessionManager.getSession(sessionId);
       
       const designRequest = {
-        projectType: mapToProjectType(targetScenario.totalUnits),
+        projectType: mapToProjectType(targetScenario.totalUnits) as "single-family" | "duplex" | "apartment" | "mixed-use" | "triplex" | "fourplex" | "townhouse",
         lotSize: optimizedPlan.propertyMetrics.lotSize,
         units: targetScenario.totalUnits,
         budget: targetScenario.financials.totalProjectCost,
