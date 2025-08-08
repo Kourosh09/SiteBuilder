@@ -385,10 +385,10 @@ export default function ZoningIntelligence() {
                   <div>
                     <h4 className="font-semibold text-sm mb-2">Lot Size Check</h4>
                     <Badge 
-                      variant={parseInt(analysisForm.lotSize) >= 3000 ? "default" : "secondary"}
-                      className={parseInt(analysisForm.lotSize) >= 3000 ? "bg-emerald-600" : ""}
+                      variant={parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "default" : "secondary"}
+                      className={parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "bg-emerald-600" : ""}
                     >
-                      {parseInt(analysisForm.lotSize) >= 3000 ? "✅ Meets 3,000 sq ft minimum" : "❌ Below 3,000 sq ft minimum"}
+                      {parseInt(analysisForm.lotSize) * 0.092903 >= 280 ? "✅ Meets 280 m² minimum" : "❌ Below 280 m² minimum"}
                     </Badge>
                   </div>
                   <div>
@@ -406,10 +406,22 @@ export default function ZoningIntelligence() {
                       variant={(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? "default" : "secondary"}
                       className={(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? "bg-brand-blue" : ""}
                     >
-                      {(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? 
-                        (parseInt(analysisForm.lotSize) >= 7200 ? 
-                          "6-plex Eligible" : "4-plex Eligible") : 
-                        "Not Eligible"}
+                      {(() => {
+                        const lotSizeSqFt = parseInt(analysisForm.lotSize);
+                        const lotSizeM2 = lotSizeSqFt * 0.092903; // Convert to m²
+                        const frontage = parseInt(analysisForm.frontage);
+                        
+                        // Official Bill 44 calculation based on BC regulations
+                        if (lotSizeM2 < 280) {
+                          return "3-unit Minimum";
+                        } else if (lotSizeM2 >= 280) {
+                          // Transit cities can get 6 units, others get 4
+                          const transitCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'new westminster'];
+                          const hasTransit = transitCities.includes(analysisForm.city.toLowerCase());
+                          return hasTransit ? "Up to 6 units" : "4-unit Minimum";
+                        }
+                        return "Not Eligible";
+                      })()}
                     </Badge>
                   </div>
                 </div>

@@ -858,32 +858,44 @@ export class ZoningIntelligenceService {
    * Calculate maximum units under Bill 44 with frontage validation
    */
   private calculateBill44MaxUnits(zoning: ZoningData, lotSize: number, frontage: number, city: string): number {
-    // Bill 44 STANDARDIZED CALCULATION - Official BC Housing Policy
-    // Small-Scale Multi-Unit Housing (SSMUH) in single-family zones
+    // Bill 44 OFFICIAL CALCULATION - Small-Scale Multi-Unit Housing (SSMUH)
+    // Based on official BC government requirements effective June 30, 2024
     
     const bill44EligibleZones = ['RS-1', 'RS-2', 'RS-3', 'RS-4', 'RS-5', 'RS-6', 'RS-7', 'RT-1', 'RT-2', 'RT-3', 'RF', 'RD', 'R-1', 'R-2'];
     const isEligibleZone = bill44EligibleZones.some(zone => zoning.zoningCode.includes(zone));
     
-    // Must be in eligible zone
+    // Must be in eligible zone (single-family and duplex residential)
     if (!isEligibleZone) {
       return 1; // Single family only if not in eligible zone
     }
     
-    // Official Bill 44 Requirements (Standardized across platform)
-    const meets3000SqFt = lotSize >= 3000; // Minimum for multiplex
-    const meets33FtFrontage = frontage >= 33; // Minimum frontage requirement
+    // Convert square feet to square meters for official calculation
+    const lotSizeM2 = lotSize * 0.092903; // 1 sq ft = 0.092903 m²
     
-    if (!meets3000SqFt || !meets33FtFrontage) {
-      return 1; // Single family if doesn't meet minimum requirements
+    // Official Bill 44 Requirements:
+    // Municipality must have >5,000 people and be within urban containment boundary
+    const municipalityPopulation = this.getMunicipalityPopulation(city);
+    const isUrbanContainment = this.isWithinUrbanContainment(city);
+    
+    if (municipalityPopulation <= 5000 || !isUrbanContainment) {
+      return 1; // Single family if municipality doesn't meet criteria
     }
     
-    // Bill 44 Standardized Unit Calculation:
-    // - 3,000+ sq ft lot = 4-plex eligible
-    // - 7,200+ sq ft lot = 6-plex eligible (like the example in screenshots)
-    let maxUnits = 4; // Base 4-plex allowance
+    // Official BC Government Thresholds:
+    // < 280 m² = Minimum 3 units
+    // ≥ 280 m² = Minimum 4 units
+    // ≥ 280 m² + Near Transit = Up to 6 units
     
-    if (lotSize >= 7200) {
-      maxUnits = 6; // 6-plex for larger lots (matches user's 7200 sq ft example)
+    let maxUnits = 3; // Base minimum for small lots
+    
+    if (lotSizeM2 >= 280) {
+      maxUnits = 4; // 4 units for lots ≥ 280 m² (≈ 3,014 sq ft)
+      
+      // Check for transit proximity for 6-unit allowance
+      const hasFrequentTransit = this.hasFrequentTransitService(city);
+      if (hasFrequentTransit) {
+        maxUnits = 6; // Up to 6 units near frequent transit
+      }
     }
     
     return Math.min(maxUnits, 6); // Cap at 6 units for Bill 44
