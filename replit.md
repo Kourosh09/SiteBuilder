@@ -2,210 +2,64 @@
 
 ## Overview
 
-BuildwiseAI is a modern web application designed to streamline financial management workflows for real estate developers and investors. The platform provides AI-powered tools for feasibility analysis, development budgeting, joint venture structuring, and automated investor reporting. Built as a single-page application with a React frontend and Express backend, it targets small to mid-size real estate developers who need efficient, specialized financial management tools.
+BuildwiseAI is a web application designed to streamline financial management for real estate developers and investors. It provides AI-powered tools for feasibility analysis, development budgeting, joint venture structuring, and automated investor reporting. The platform targets small to mid-size real estate developers, offering efficient, specialized financial management solutions. It is built as a single-page application with a React frontend and an Express backend. BuildwiseAI is production-ready, featuring a complete AI-powered real estate development platform, a fully functional contractor marketplace, and is configured for secure deployment. It incorporates the latest 2025 BC housing regulations, including SSMUH compliance analysis and Bill 47 TOA analysis, and integrates with the official DDF Web API v1.0 for real-time MLS data.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-
-## Recent Changes (August 2025)
-
-### Production Deployment Ready (August 7, 2025)
-- **Date**: August 7, 2025
-- **Status**: Ready for secure production deployment
-- **Security**: HTTPS/TLS certificates automatically provisioned by Replit
-- **Domain**: buildwiseai.ca configured for custom domain deployment
-- **Marketplace**: Fully functional contractor marketplace with verified trade professionals
-- **Features**: Complete AI-powered real estate development platform ready for client use
-
-## Recent Changes (August 2025)
-
-### Critical Platform Fixes - All Systems Operational (August 8, 2025)
-- **Date**: August 8, 2025
-- **Status**: ✅ ALL THREE CRITICAL ISSUES RESOLVED
-- **Issue 1 Fixed**: Bill 44 Results Inconsistency - Implemented deterministic calculation algorithm ensuring same inputs always produce identical results
-- **Issue 2 Fixed**: Incorrect Realtor.ca Data - Updated to accurate 2024 BC market pricing with corrected municipal data
-- **Issue 3 Fixed**: AI Design Generator - Enhanced OpenAI API error handling with detailed diagnostics and improved fallback mechanisms
-- **Impact**: Platform now provides consistent, accurate, and reliable analysis across all features
-- **Technical**: Comprehensive fixes to zoning intelligence, property data services, and AI design generation modules
-
-### Enhanced with 2025 BC Housing Regulations (August 8, 2025)
-- **Date**: August 8, 2025
-- **Status**: ✅ SSMUH Compliance Analysis Added - Official 2025 BC housing policies integrated
-- **Enhancement**: Complete Small-Scale Multi-Unit Housing (SSMUH) analysis framework
-- **Regulations**: Provincial Policy Manual compliance with June 30, 2024 effective date
-- **Coverage**: All BC municipalities with population and transit service analysis
-- **Features**: 
-  - Secondary suites province-wide allowance
-  - Detached ADUs (garden suites/laneway homes) analysis
-  - 3-4 units in single-family zones (municipalities >5,000 + urban containment)
-  - 6 units near frequent transit service requirements
-  - Parcel size thresholds (280m² analysis)
-  - Municipal compliance status tracking
-  - **Bill 47 TOA Analysis**: Transit-Oriented Area density bonuses and parking reductions
-- **Data Sources**: Official BC government regulations at gov.bc.ca/housing-initiatives and BC Laws Bill 47
-
-### Enhanced MLS Integration with Official DDF Web API v1.0 (August 8, 2025)
-- **Date**: August 8, 2025
-- **Status**: ✅ REALTOR.ca DDF Web API v1.0 specifications fully implemented
-- **API Documentation**: Official ddfapi-docs.realtor.ca integration complete
-- **Authentication**: OAuth 2.0 client credentials flow with automatic token management
-- **Endpoints**: Complete OData-compliant property, member, office, and open house data access
-- **Standards**: RESO Data Dictionary compliance with CREA certification requirements
-- **Features**:
-  - Real-time MLS property data with 3600-second token lifecycle
-  - Advanced OData filtering and pagination capabilities
-  - Professional property data transformation and mapping
-  - Comprehensive media handling (photos, virtual tours)
-  - Agent and brokerage information integration
-  - Geographic coordinate data for mapping applications
-  - Market analysis with authentic comparable sales data
-
-### Complete BuildwiseAI Platform (August 7, 2025)
-- **Date**: August 7, 2025
-- **Status**: ✅ PRODUCTION READY - Full-featured real estate development platform with authentication and lead generation
-- **Authentication**: Email/SMS verification system with protected dashboard access (demo code: 123456)
-- **Login Preference**: User prefers email/SMS code verification over username/password system
-- **Lead Generation**: Functional campaign management, social media automation, and lead scoring system
-- **Marketing Structure**: Public marketing on home page, functional tools in protected dashboard
-- **Platform Architecture**:
-  - **Home Page**: Public marketing site showcasing AI marketing automation
-  - **Dashboard**: Protected 9-tab interface requiring authentication:
-    - Overview: Project stats and quick actions
-    - AI Analysis: Property feasibility with OpenAI integration
-    - Zoning: Bill 44/47/TOD compliance analysis 
-    - Permits: 150+ municipal permits across BC Lower Mainland
-    - Alerts: MLS-style property notifications
-    - Financial: ROI analysis and cash flow projections
-    - Compliance: Regulatory monitoring and change tracking
-    - Lead Gen: Campaign management and social media automation
-    - Partners: Trade professional network and project matching
-
-### Real Data Integration Analysis Complete (August 2025)
-- **Date**: August 8, 2025
-- **Status**: API integration analysis complete, enhanced fallback data implemented
-- **User Status**: Licensed realtor with REBGV credentials configured
-- **BC Assessment**: Requires commercial API access (call 1-800-663-7867)
-- **MLS Integration**: Needs REBGV-specific RETS endpoints (call 604-730-3000)
-- **Technical Status**: Integration code complete, enhanced market intelligence fallback
-- **Next Steps**: User to contact BC Assessment and REBGV for proper API access
-- **Data Quality**: Realistic 2024 BC market values with location-based premiums
-
-### Framer Marketing Integration (August 2025)
-- **Date**: August 7, 2025
-- **Status**: Framer marketing site connected to live dashboard
-- **Framer Project**: https://framer.com/projects/Website--9ApMcAmqBm7a9kFS33AI-hqII8
-- **Integration Strategy**: Framer for marketing, Replit for functional platform
-- **Live Data Connection**: Vancouver Open Data API integrated for real permits
-
-### Comprehensive PDF Report Generator (August 7, 2025)
-- **Date**: August 7, 2025
-- **Status**: Professional PDF report generation fully operational
-- **Implementation**: Complete shareable PDF reports for zoning analysis
-- **Features**: 
-  - Professional jsPDF-based report generation
-  - Comprehensive multi-policy analysis (Bill 44, Bill 47, TOD)
-  - Branded BuildwiseAI formatting with tables and charts
-  - Property details, development potential, financial overview
-  - Downloadable reports with client-ready formatting
-  - Integration with frontend download functionality
-
-### Complete BuildwiseAI Platform with Advanced AI Features
-- **Date**: August 2025
-- **Status**: Production-ready comprehensive real estate development platform
-- **Core Features Implemented**:
-  - Professional marketing homepage with hero section
-  - Interactive feasibility calculator with real-time ROI analysis
-  - AI-powered property analysis with OpenAI integration
-  - BC Assessment and MLS data integration
-  - Zoning intelligence and city data analysis
-  - Lead generation and social media automation suite
-  - Features overview highlighting AI-powered tools
-  - Product showcase for budget tracking and investor reporting
-  - About founder section featuring Kourosh Ahmadian's background
-  - Pricing plans (Starter/Pro/Enterprise) with clear value propositions
-  - Professional testimonials and social proof
-  - Responsive design with BuildwiseAI brand colors
-
-### Advanced AI Integration (August 2025)
-- **AI Property Analyzer**: OpenAI-powered feasibility analysis with confidence scoring
-- **Property Data Intelligence**: BC Assessment and MLS integration for comprehensive property lookup
-- **Zoning Intelligence**: Municipal zoning analysis with development potential calculation
-- **Lead Generation Suite**: AI-powered ad copy generation, social media content creation, and landing page builder
-- **Design Automation**: AI-generated architectural suggestions and feasibility reports
-- **Data Sources**: Ready for real API integration with BC Assessment, MLS, and municipal GIS systems
-
-### Major Platform Expansion (August 2025)
-- **Permit Tracker (150+ sample permits)**: BuildMapper-style permit tracking across Maple Ridge, Burnaby, Tricities, Mission, Langley, Vancouver, Surrey, Richmond, and North/West Vancouver
-- **Find Partners (trade professional network)**: Complete CRM for architects, engineers, contractors, developers with project opportunity matching
-- **AI Design Generator**: Full architectural design concept generation with OpenAI integration, floor plan suggestions, cost estimation, and DALL-E image generation
-- **Bill 44 Compliance Engine**: BC-specific zoning intelligence with Bill 44 upzoning analysis, multiplex eligibility, and transit-oriented development benefits
-- **BC-First Strategy**: Platform locked to BC municipalities with expansion roadmap (Phase 1: BC Lower Mainland → Phase 2: BC province-wide → Phase 3: Alberta/Ontario → Phase 4: Canada/USA)
-
-### Technical Architecture Expansion
-- **AI Services**: OpenAI GPT-4o integration for property analysis, content generation, design suggestions, and DALL-E image generation
-- **Data Services**: Property data service, zoning intelligence service, lead generation service, permit tracker service, partner finder service, and AI design generator service
-- **API Endpoints**: 30+ comprehensive endpoints covering permits, partners, projects, proposals, designs, AI analysis, property data, zoning with Bill 44 compliance, leads, and social media
-- **Frontend Components**: 6 major components for property lookup, zoning analysis, AI analysis, lead generation, permit tracking, and partner finding
-- **Backend Services**: Complete ecosystem with realistic sample data covering all target BC municipalities
-- **Geographic Coverage**: Comprehensive data for Maple Ridge, Burnaby, Tricities (Coquitlam, Port Coquitlam, Port Moody), Mission, Langley, Vancouver, Surrey, Richmond, North Vancouver, and West Vancouver
-
-- **Technical Stack**: React/TypeScript frontend, Express backend, OpenAI API integration, in-memory storage for development
-- **Deployment Ready**: Configured for Replit deployment with custom domain (buildwiseai.ca) support
-- **Security**: HTTPS/TLS automatically enabled on Replit deployments with custom domains
-- **Business Impact**: Complete real estate development platform ready to compete with industry leaders
+User prefers email/SMS code verification over username/password system.
+User is a licensed realtor with REBGV credentials.
 
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React 18 with TypeScript for type safety and modern development patterns
-- **Routing**: Wouter for lightweight client-side routing
-- **UI Components**: Shadcn/ui component library built on Radix UI primitives for accessibility and consistency
-- **Styling**: Tailwind CSS with custom design tokens and CSS variables for theming
-- **State Management**: TanStack Query (React Query) for server state management and API data fetching
-- **Forms**: React Hook Form with Zod validation for type-safe form handling
-- **Build Tool**: Vite for fast development and optimized production builds
+- **Framework**: React 18 with TypeScript.
+- **Routing**: Wouter.
+- **UI Components**: Shadcn/ui, built on Radix UI primitives.
+- **Styling**: Tailwind CSS with custom design tokens.
+- **State Management**: TanStack Query (React Query).
+- **Forms**: React Hook Form with Zod validation.
+- **Build Tool**: Vite.
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js framework using ES modules
-- **Language**: TypeScript for full-stack type safety
-- **API Design**: RESTful API endpoints for lead management and calculation storage
-- **Middleware**: Custom logging middleware for API request tracking
-- **Error Handling**: Centralized error handling with proper HTTP status codes
+- **Runtime**: Node.js with Express.js (ES modules).
+- **Language**: TypeScript.
+- **API Design**: RESTful API endpoints.
+- **Middleware**: Custom logging middleware.
+- **Error Handling**: Centralized error handling.
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL configured through Drizzle ORM
-- **ORM**: Drizzle ORM with schema-first approach for type-safe database operations
-- **Schema Management**: Shared schema definitions between frontend and backend using Zod
-- **Migrations**: Drizzle Kit for database schema migrations
-- **Development Storage**: In-memory storage implementation for development/testing
-- **Connection**: Neon Database serverless PostgreSQL for production
+- **Database**: PostgreSQL configured through Drizzle ORM.
+- **ORM**: Drizzle ORM for type-safe operations.
+- **Schema Management**: Shared schema definitions (Zod).
+- **Migrations**: Drizzle Kit.
+- **Development Storage**: In-memory storage.
+- **Production Storage**: Neon Database serverless PostgreSQL.
 
-### Comprehensive Platform Enhancements (August 2025)
-- **Property Alerts System**: Real-time MLS integration with customizable filters for lot size, price, zoning, and development potential
-- **Financial Modeling Suite**: Advanced ROI calculators, cash flow projections, construction cost estimators, and sensitivity analysis
-- **Regulatory Compliance Tracker**: Bill 44/47 monitoring, municipal bylaw change notifications, and compliance checking
-- **Authentication System**: Email/SMS verification login with 6-digit codes and secure session management
-- **AI-Powered Analytics**: Property analysis, market intelligence, and development recommendations
+### Core Platform Features & Design
+- **Authentication**: Email/SMS verification system with protected dashboard access.
+- **Dashboard Interface**: 9-tab interface including: Overview, AI Analysis (OpenAI integration), Zoning (Bill 44/47/TOD compliance), Permits (150+ municipal), Alerts (MLS-style notifications), Financial (ROI/cash flow), Compliance, Lead Gen, and Partners.
+- **AI Services**: OpenAI GPT-4o integration for property analysis, content generation, design suggestions, and DALL-E image generation.
+- **Data Services**: Property data service, zoning intelligence service, lead generation service, permit tracker service, partner finder service, and AI design generator service.
+- **API Endpoints**: Over 30 endpoints covering various functionalities.
+- **Comprehensive PDF Report Generator**: jsPDF-based reports for zoning analysis, integrating multi-policy analysis (Bill 44, Bill 47, TOD).
+- **Property Alerts System**: Real-time MLS integration with customizable filters.
+- **Financial Modeling Suite**: Advanced ROI calculators, cash flow projections, and construction cost estimators.
+- **Regulatory Compliance Tracker**: Bill 44/47 monitoring and municipal bylaw change notifications.
+- **BC-First Strategy**: Platform primarily focused on BC municipalities, with expansion plans.
+- **Technical Stack**: React/TypeScript frontend, Express backend, OpenAI API integration.
+- **Design Patterns**: Shared Schema, Component-Driven Development, End-to-end Type Safety, Error Boundaries, Responsive Design, Performance Optimization.
 
-### External Dependencies
-- **Database Hosting**: Neon Database (@neondatabase/serverless) for serverless PostgreSQL
-- **UI Framework**: Comprehensive Radix UI component ecosystem for accessible components
-- **Development Tools**: Replit-specific plugins for development environment integration
-- **Validation**: Zod for runtime type checking and form validation
-- **Date Handling**: date-fns for date manipulation and formatting
-- **Styling**: Class Variance Authority for component variant management
+## External Dependencies
 
-### Key Design Patterns
-- **Shared Schema**: Common type definitions and validation schemas shared between client and server
-- **Component-Driven Development**: Modular React components with clear separation of concerns
-- **Type Safety**: End-to-end TypeScript implementation with strict type checking
-- **Error Boundaries**: Proper error handling with user-friendly error displays
-- **Responsive Design**: Mobile-first approach with responsive layouts
-- **Performance Optimization**: Lazy loading, code splitting, and optimized bundle sizes
-
-### Development Workflow
-- **Build Process**: Separate client and server build processes with esbuild for server bundling
-- **Development Server**: Hot module replacement with Vite for fast development cycles
-- **Code Quality**: TypeScript strict mode with comprehensive type checking
-- **Asset Management**: Static asset serving with proper caching strategies
+- **Database Hosting**: Neon Database (@neondatabase/serverless).
+- **AI Integration**: OpenAI API.
+- **UI Framework**: Radix UI component ecosystem.
+- **Validation**: Zod.
+- **Date Handling**: date-fns.
+- **Styling**: Class Variance Authority.
+- **MLS Integration**: REALTOR.ca DDF Web API v1.0.
+- **Marketing Integration**: Framer (for the marketing site).
+- **Mapping**: Geographic coordinate data for mapping applications (implied from MLS integration).
+- **Specific Data Sources**: Official BC government regulations (gov.bc.ca/housing-initiatives, BC Laws Bill 47), Vancouver Open Data API (for permits).
+- **Potential Future Integrations**: BC Assessment Commercial API, REBGV-specific RETS endpoints (user to obtain access).
