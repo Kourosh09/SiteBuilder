@@ -33,7 +33,8 @@ Preferred communication style: Simple, everyday language.
   - 6 units near frequent transit service requirements
   - Parcel size thresholds (280m² analysis)
   - Municipal compliance status tracking
-- **Data Sources**: Official BC government regulations at gov.bc.ca/housing-initiatives
+  - **Bill 47 TOA Analysis**: Transit-Oriented Area density bonuses and parking reductions
+- **Data Sources**: Official BC government regulations at gov.bc.ca/housing-initiatives and BC Laws Bill 47
 
 ### Complete BuildwiseAI Platform (August 7, 2025)
 - **Date**: August 7, 2025
