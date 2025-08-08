@@ -639,6 +639,23 @@ export class MLSService {
     }
   }
 
+  // Get comparables for compatibility
+  async getComparables(address: string, city: string, radius: number = 1): Promise<any[]> {
+    try {
+      const result = await this.searchProperties({
+        address,
+        city,
+        minPrice: 0,
+        maxPrice: 10000000,
+        propertyType: 'all'
+      });
+      return result.listings;
+    } catch (error) {
+      console.error('MLS comparables error:', error);
+      return [];
+    }
+  }
+
   // Format MLS data to standard interface
   private formatListings(rawListings: any[]): MLSListing[] {
     return rawListings.map(listing => this.formatListing(listing));
