@@ -2547,6 +2547,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Support system routes
+  app.post('/api/support/messages', async (req, res) => {
+    try {
+      const messageData = req.body;
+      
+      // Log the support message (in production, save to database)
+      console.log('📧 Support message received:', {
+        name: messageData.name,
+        email: messageData.email,
+        type: messageData.type,
+        subject: messageData.subject,
+        priority: messageData.priority,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`🎫 Support ticket created for ${messageData.priority} priority ${messageData.type} issue`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Support message sent successfully',
+        ticketId: `BWA-${Date.now()}`
+      });
+    } catch (error) {
+      console.error('Error handling support message:', error);
+      res.status(500).json({ error: 'Failed to send support message' });
+    }
+  });
+
+  app.get('/api/support/messages', async (req, res) => {
+    try {
+      // Sample support messages for demo
+      const sampleMessages = [
+        {
+          id: '1',
+          name: 'Developer User',
+          email: 'dev@buildwise.com',
+          type: 'api',
+          subject: 'BC Assessment Integration',
+          priority: 'high',
+          status: 'in_progress',
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        },
+        {
+          id: '2', 
+          name: 'Real Estate Pro',
+          email: 'realtor@mls.com',
+          type: 'technical',
+          subject: 'MLS Data Access',
+          priority: 'medium',
+          status: 'new',
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        }
+      ];
+      
+      res.json(sampleMessages);
+    } catch (error) {
+      console.error('Error fetching support messages:', error);
+      res.status(500).json({ error: 'Failed to fetch support messages' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
