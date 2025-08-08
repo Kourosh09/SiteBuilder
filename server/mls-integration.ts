@@ -526,6 +526,37 @@ export class MLSService {
     }
   }
 
+  // Search properties method for API compatibility
+  async searchProperties(filters: {
+    address: string;
+    city: string;
+    minPrice: number;
+    maxPrice: number;
+    propertyType: string;
+  }): Promise<{ listings: MLSListing[] }> {
+    try {
+      const listings = await this.searchListings(
+        filters.city,
+        filters.propertyType === 'all' ? undefined : filters.propertyType,
+        filters.minPrice,
+        filters.maxPrice,
+        50
+      );
+      
+      // Filter by address if provided
+      const filteredListings = filters.address 
+        ? listings.filter(listing => 
+            listing.address.toLowerCase().includes(filters.address.toLowerCase())
+          )
+        : listings;
+      
+      return { listings: filteredListings };
+    } catch (error) {
+      console.error('Property search error:', error);
+      throw new Error('Failed to search properties');
+    }
+  }
+
   // Get market statistics
   async getMarketStats(city: string, propertyType?: string) {
     try {

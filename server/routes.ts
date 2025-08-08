@@ -1360,7 +1360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await regulatoryComplianceService.createComplianceAlert(
         jurisdiction, categories, email
       );
-      res.json({ success: true, ...result });
+      res.json({ success: true, alert: result });
     } catch (error) {
       console.error("Create compliance alert error:", error);
       res.status(500).json({ success: false, error: "Failed to create alert" });
