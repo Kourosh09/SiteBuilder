@@ -33,9 +33,6 @@ function Router() {
           <Home onAuthenticated={handleAuthentication} />
         )}
       </Route>
-      <Route path="/dashboard">
-        <Dashboard />
-      </Route>
       <Route component={NotFound} />
     </Switch>
   );
