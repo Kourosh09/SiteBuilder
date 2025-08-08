@@ -103,7 +103,7 @@ export class DDFService {
       
       console.log(`✅ Successfully authenticated with REALTOR.ca DDF. Token expires in ${authData.expires_in} seconds.`);
       
-      return this.accessToken;
+      return this.accessToken || '';
       
     } catch (error) {
       console.error("❌ DDF Authentication Error:", error);
@@ -377,30 +377,7 @@ export class DDFService {
     return features;
   }
 
-  private getFallbackComparables(address: string, city: string): any[] {
-    console.log("Using market intelligence fallback for MLS comparables");
-    
-    const basePrice = this.getBasePriceForCity(city);
-    const comparables = [];
-    
-    for (let i = 0; i < 5; i++) {
-      const priceVariation = (Math.random() - 0.5) * 0.3; // ±15% variation
-      const soldPrice = Math.round(basePrice * (1 + priceVariation));
-      
-      comparables.push({
-        mlsNumber: `V${Math.floor(Math.random() * 900000 + 100000)}`,
-        soldPrice,
-        daysOnMarket: Math.floor(Math.random() * 60 + 10),
-        soldDate: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000),
-        propertyType: "Single Family",
-        bedrooms: Math.floor(Math.random() * 3 + 2),
-        bathrooms: Math.floor(Math.random() * 2 + 1) + 0.5,
-        squareFootage: Math.floor(Math.random() * 1000 + 1500)
-      });
-    }
-    
-    return comparables;
-  }
+
 
   private getBasePriceForCity(city: string): number {
     const cityPrices: { [key: string]: number } = {
