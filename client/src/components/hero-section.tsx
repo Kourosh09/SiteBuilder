@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Check, Play, Search, Building, MapPin, TrendingUp, Users, CheckCircle, ArrowRight, Loader2, Brain, AlertTriangle, Shield } from "lucide-react";
 import { usePropertyData } from "@/hooks/usePropertyData";
 import { apiRequest } from '@/lib/queryClient';
+import PrivacyNotice from './privacy-notice';
 
 interface HeroSectionProps {
   onGetStarted?: () => void;
@@ -215,6 +216,8 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                       </>
                     )}
                   </Button>
+                  
+                  <PrivacyNotice />
                   
                   {/* Feature Preview */}
                   <div className="mt-6 space-y-3 text-sm text-blue-100">

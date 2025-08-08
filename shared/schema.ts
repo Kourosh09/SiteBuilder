@@ -22,6 +22,22 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Property analysis leads - captures email/phone from property analyzer
+export const propertyLeads = pgTable("property_leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  propertyAddress: text("property_address"),
+  city: text("city"),
+  analysisData: jsonb("analysis_data"),
+  leadSource: text("lead_source").default("property_analyzer"),
+  leadScore: text("lead_score").default("warm"), // hot, warm, cold
+  followUpStatus: text("followup_status").default("new"), // new, contacted, qualified, converted
+  consentGiven: text("consent_given").default("true"), // GDPR/privacy compliance
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const calculationResults = pgTable("calculation_results", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   landPrice: text("land_price").notNull(),
@@ -48,6 +64,12 @@ export const insertLeadSchema = createInsertSchema(leads).omit({
   createdAt: true,
 });
 
+export const insertPropertyLeadSchema = createInsertSchema(propertyLeads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertCalculationSchema = createInsertSchema(calculationResults).omit({
   id: true,
   createdAt: true,
@@ -57,6 +79,8 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type Lead = typeof leads.$inferSelect;
+export type InsertPropertyLead = z.infer<typeof insertPropertyLeadSchema>;
+export type PropertyLead = typeof propertyLeads.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type Calculation = typeof calculationResults.$inferSelect;
 

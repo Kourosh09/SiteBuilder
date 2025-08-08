@@ -144,6 +144,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         confidence: 89
       };
 
+      // Capture lead data if email and phone are provided
+      const { email, phone } = req.body;
+      if (email && phone) {
+        try {
+          await storage.createPropertyLead({
+            email,
+            phone,
+            propertyAddress: address,
+            city,
+            analysisData: analysis,
+            leadSource: "property_analyzer",
+            leadScore: "warm",
+            followUpStatus: "new",
+            consentGiven: "true"
+          });
+          console.log(`📧 Lead captured: ${email} analyzed ${address}, ${city}`);
+        } catch (leadError) {
+          console.error('Lead capture error:', leadError);
+        }
+      }
+
       res.json({ success: true, analysis, rawData: propertyData });
     } catch (error) {
       console.error('Property analysis error:', error);
