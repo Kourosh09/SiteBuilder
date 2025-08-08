@@ -407,9 +407,9 @@ export default function ZoningIntelligence() {
                       className={(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? "bg-brand-blue" : ""}
                     >
                       {(parseInt(analysisForm.lotSize) >= 3000 && parseInt(analysisForm.frontage) >= 33) ? 
-                        (parseInt(analysisForm.lotSize) >= 4000 && parseInt(analysisForm.frontage) >= 40 ? 
-                          "🎯 6-plex Eligible" : "🏘️ 4-plex Eligible") : 
-                        "❌ Not Eligible"}
+                        (parseInt(analysisForm.lotSize) >= 7200 ? 
+                          "6-plex Eligible" : "4-plex Eligible") : 
+                        "Not Eligible"}
                     </Badge>
                   </div>
                 </div>
