@@ -72,7 +72,18 @@ export class AIDesignGeneratorService {
         response_format: { type: "json_object" }
       });
 
-      const conceptData = JSON.parse(response.choices[0].message.content!);
+      const responseContent = response.choices[0].message.content;
+      if (!responseContent) {
+        throw new Error("No response content from OpenAI");
+      }
+      
+      let conceptData;
+      try {
+        conceptData = JSON.parse(responseContent);
+      } catch (parseError) {
+        console.error("JSON parsing failed:", parseError, "Content:", responseContent);
+        throw new Error("Invalid JSON response from OpenAI");
+      }
 
       // Generate image prompts for visualization
       const imagePrompts = await this.generateImagePrompts(request, conceptData);
@@ -201,7 +212,19 @@ export class AIDesignGeneratorService {
         response_format: { type: "json_object" }
       });
 
-      const result = JSON.parse(response.choices[0].message.content!);
+      const responseContent = response.choices[0].message.content;
+      if (!responseContent) {
+        throw new Error("No response content from OpenAI");
+      }
+      
+      let result;
+      try {
+        result = JSON.parse(responseContent);
+      } catch (parseError) {
+        console.error("JSON parsing failed for floor plans:", parseError);
+        throw new Error("Invalid JSON response from OpenAI");
+      }
+      
       return result.suggestions || [];
 
     } catch (error) {
