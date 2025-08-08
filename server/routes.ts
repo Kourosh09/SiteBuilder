@@ -3287,6 +3287,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'Vancouver';
   }
 
+  // === LEAD CAPTURE & MARKETING ENDPOINTS ===
+
+  // Capture lead from landing page
+  app.post("/api/leads/capture", async (req, res) => {
+    try {
+      const leadData = req.body;
+      
+      // Validate required fields
+      if (!leadData.name || !leadData.email || !leadData.developmentType) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: name, email, developmentType" 
+        });
+      }
+      
+      const { leadCaptureService } = await import("./lead-capture");
+      const lead = leadCaptureService.captureLead({
+        ...leadData,
+        leadStatus: 'new'
+      });
+      
+      res.json({ 
+        success: true, 
+        data: lead,
+        message: "Thank you! We'll analyze your project and get back to you within 24 hours."
+      });
+      
+    } catch (error) {
+      console.error("Lead capture error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to capture lead" 
+      });
+    }
+  });
+
+  // Get leads for CRM dashboard
+  app.get("/api/leads", async (req, res) => {
+    try {
+      const filters = {
+        status: req.query.status as string,
+        developmentType: req.query.developmentType as string,
+        city: req.query.city as string
+      };
+      
+      const { leadCaptureService } = await import("./lead-capture");
+      const leads = leadCaptureService.getLeads(filters);
+      
+      res.json({ 
+        success: true, 
+        data: leads,
+        count: leads.length
+      });
+      
+    } catch (error) {
+      console.error("Get leads error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to get leads" 
+      });
+    }
+  });
+
+  // Submit contractor proposal
+  app.post("/api/leads/:leadId/proposals", async (req, res) => {
+    try {
+      const { leadId } = req.params;
+      const proposalData = req.body;
+      
+      if (!proposalData.contractorName || !proposalData.contractorEmail || !proposalData.estimatedCost) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required proposal fields" 
+        });
+      }
+      
+      const { leadCaptureService } = await import("./lead-capture");
+      const proposal = leadCaptureService.submitContractorProposal({
+        ...proposalData,
+        leadId,
+        proposalStatus: 'submitted'
+      });
+      
+      res.json({ 
+        success: true, 
+        data: proposal,
+        message: "Proposal submitted successfully"
+      });
+      
+    } catch (error) {
+      console.error("Proposal submission error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to submit proposal" 
+      });
+    }
+  });
+
+  // Get project timeline with contractor proposals
+  app.get("/api/leads/:leadId/timeline", async (req, res) => {
+    try {
+      const { leadId } = req.params;
+      
+      const { leadCaptureService } = await import("./lead-capture");
+      const timeline = leadCaptureService.generateProjectTimeline(leadId);
+      
+      res.json({ 
+        success: true, 
+        data: timeline,
+        message: "Project timeline with contractor milestones"
+      });
+      
+    } catch (error) {
+      console.error("Timeline generation error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to generate timeline" 
+      });
+    }
+  });
+
+  // Marketing demo endpoint - complete workflow
+  app.post("/api/marketing/demo", async (req, res) => {
+    try {
+      const { address, city, contactInfo } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Address and city required for demo" 
+        });
+      }
+      
+      // Step 1: Property lookup
+      const propertyResponse = await fetch(`http://localhost:${req.socket.localPort}/api/property/lookup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, city })
+      });
+      
+      const propertyData = await propertyResponse.json();
+      
+      if (!propertyData.success) {
+        throw new Error('Property lookup failed');
+      }
+      
+      const sessionId = propertyData.data.sessionId;
+      
+      // Step 2: Development optimization
+      const optimizationResponse = await fetch(`http://localhost:${req.socket.localPort}/api/development/optimize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      
+      const optimizationData = await optimizationResponse.json();
+      
+      // Step 3: Construction design
+      const designResponse = await fetch(`http://localhost:${req.socket.localPort}/api/construction/design`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      
+      const designData = await designResponse.json();
+      
+      // Step 4: Capture lead if contact info provided
+      let leadData = null;
+      if (contactInfo && contactInfo.name && contactInfo.email) {
+        const { leadCaptureService } = await import("./lead-capture");
+        leadData = leadCaptureService.captureLead({
+          name: contactInfo.name,
+          email: contactInfo.email,
+          phone: contactInfo.phone,
+          propertyAddress: address,
+          city,
+          developmentType: optimizationData.success ? 
+            (optimizationData.data.recommendedScenario.totalUnits > 4 ? 'apartment' : 
+             optimizationData.data.recommendedScenario.totalUnits > 2 ? 'multiplex' : 'duplex') : 
+            'single-family',
+          projectBudget: optimizationData.success ? 
+            `$${optimizationData.data.recommendedScenario.financials.totalProjectCost.toLocaleString()}` : 
+            'TBD',
+          experience: contactInfo.experience || 'first-time',
+          specificNeeds: contactInfo.specificNeeds || [],
+          message: contactInfo.message,
+          source: 'landing-page',
+          leadStatus: 'new'
+        });
+      }
+      
+      // Complete demo response
+      const demoResult = {
+        propertyAnalysis: propertyData.data,
+        developmentScenarios: optimizationData.success ? optimizationData.data : null,
+        constructionDesign: designData.success ? designData.data : null,
+        marketingCapture: leadData,
+        demoSummary: {
+          address,
+          city,
+          analysisComplete: propertyData.success,
+          scenariosGenerated: optimizationData.success ? optimizationData.data?.scenarios?.length : 0,
+          recommendedProject: optimizationData.success ? optimizationData.data.recommendedScenario?.scenarioName : null,
+          estimatedROI: optimizationData.success ? optimizationData.data.recommendedScenario?.financials?.roi : null,
+          leadCaptured: !!leadData
+        }
+      };
+      
+      res.json({ 
+        success: true, 
+        data: demoResult,
+        message: "Complete marketing demo workflow executed successfully"
+      });
+      
+    } catch (error) {
+      console.error("Marketing demo error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Demo workflow failed" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

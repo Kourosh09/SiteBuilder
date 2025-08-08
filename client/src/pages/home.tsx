@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
+import InteractivePropertyDemo from "@/components/interactive-property-demo";
 import FeaturesOverview from "@/components/features-overview";
 import LandownerJVSection from "@/components/landowner-jv-section";
 import DevelopmentNetworkSection from "@/components/development-network-section";
@@ -31,6 +32,7 @@ export default function Home({ onAuthenticated }: HomeProps) {
     <div className="bg-white">
       <Navigation onLoginClick={() => setShowLogin(true)} />
       <HeroSection onGetStarted={() => setShowLogin(true)} />
+      <InteractivePropertyDemo />
       <FeaturesOverview />
       <LandownerJVSection />
       <DevelopmentNetworkSection />
