@@ -144,12 +144,13 @@ export default function AIPropertyAnalyzer() {
       if (result.success) {
         setAnalysis(result.analysis);
         
-        // Store property data for use in other calculators
+        // Store comprehensive property data for use in other calculators
+        const propertyDetails = result.analysis.propertyDetails;
         setPropertyData({
           address: formData.address,
           city: formData.city,
-          currentValue: formData.currentValue ? parseFloat(formData.currentValue) : undefined,
-          lotSize: parseFloat(formData.lotSize),
+          currentValue: propertyDetails?.assessedValue || (formData.currentValue ? parseFloat(formData.currentValue) : undefined),
+          lotSize: propertyDetails?.lotSize || parseFloat(formData.lotSize),
           currentUse: formData.currentUse,
           proposedUse: formData.proposedUse
         });
