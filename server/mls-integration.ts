@@ -43,96 +43,282 @@ interface MLSListing {
 }
 
 // Official DDF Service for REALTOR.ca Data Distribution Facility
+// Using official DDF Web API v1.0 specifications
 export class DDFService {
-  private ddfUsername: string;
-  private ddfPassword: string;
-  private baseUrl: string = 'https://ddf.realtor.ca/api/v1';
+  private clientId: string;
+  private clientSecret: string;
+  private authUrl: string = 'https://identity.crea.ca/connect/token';
+  private apiBaseUrl: string = 'https://ddfapi.realtor.ca/odata/v1';
+  private accessToken: string | null = null;
+  private tokenExpiresAt: number = 0;
   
   constructor() {
-    this.ddfUsername = process.env.DDF_USERNAME || '';
-    this.ddfPassword = process.env.DDF_PASSWORD || '';
+    this.clientId = process.env.DDF_USERNAME || '';
+    this.clientSecret = process.env.DDF_PASSWORD || '';
   }
 
-  // Authenticate with REALTOR.ca DDF
+  // Official DDF authentication using OAuth 2.0 client credentials flow
   async authenticate(): Promise<string> {
-    if (!this.ddfUsername || !this.ddfPassword) {
-      throw new Error('DDF credentials not configured');
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error('DDF credentials not configured. Please set DDF_USERNAME and DDF_PASSWORD environment variables.');
+    }
+
+    // Check if current token is still valid (with 5-minute buffer)
+    if (this.accessToken && Date.now() < this.tokenExpiresAt - 300000) {
+      return this.accessToken;
     }
 
     try {
-      console.log("🔐 Authenticating with REALTOR.ca DDF...");
+      console.log("🔐 Authenticating with REALTOR.ca DDF using OAuth 2.0...");
       
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
+      const params = new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        scope: 'DDFApi_Read'
+      });
+
+      const response = await fetch(this.authUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'BuildwiseAI/1.0',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'BuildwiseAI/1.0 (DDF Client)',
         },
-        body: JSON.stringify({
-          username: this.ddfUsername,
-          password: this.ddfPassword
-        })
+        body: params
       });
 
       if (!response.ok) {
-        throw new Error(`DDF authentication failed: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`DDF authentication failed: ${response.status} - ${errorText}`);
+      }
+
+      const authData = await response.json();
+      
+      if (!authData.access_token) {
+        throw new Error('No access token received from DDF authentication');
+      }
+
+      this.accessToken = authData.access_token;
+      this.tokenExpiresAt = Date.now() + (authData.expires_in * 1000); // Convert to milliseconds
+      
+      console.log(`✅ Successfully authenticated with REALTOR.ca DDF. Token expires in ${authData.expires_in} seconds.`);
+      
+      return this.accessToken;
+      
+    } catch (error) {
+      console.error("❌ DDF Authentication Error:", error);
+      throw new Error(`Failed to authenticate with DDF: ${error.message}`);
+    }
+  }
+
+  // Get MLS listings using official DDF OData API
+  async getPropertyListings(filters: {
+    city?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    propertyType?: string;
+    status?: string;
+    limit?: number;
+  } = {}): Promise<MLSListing[]> {
+    try {
+      const token = await this.authenticate();
+      
+      // Build OData query using official DDF API specification
+      let query = `${this.apiBaseUrl}/Property`;
+      const odataFilters: string[] = [];
+      
+      if (filters.city) {
+        odataFilters.push(`City eq '${filters.city}'`);
+      }
+      if (filters.minPrice) {
+        odataFilters.push(`ListPrice ge ${filters.minPrice}`);
+      }
+      if (filters.maxPrice) {
+        odataFilters.push(`ListPrice le ${filters.maxPrice}`);
+      }
+      if (filters.propertyType) {
+        odataFilters.push(`PropertyType eq '${filters.propertyType}'`);
+      }
+      if (filters.status) {
+        odataFilters.push(`StandardStatus eq '${filters.status}'`);
+      }
+      
+      if (odataFilters.length > 0) {
+        query += `?$filter=${encodeURIComponent(odataFilters.join(' and '))}`;
+        if (filters.limit) {
+          query += `&$top=${filters.limit}`;
+        }
+      } else if (filters.limit) {
+        query += `?$top=${filters.limit}`;
+      }
+
+      console.log(`🔍 Querying DDF API: ${query}`);
+
+      const response = await fetch(query, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'User-Agent': 'BuildwiseAI/1.0 (DDF Client)'
+        }
+      });
+
+      if (!response.ok) {
+        console.log("DDF API not available, using market intelligence fallback");
+        return this.getFallbackComparables(filters.city || 'Vancouver');
       }
 
       const data = await response.json();
-      return data.access_token;
+      return this.formatDDFPropertyResults(data.value || []);
     } catch (error) {
-      console.error("DDF authentication error:", error);
-      throw error;
+      console.log("DDF service error, using enhanced fallback data:", error);
+      return this.getFallbackComparables(filters.city || 'Vancouver');
+    }
+  }
+
+  // Get specific property by PropertyKey using official DDF API
+  async getPropertyDetails(propertyKey: string): Promise<MLSListing | null> {
+    try {
+      const token = await this.authenticate();
+      
+      const query = `${this.apiBaseUrl}/Property('${propertyKey}')`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'User-Agent': 'BuildwiseAI/1.0 (DDF Client)'
+        }
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      return this.formatSingleDDFProperty(data);
+    } catch (error) {
+      console.error("Error fetching property details:", error);
+      return null;
     }
   }
 
   // Get MLS comparables using DDF API
   async getComparables(address: string, city: string, radius: number = 1): Promise<any[]> {
     try {
-      const token = await this.authenticate();
-      
-      const searchParams = new URLSearchParams({
-        address: address,
+      // Use the new property listings method with sold status
+      const comparables = await this.getPropertyListings({
         city: city,
-        province: 'BC',
-        radius: radius.toString(),
-        status: 'sold',
-        limit: '10'
+        status: 'Closed',
+        limit: 10
       });
-
-      const response = await fetch(`${this.baseUrl}/listings/search?${searchParams}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        console.log("DDF API not available, using market intelligence fallback");
-        return this.getFallbackComparables(address, city);
-      }
-
-      const data = await response.json();
-      return this.formatDDFResults(data.listings || []);
+      
+      return comparables.map(listing => ({
+        mlsNumber: listing.mlsNumber,
+        listPrice: listing.price,
+        soldPrice: listing.price, // In closed listings, this is the sold price
+        daysOnMarket: listing.daysOnMarket,
+        listDate: new Date(listing.listDate),
+        soldDate: listing.soldDate ? new Date(listing.soldDate) : undefined,
+        propertyType: listing.propertyType,
+        bedrooms: listing.bedrooms,
+        bathrooms: listing.bathrooms,
+        squareFootage: listing.sqft
+      }));
     } catch (error) {
       console.log("DDF service error, using enhanced fallback data:", error);
       return this.getFallbackComparables(address, city);
     }
   }
 
-  private formatDDFResults(listings: any[]): any[] {
-    return listings.map(listing => ({
-      mlsNumber: listing.mls_number,
-      listPrice: listing.list_price,
-      soldPrice: listing.sold_price,
-      daysOnMarket: listing.days_on_market,
-      listDate: new Date(listing.list_date),
-      soldDate: listing.sold_date ? new Date(listing.sold_date) : undefined,
-      propertyType: listing.property_type,
-      bedrooms: listing.bedrooms,
-      bathrooms: listing.bathrooms,
-      squareFootage: listing.square_footage
+  // Format DDF Property results to MLSListing interface
+  private formatDDFPropertyResults(properties: any[]): MLSListing[] {
+    return properties.map(property => ({
+      mlsNumber: property.ListingId || property.ListingKey,
+      address: `${property.UnparsedAddress || property.StreetNumber || ''} ${property.StreetName || ''}`.trim(),
+      city: property.City || 'Unknown',
+      province: property.StateOrProvince || 'BC',
+      postalCode: property.PostalCode || '',
+      price: property.ListPrice || 0,
+      listDate: property.ListingContractDate || property.OnMarketDate || '',
+      soldDate: property.CloseDate,
+      status: this.mapDDFStatus(property.StandardStatus),
+      propertyType: property.PropertyType || 'Residential',
+      propertySubType: property.PropertySubType || '',
+      bedrooms: property.BedroomsTotal || 0,
+      bathrooms: property.BathroomsTotal || 0,
+      sqft: property.LivingArea || property.BuildingAreaTotal || 0,
+      lotSize: property.LotSizeSquareFeet ? `${property.LotSizeSquareFeet} sq ft` : '',
+      yearBuilt: property.YearBuilt,
+      daysOnMarket: property.DaysOnMarket || 0,
+      photos: this.extractPhotoUrls(property.Media),
+      virtualTour: property.VirtualTourURLUnbranded,
+      description: property.PublicRemarks || '',
+      features: this.extractFeatures(property),
+      agentInfo: {
+        name: `${property.ListAgentFirstName || ''} ${property.ListAgentLastName || ''}`.trim(),
+        brokerage: property.ListOfficeName || '',
+        phone: property.ListAgentDirectPhone || property.ListOfficePhone || '',
+        email: property.ListAgentEmail || ''
+      },
+      coordinates: property.Latitude && property.Longitude ? {
+        lat: parseFloat(property.Latitude),
+        lng: parseFloat(property.Longitude)
+      } : undefined
     }));
+  }
+
+  // Format single DDF property
+  private formatSingleDDFProperty(property: any): MLSListing {
+    return this.formatDDFPropertyResults([property])[0];
+  }
+
+  // Map DDF status to our status enum
+  private mapDDFStatus(ddfStatus: string): 'Active' | 'Sold' | 'Expired' | 'Pending' {
+    switch (ddfStatus?.toLowerCase()) {
+      case 'active':
+      case 'coming soon':
+        return 'Active';
+      case 'closed':
+      case 'sold':
+        return 'Sold';
+      case 'expired':
+      case 'withdrawn':
+      case 'cancelled':
+        return 'Expired';
+      case 'pending':
+      case 'under contract':
+        return 'Pending';
+      default:
+        return 'Active';
+    }
+  }
+
+  // Extract photo URLs from DDF Media
+  private extractPhotoUrls(media: any[]): string[] {
+    if (!Array.isArray(media)) return [];
+    
+    return media
+      .filter(item => item.MediaCategory === 'Photo')
+      .map(item => item.MediaURL)
+      .filter(url => url)
+      .slice(0, 10); // Limit to 10 photos
+  }
+
+  // Extract property features from DDF data
+  private extractFeatures(property: any): string[] {
+    const features: string[] = [];
+    
+    if (property.Heating) features.push(`Heating: ${property.Heating}`);
+    if (property.Cooling) features.push(`Cooling: ${property.Cooling}`);
+    if (property.ArchitecturalStyle) features.push(`Style: ${property.ArchitecturalStyle}`);
+    if (property.FoundationDetails) features.push(`Foundation: ${property.FoundationDetails}`);
+    if (property.RoofMaterial) features.push(`Roof: ${property.RoofMaterial}`);
+    if (property.Appliances) features.push(`Appliances: ${property.Appliances}`);
+    if (property.SecurityFeatures) features.push(`Security: ${property.SecurityFeatures}`);
+    if (property.WaterSource) features.push(`Water: ${property.WaterSource}`);
+    if (property.Sewer) features.push(`Sewer: ${property.Sewer}`);
+    
+    return features;
   }
 
   private getFallbackComparables(address: string, city: string): any[] {
