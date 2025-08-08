@@ -10,42 +10,42 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-brand-blue to-blue-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white min-h-screen flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 text-white">
               AI-Powered Financial Management for{" "}
-              <span className="text-amber-300 font-extrabold drop-shadow-lg">Real Estate Developers</span>
+              <span className="text-yellow-400 font-extrabold drop-shadow-lg">Real Estate Developers</span>
             </h1>
-            <p className="text-xl text-white mb-8 leading-relaxed font-medium">
+            <p className="text-xl text-blue-100 mb-8 leading-relaxed font-medium max-w-2xl">
               Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <Button
                 onClick={scrollToContact}
-                className="bg-amber-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-amber-700 transition-colors"
+                className="bg-yellow-500 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-400 transition-colors shadow-lg"
                 data-testid="button-start-trial"
               >
                 Start Free Trial
               </Button>
               <Button
                 variant="outline"
-                className="border border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-brand-blue transition-colors"
+                className="border-2 border-white text-white bg-transparent px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-800 transition-colors"
                 data-testid="button-watch-demo"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Watch Demo
               </Button>
             </div>
-            <div className="mt-8 flex items-center gap-8 text-sm text-blue-200">
+            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 text-sm text-blue-200">
               <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-brand-green" />
-                Free 14-day trial
+                <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
+                <span>Free 14-day trial</span>
               </div>
               <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-brand-green" />
-                No credit card required
+                <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
+                <span>No credit card required</span>
               </div>
             </div>
           </div>
