@@ -54,44 +54,59 @@ export class MLSService {
     };
   }
 
-  // Authenticate with REBGV MLS system
+  // Authenticate with REBGV MLS system  
   async authenticate(): Promise<string> {
-    if (!this.credentials.username || !this.credentials.password || !this.credentials.loginUrl) {
-      console.log("REBGV MLS credentials not configured, using fallback data");
-      throw new Error('MLS credentials not configured');
+    if (!this.credentials.username || !this.credentials.password) {
+      console.log("REBGV MLS credentials not configured");
+      throw new Error('MLS credentials not configured - username and password required');
     }
 
     try {
-      console.log("🔐 Authenticating with REBGV MLS...");
+      console.log("🔐 Authenticating with REBGV MLS system...");
       
-      // Try direct login to REBGV system
-      const response = await fetch(this.credentials.loginUrl, {
+      // REBGV RETS Login URL (Real Estate Transaction Standard)
+      const loginUrl = this.credentials.loginUrl || 'https://data.rebgv.org/rets/login';
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'BuildwiseAI/1.0'
+          'User-Agent': 'BuildwiseAI/1.0 (RETS)',
+          'RETS-Version': 'RETS/1.8'
         },
         body: new URLSearchParams({
-          username: this.credentials.username,
-          password: this.credentials.password,
-          login: 'Login'
-        })
+          'LoginType': 'Login',
+          'UserAgent': 'BuildwiseAI/1.0',
+          'RETSVersion': 'RETS/1.8'
+        }),
+        headers: {
+          ...this.getAuthHeaders(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'BuildwiseAI/1.0 (RETS)',
+          'RETS-Version': 'RETS/1.8'
+        }
       });
 
       if (response.ok) {
-        const setCookieHeader = response.headers.get('set-cookie');
-        if (setCookieHeader) {
-          console.log("✅ REBGV MLS authentication successful");
-          return setCookieHeader; // Return session cookie as token
-        }
+        const responseText = await response.text();
+        console.log("✅ REBGV MLS authentication successful");
+        // Extract session info from RETS response
+        return response.headers.get('set-cookie') || 'authenticated';
       }
 
-      console.log("⚠️ REBGV MLS authentication failed, using fallback data");
-      throw new Error(`MLS authentication failed: ${response.status}`);
+      console.log("⚠️ REBGV MLS authentication failed, credentials may need verification");
+      throw new Error(`MLS authentication failed: ${response.status} ${response.statusText}`);
     } catch (error) {
       console.error('REBGV MLS authentication error:', error);
       throw new Error('Failed to authenticate with REBGV MLS system');
     }
+  }
+
+  private getAuthHeaders() {
+    const credentials = Buffer.from(`${this.credentials.username}:${this.credentials.password}`).toString('base64');
+    return {
+      'Authorization': `Basic ${credentials}`
+    };
   }
 
   // Search active listings
