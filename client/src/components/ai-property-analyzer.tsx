@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin } from "lucide-react";
+import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -53,6 +53,48 @@ export default function AIPropertyAnalyzer() {
     proposedUse: "multi-family"
   });
   const { toast } = useToast();
+
+  const handleDownloadPDF = async () => {
+    if (!analysis) return;
+    
+    try {
+      const response = await fetch("/api/generate-pdf-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          propertyData: formData,
+          analysisData: analysis
+        })
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `BuildwiseAI-Analysis-${formData.address.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast({
+          title: "PDF Downloaded",
+          description: "Your property analysis report has been downloaded successfully."
+        });
+      } else {
+        throw new Error('Failed to generate PDF');
+      }
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "There was an error generating the PDF report. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!formData.address || !formData.city || !formData.lotSize) {
@@ -264,13 +306,29 @@ export default function AIPropertyAnalyzer() {
           {/* Analysis Results */}
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
-                Analysis Results
-              </CardTitle>
-              <CardDescription>
-                AI-generated feasibility analysis and recommendations
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+                    Analysis Results
+                  </CardTitle>
+                  <CardDescription>
+                    AI-generated feasibility analysis and recommendations
+                  </CardDescription>
+                </div>
+                {analysis && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadPDF}
+                    className="flex items-center gap-2"
+                    data-testid="button-download-pdf"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {!analysis ? (

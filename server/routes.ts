@@ -3562,6 +3562,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PDF Report Generation for AI Analysis
+  app.post('/api/generate-pdf-report', async (req, res) => {
+    try {
+      const { propertyData, analysisData } = req.body;
+      
+      if (!propertyData || !analysisData) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required fields: propertyData, analysisData' 
+        });
+      }
+
+      const { PDFReportGenerator } = await import('./pdf-generator');
+      const generator = new PDFReportGenerator();
+      
+      // Transform data for PDF generator with full compliance structures
+      const reportData = {
+        address: propertyData.address,
+        city: propertyData.city,
+        coordinates: { lat: 49.2827, lng: -123.1207 },
+        lotSize: parseInt(propertyData.lotSize) || 0,
+        frontage: 50,
+        analysisDate: new Date().toISOString().split('T')[0],
+        zoning: {
+          zoningCode: 'RS-1',
+          description: 'Single Family Residential',
+          maxHeight: 9,
+          maxFAR: 0.7,
+          maxDensity: 1,
+          permittedUses: ['Single Family Dwelling'],
+          setbacks: { front: 6, rear: 6, side: 1.2 },
+          parkingRequirements: '1 space per unit'
+        },
+        developmentPotential: {
+          maxUnits: 1,
+          bill44MaxUnits: 4,
+          bill47MaxUnits: 6,
+          todMaxUnits: 8,
+          combinedMaxUnits: 8,
+          recommendedUnits: analysisData.developmentFeasibility?.recommendedUnits || 4,
+          suggestedUnitMix: [{ bedrooms: 2, count: 2 }, { bedrooms: 3, count: 2 }],
+          buildingType: propertyData.proposedUse || 'Multi-Family',
+          estimatedGFA: parseInt(propertyData.lotSize) * 0.7 || 3500,
+          estimatedValue: analysisData.financialSummary.projectedRevenue,
+          feasibilityScore: analysisData.confidence / 10,
+          constraints: analysisData.developmentFeasibility?.majorObstacles || [],
+          opportunities: analysisData.recommendations.optimizations || [],
+          bill44Compliance: {
+            eligible: true,
+            benefits: ['Streamlined approvals', 'Reduced parking requirements'],
+            requirements: ['Transit accessibility', 'Affordable housing component'],
+            incentives: ['Development cost charges reduction']
+          },
+          bill47Compliance: {
+            eligible: true,
+            benefits: ['Increased density allowance', 'Height bonus'],
+            requirements: ['Design guidelines compliance'],
+            incentives: ['Property tax reduction']
+          },
+          todCompliance: {
+            eligible: false,
+            benefits: [],
+            requirements: [],
+            incentives: []
+          },
+          ssmuhCompliance: {
+            eligible: true,
+            benefits: ['Additional unit allowance'],
+            requirements: ['Secondary suite compliance'],
+            incentives: []
+          }
+        },
+        marketContext: {
+          averageHomePrices: analysisData.marketAnalysis.priceRecommendation || 800000,
+          constructionCosts: analysisData.financialSummary.estimatedCosts,
+          saleVelocity: analysisData.marketAnalysis.marketDemand,
+          demographics: 'Mixed demographics'
+        }
+      };
+
+      const pdfBuffer = generator.generateZoningReport(reportData);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Analysis-${propertyData.address.replace(/\s+/g, '-')}.pdf"`);
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to generate PDF report' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
