@@ -7,39 +7,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download, Search } from "lucide-react";
+import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download, Search, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePropertyData } from "@/hooks/usePropertyData";
 import { apiRequest } from "@/lib/queryClient";
 
 interface PropertyAnalysisResult {
-  propertyId: string;
-  analysisDate: string;
-  financialSummary: {
-    estimatedCosts: number;
-    projectedRevenue: number;
-    netProfit: number;
-    roi: number;
-    paybackPeriod: number;
+  propertyDetails: {
+    address: string;
+    assessedValue: number;
+    lotSize: number;
+    zoning: string;
+    yearBuilt: number;
+    buildingArea: number;
   };
-  marketAnalysis: {
-    marketDemand: string;
-    comparableSales: string;
-    priceRecommendation: number;
-    riskFactors: string[];
+  developmentAnalysis: {
+    currentConfiguration: string;
+    bill44Potential: {
+      eligible: boolean;
+      maxUnits: number;
+      compliance: string;
+    };
+    bill47Potential: {
+      eligible: boolean;
+      reason: string;
+      todZone: string;
+    };
+    recommendedDevelopment: {
+      units: number;
+      type: string;
+      feasibilityScore: number;
+      timeline: string;
+    };
   };
-  developmentFeasibility: {
-    complexity: string;
-    timelineMonths: number;
-    majorObstacles: string[];
-    regulatoryRequirements: string[];
+  financialProjection: {
+    acquisitionCost: number;
+    developmentCost: number;
+    totalInvestment: number;
+    projectedValue: number;
+    projectedProfit: number;
+    roiPercentage: number;
+    breakdownCosts: {
+      demolition: number;
+      construction: number;
+      permits: number;
+      professional: number;
+    };
   };
-  recommendations: {
-    goNoGo: string;
-    optimizations: string[];
-    alternatives: string[];
+  marketContext: {
+    comparableSales: Array<{
+      address: string;
+      soldPrice: number;
+      pricePerSqft: number;
+      daysOnMarket: number;
+    }>;
+    marketTrend: string;
+    averageDaysOnMarket: number;
+    priceAppreciation: string;
   };
-  confidence: number;
+  nextSteps: string[];
+  legalConsiderations: string[];
 }
 
 export default function AIPropertyAnalyzer() {
