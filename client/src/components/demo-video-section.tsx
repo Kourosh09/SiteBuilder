@@ -20,7 +20,29 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
-    // In real implementation, this would control video playback
+    
+    // Simulate video playback with time progression
+    if (!isPlaying) {
+      // Start playing - simulate time progression
+      const interval = setInterval(() => {
+        setCurrentTime(prev => {
+          if (prev >= totalDuration) {
+            setIsPlaying(false);
+            clearInterval(interval);
+            return 0; // Reset to beginning
+          }
+          return prev + 1;
+        });
+      }, 1000);
+      
+      // Store interval reference to clear later
+      (window as any).videoInterval = interval;
+    } else {
+      // Pause - stop time progression
+      if ((window as any).videoInterval) {
+        clearInterval((window as any).videoInterval);
+      }
+    }
   };
 
   const videoFeatures = [
@@ -67,20 +89,43 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
               <div className="relative bg-black aspect-video">
                 {/* Video Thumbnail/Player */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-colors">
-                      <Play className="w-8 h-8 text-white ml-1" />
+                  {!isPlaying ? (
+                    <div className="text-center">
+                      <div 
+                        onClick={handlePlayPause}
+                        className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-colors hover:scale-110"
+                      >
+                        <Play className="w-8 h-8 text-white ml-1" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">
+                        BuildwiseAI Platform Demo
+                      </h3>
+                      <p className="text-blue-100 text-sm">
+                        21558 Glenwood Ave, Maple Ridge Analysis
+                      </p>
+                      <p className="text-blue-200 text-xs mt-1">
+                        Duration: 2:30 • HD Quality
+                      </p>
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      BuildwiseAI Platform Demo
-                    </h3>
-                    <p className="text-blue-100 text-sm">
-                      21558 Glenwood Ave, Maple Ridge Analysis
-                    </p>
-                    <p className="text-blue-200 text-xs mt-1">
-                      Duration: 2:30 • HD Quality
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-emerald-500/80 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
+                        <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">
+                        Demo Playing...
+                      </h3>
+                      <p className="text-blue-100 text-sm">
+                        Analyzing {Math.floor(currentTime/30) % 5 === 0 ? "BC Assessment Data" : 
+                                Math.floor(currentTime/30) % 5 === 1 ? "MLS Comparables" :
+                                Math.floor(currentTime/30) % 5 === 2 ? "Zoning Intelligence" :
+                                Math.floor(currentTime/30) % 5 === 3 ? "ROI Calculations" : "Partner Directory"}
+                      </p>
+                      <p className="text-emerald-200 text-xs mt-1">
+                        ● LIVE • Professional Analysis in Progress
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Video Controls */}
