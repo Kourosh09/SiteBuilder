@@ -16,8 +16,8 @@ interface HeroSectionProps {
 export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   const { setPropertyData } = usePropertyData();
   const [propertyForm, setPropertyForm] = useState({
-    address: '21558 Glenwood Ave',
-    city: 'Maple Ridge',
+    address: '',
+    city: '',
     email: '',
     phone: ''
   });
@@ -46,7 +46,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   const demoProperty = () => {
     // Set demo property data that will auto-populate all calculators
     setPropertyData({
-      address: "1234 Main Street",
+      address: "1234 Example Street",
       city: "Vancouver",
       currentValue: 1850000,
       lotSize: 7200,
@@ -258,7 +258,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                         value={propertyForm.address}
                         onChange={(e) => setPropertyForm({...propertyForm, address: e.target.value})}
                         className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="Enter property address"
+                        placeholder="Enter your BC property address"
                       />
                     </div>
                     <div>
@@ -268,7 +268,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                         value={propertyForm.city}
                         onChange={(e) => setPropertyForm({...propertyForm, city: e.target.value})}
                         className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="Enter city"
+                        placeholder="Enter BC city (e.g. Vancouver)"
                       />
                     </div>
                     <div>
