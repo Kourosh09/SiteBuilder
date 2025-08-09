@@ -3857,6 +3857,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner signup endpoint
+  app.post('/api/partners/signup', async (req, res) => {
+    try {
+      const partnerData = req.body;
+      console.log('👥 Partner signup received:', {
+        company: partnerData.companyName,
+        email: partnerData.email,
+        services: partnerData.serviceType,
+        areas: partnerData.serviceAreas
+      });
+
+      // Store partner application (in production, save to database)
+      const partnerId = `partner_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Email notification could be sent here
+      console.log('📧 Partner application stored with ID:', partnerId);
+      
+      res.json({
+        success: true,
+        data: {
+          partnerId,
+          status: 'pending_review',
+          message: 'Application received and under review'
+        }
+      });
+    } catch (error) {
+      console.error('Partner signup error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process partner application'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building2, TrendingUp, Users, Shield, Calculator, FileText } from "lucide-react";
+import PartnerSignupDialog from './partner-signup-dialog';
 
 export default function LandownerJVSection() {
+  const [showPartnerSignup, setShowPartnerSignup] = useState(false);
   return (
     <section id="landowner-jv" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,14 +149,8 @@ export default function LandownerJVSection() {
               size="lg" 
               variant="outline"
               onClick={() => {
-                console.log('🖱️ Browse Development Partners clicked');
-                const partnersSection = document.getElementById('partners');
-                if (partnersSection) {
-                  partnersSection.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  // Fallback: scroll to bottom of page
-                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                }
+                console.log('🖱️ Browse Development Partners clicked - Opening signup dialog');
+                setShowPartnerSignup(true);
               }}
               data-testid="button-landowner-partners"
             >
@@ -162,6 +159,11 @@ export default function LandownerJVSection() {
           </div>
         </div>
       </div>
+      
+      <PartnerSignupDialog 
+        open={showPartnerSignup} 
+        onOpenChange={setShowPartnerSignup} 
+      />
     </section>
   );
 }
