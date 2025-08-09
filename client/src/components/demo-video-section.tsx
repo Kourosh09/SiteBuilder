@@ -11,24 +11,13 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [voiceoverPhase, setVoiceoverPhase] = useState(0);
-  const [isMuted, setIsMuted] = useState(true); // Start muted by default
-  const [speechSupported, setSpeechSupported] = useState(false);
-  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [showCaptions, setShowCaptions] = useState(true);
   const intervalRef = useRef<number | null>(null);
   const totalDuration = 60; // Faster 1:00 demo video
   
-  // Initialize and cleanup
+  // Cleanup on unmount
   useEffect(() => {
-    if ('speechSynthesis' in window) {
-      setSpeechSupported(true);
-    }
-    
-    // Complete cleanup on unmount
     return () => {
-      if (speechRef.current) {
-        window.speechSynthesis.cancel();
-        speechRef.current = null;
-      }
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -36,68 +25,16 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
     };
   }, []);
 
-  // Comprehensive speech management
-  const stopAllSpeech = () => {
-    if (speechRef.current) {
-      window.speechSynthesis.cancel();
-      speechRef.current = null;
-    }
+  const demoSteps: Record<number, { title: string; description: string }> = {
+    0: { title: "Property Input", description: "Enter any BC address to start instant analysis" },
+    1: { title: "BC Assessment Data", description: "Real assessment values and lot details from official sources" },
+    2: { title: "MLS Comparables", description: "Recent sales data showing market trends and pricing" },
+    3: { title: "Zoning Analysis", description: "Bill 44/47 compliance and municipal development potential" },
+    4: { title: "Financial Modeling", description: "ROI calculations with authentic construction costs" },
+    5: { title: "Complete Report", description: "Professional PDF with contractor connections" }
   };
 
-  // Stop speech when paused or muted
-  useEffect(() => {
-    if (!isPlaying || isMuted) {
-      stopAllSpeech();
-    }
-  }, [isPlaying, isMuted]);
-
-  const voiceoverTexts: Record<number, string> = {
-    0: "Ready to see how BuildwiseAI transforms BC property development? This real Vancouver analysis shows the complete workflow in 60 seconds.",
-    1: "Let's analyze a Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data and property details from real MLS records.",
-    2: "Now we're comparing with recent MLS sales in the area. Similar properties show strong market trends and development potential.",
-    3: "Next, BuildwiseAI checks Vancouver zoning laws and Bill 44/47 compliance. This property shows excellent potential for multiplex development.",
-    4: "The financial engine calculates ROI based on real costs. With 1.34 million investment plus 580K construction, projected value reaches 2.75 million for 43.2% return.",
-    5: "Analysis complete! 87% feasibility score confirms this is an excellent opportunity. BuildwiseAI connects you with 15+ qualified contractors."
-  };
-
-  const speakText = (text: string) => {
-    if (!speechSupported || isMuted || !isPlaying) return;
-    
-    // Always stop current speech first
-    stopAllSpeech();
-    
-    // Wait for proper cleanup
-    setTimeout(() => {
-      if (!isPlaying || isMuted) return; // Double check state
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
-      utterance.pitch = 1.0;
-      utterance.volume = 0.7;
-      
-      utterance.onend = () => {
-        speechRef.current = null;
-      };
-      
-      utterance.onerror = () => {
-        speechRef.current = null;
-      };
-      
-      // Use a clear, professional voice
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.name.includes('Microsoft') || 
-        voice.name.includes('Google') ||
-        (voice.lang.startsWith('en-') && voice.name.includes('Female'))
-      );
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-      
-      speechRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    }, 150);
-  };
+  // Remove problematic speech synthesis - use visual captions instead
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -106,62 +43,48 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   };
 
   const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-    
-    // Simulate video playback with time progression
     if (!isPlaying) {
-      // Start initial narration
-      speakText(voiceoverTexts[0]);
+      setIsPlaying(true);
+      setCurrentTime(0);
+      setVoiceoverPhase(0);
       
-      // Start playing - faster time progression with voiceover phases
-      const interval = setInterval(() => {
+      // Start demo progression
+      intervalRef.current = setInterval(() => {
         setCurrentTime(prev => {
           const newTime = prev + 1;
           if (newTime >= totalDuration) {
             setIsPlaying(false);
             setVoiceoverPhase(0);
-            clearInterval(interval);
-            return 0; // Reset to beginning
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            return 0;
           }
           
-          // Update voiceover phase based on timeline
-          let newPhase = voiceoverPhase;
-          if (newTime < 12) newPhase = 1;
-          else if (newTime < 24) newPhase = 2;
-          else if (newTime < 36) newPhase = 3;
-          else if (newTime < 48) newPhase = 4;
-          else newPhase = 5;
+          // Update demo phase based on timeline
+          let newPhase = 0;
+          if (newTime >= 10) newPhase = 1;
+          if (newTime >= 20) newPhase = 2;
+          if (newTime >= 30) newPhase = 3;
+          if (newTime >= 45) newPhase = 4;
+          if (newTime >= 55) newPhase = 5;
           
-          // Speak when phase changes
           if (newPhase !== voiceoverPhase) {
             setVoiceoverPhase(newPhase);
-            speakText(voiceoverTexts[newPhase]);
           }
           
           return newTime;
         });
-      }, 500); // Faster playback - 2x speed
-      
-      // Store interval reference to clear later
-      (window as any).videoInterval = interval;
+      }, 1000);
     } else {
-      // Pause - stop time progression and speech
-      window.speechSynthesis.cancel();
-      if ((window as any).videoInterval) {
-        clearInterval((window as any).videoInterval);
+      setIsPlaying(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     }
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    if (!isMuted) {
-      // Muting - stop current speech
-      window.speechSynthesis.cancel();
-    } else if (isPlaying) {
-      // Unmuting - speak current phase text
-      speakText(voiceoverTexts[voiceoverPhase]);
-    }
+  const toggleCaptions = () => {
+    setShowCaptions(!showCaptions);
   };
 
   const videoFeatures = [

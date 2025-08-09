@@ -11,7 +11,7 @@ import AIPropertyAnalyzer from "@/components/ai-property-analyzer";
 import MarketingAutomationShowcase from "@/components/marketing-automation-showcase";
 import ContractorSignupSection from "@/components/contractor-signup-section";
 import CalculatorDemo from "@/components/calculator-demo";
-import DemoVideoSection from "@/components/demo-video-section";
+import DemoVideoSection from "@/components/demo-video-section-fixed";
 import ProductShowcase from "@/components/product-showcase";
 import AboutFounder from "@/components/about-founder";
 import Testimonials from "@/components/testimonials";
