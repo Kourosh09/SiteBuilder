@@ -10,6 +10,8 @@ BuildwiseAI is a comprehensive AI-powered real estate development platform for t
 
 **DEVELOPMENT OPTIMIZATION ENGINE**: Advanced analysis system that evaluates all integrated data sources (BC Assessment, MLS, municipal zoning, bylaws, building codes) to generate optimized development scenarios with financial analysis, compliance scoring, and city-compliant construction designs. Automatically determines best development possibilities and generates AI-powered architectural recommendations that meet all municipal requirements.
 
+**LOT-BY-LOT ANALYSIS SYSTEM**: Comprehensive property evaluation system providing authentic BC legislative compliance analysis. Features include: exact transit distance measurements (200m/400m/800m TOD zones), Bill 44 multiplex eligibility (4-plex vs 6-plex based on 400m frequent transit rule), Bill 47 TOD zone classification with FSR minimums (5.0/4.0/3.0), real MLS comparable integration, construction cost estimates by municipality, and ROI calculations. API endpoint: `/api/lot/analyze` - fully operational with real REALTOR.ca DDF data integration.
+
 **COMPLETE MARKETING ECOSYSTEM**: Comprehensive lead generation and conversion system including:
 - Interactive property demo with real-time AI analysis
 - Automated lead capture with CRM integration and scoring
