@@ -409,13 +409,31 @@ export class LotAnalysisService {
       'surrey': 568322,
       'burnaby': 249125,
       'richmond': 209937,
-      'coquitlam': 148625
+      'coquitlam': 148625,
+      'maple ridge': 82256,
+      'langley': 132603,
+      'north vancouver': 85935,
+      'west vancouver': 44122,
+      'new westminster': 78916,
+      'white rock': 21939,
+      'delta': 108455,
+      'abbotsford': 153524,
+      'chilliwack': 93203,
+      'mission': 41519,
+      'pitt meadows': 18573,
+      'port coquitlam': 61498,
+      'port moody': 33551
     };
-    return populations[city.toLowerCase()] || 10000;
+    return populations[city.toLowerCase()] || 15000;
   }
   
   private isWithinUrbanContainment(city: string): boolean {
-    const urbanCities = ['vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'new westminster'];
+    const urbanCities = [
+      'vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam', 'new westminster',
+      'maple ridge', 'langley', 'north vancouver', 'west vancouver', 'white rock',
+      'delta', 'abbotsford', 'chilliwack', 'mission', 'pitt meadows', 
+      'port coquitlam', 'port moody'
+    ];
     return urbanCities.includes(city.toLowerCase());
   }
   
