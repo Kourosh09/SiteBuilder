@@ -3849,6 +3849,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // LTSA Enterprise Test Endpoint
+  app.post("/api/test-ltsa", async (req, res) => {
+    try {
+      const { LTSAEnterpriseService } = await import('./ltsa-enterprise-service');
+      const ltsaService = new LTSAEnterpriseService();
+      const { address, city } = req.body;
+      
+      console.log(`🧪 Testing LTSA Enterprise integration for ${address}, ${city}`);
+      
+      const isConfigured = ltsaService.isConfigured();
+      console.log(`🔧 LTSA Enterprise configured: ${isConfigured}`);
+      
+      if (!isConfigured) {
+        return res.json({
+          success: false,
+          error: 'LTSA Enterprise credentials not configured',
+          configured: false
+        });
+      }
+      
+      const connectionTest = await ltsaService.testConnection();
+      console.log(`🔗 LTSA Connection test: ${connectionTest}`);
+      
+      // Test web automation
+      console.log(`🤖 Testing web automation for property search...`);
+      const propertyData = await ltsaService.getBCAssessmentData(address, city);
+      
+      res.json({
+        success: true,
+        configured: isConfigured,
+        connectionTest: connectionTest,
+        propertyData: propertyData,
+        message: 'LTSA Enterprise test completed'
+      });
+      
+    } catch (error) {
+      console.error('LTSA test failed:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

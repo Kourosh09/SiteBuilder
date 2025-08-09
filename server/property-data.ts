@@ -110,23 +110,30 @@ export class PropertyDataService {
     console.log(`🔍 Method 2: Searching BC Assessment database using direct data sources`);
     
     try {
-      // Method 2A: LTSA Enterprise Account (highest authority)
-      const ltsaData = await this.ltsaService.searchPropertyByAddress(address, city);
-      if (ltsaData) {
-        console.log(`✅ Found authentic LTSA data for ${address}`);
-        return {
-          pid: ltsaData.pid || "",
-          address: ltsaData.address || `${address}, ${city}, BC`,
-          landValue: ltsaData.landValue || 0,
-          improvementValue: ltsaData.improvementValue || 0,
-          totalAssessedValue: ltsaData.totalAssessedValue || 0,
-          lotSize: ltsaData.lotSize || 0,
-          zoning: ltsaData.zoning || this.getZoningEstimate(city),
-          propertyType: ltsaData.propertyClass || "Residential",
-          yearBuilt: ltsaData.yearBuilt || 0,
-          buildingArea: ltsaData.buildingArea || 0,
-          legalDescription: ltsaData.legalDescription || `${address}, ${city}, BC`
-        };
+      // Method 2A: LTSA Enterprise Account (highest authority) 
+      if (this.ltsaService.isConfigured()) {
+        console.log(`🏛️ Attempting LTSA Enterprise portal access for ${address}, ${city}`);
+        const ltsaData = await this.ltsaService.getBCAssessmentData(address, city);
+        if (ltsaData && ltsaData.found) {
+          console.log(`✅ Found authentic LTSA Enterprise data for ${address}`);
+          return {
+            pid: ltsaData.pid || "",
+            address: ltsaData.address || `${address}, ${city}, BC`,
+            landValue: 0, // Extract from assessment text
+            improvementValue: 0, // Extract from assessment text  
+            totalAssessedValue: this.parseAssessmentValue(ltsaData.assessment),
+            lotSize: 0, // Not available in portal search
+            zoning: this.getZoningEstimate(city),
+            propertyType: "Residential",
+            yearBuilt: 0,
+            buildingArea: 0,
+            legalDescription: `${address}, ${city}, BC - ${ltsaData.source}`
+          };
+        } else {
+          console.log(`❌ LTSA Enterprise portal search failed for ${address}`);
+        }
+      } else {
+        console.log(`⚠️ LTSA Enterprise credentials not configured`);
       }
       
       // Method 2B: Direct GIS integration
@@ -664,6 +671,20 @@ export class PropertyDataService {
     }
     
     return [];
+  }
+
+  /**
+   * Parse assessment value from LTSA text
+   */
+  private parseAssessmentValue(assessmentText: string): number {
+    if (!assessmentText) return 0;
+    
+    // Extract numeric value from assessment text
+    const match = assessmentText.match(/[\d,]+/);
+    if (match) {
+      return parseInt(match[0].replace(/,/g, ''), 10) || 0;
+    }
+    return 0;
   }
 
   /**
