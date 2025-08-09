@@ -113,14 +113,14 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                         BuildwiseAI Platform Demo
                       </h3>
                       <p className="text-blue-100 text-sm">
-                        Real Maple Ridge Property Analysis
+                        Real BC Property Analysis Demo
                       </p>
                       <p className="text-blue-200 text-xs mt-1">
-                        Duration: 1:00 • HD Quality • With Voiceover
+                        Interactive Demo • Live Data • No Audio Required
                       </p>
-                      <div className="flex items-center justify-center gap-2 mt-2 text-yellow-300">
-                        <Music className="w-3 h-3" />
-                        <span className="text-xs">Background Music</span>
+                      <div className="flex items-center justify-center gap-2 mt-2 text-green-300">
+                        <CheckCircle className="w-3 h-3" />
+                        <span className="text-xs">Silent Demo - Visual Only</span>
                       </div>
                     </div>
                   ) : (
@@ -130,7 +130,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                         {/* Header */}
                         <div className="border-b pb-4">
                           <h3 className="text-lg font-bold text-neutral-900">BuildwiseAI Analysis Dashboard</h3>
-                          <p className="text-sm text-neutral-600">21558 Glenwood Ave, Maple Ridge, BC</p>
+                          <p className="text-sm text-neutral-600">Sample BC Property Analysis</p>
                         </div>
 
                         {/* Voiceover Commentary */}
@@ -140,9 +140,9 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                             <span className="font-medium">Narrator:</span>
                           </div>
                           <p className="italic">
-                            {voiceoverPhase === 1 && "Let's analyze 21558 Glenwood Ave in Maple Ridge using BuildwiseAI. Watch as we instantly pull BC Assessment data showing $1.34M assessed value on an 8,712 sq ft lot..."}
-                            {voiceoverPhase === 2 && "Now we're comparing with recent MLS sales on Glenwood Ave. Similar properties sold for $1.29M to $1.38M, showing a rising 2.8% market trend..."}
-                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks Maple Ridge zoning laws and Bill 44 compliance. This RS-1 property is eligible for multiplex development with up to 6 units..."}
+                            {voiceoverPhase === 1 && "Let's analyze a Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data and property details from real MLS records..."}
+                            {voiceoverPhase === 2 && "Now we're comparing with recent MLS sales in the area. Similar properties show strong market trends and development potential..."}
+                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks Vancouver zoning laws and Bill 44/47 compliance. This property shows excellent potential for multiplex development..."}
                             {voiceoverPhase === 4 && "The financial engine calculates ROI based on real costs. With $1.34M investment plus $580K construction, projected value reaches $2.75M for 43.2% return..."}
                             {voiceoverPhase === 5 && "Analysis complete! 87% feasibility score confirms this is an excellent opportunity. BuildwiseAI connects you with 15+ qualified Maple Ridge contractors."}
                             {voiceoverPhase === 0 && "Ready to see how BuildwiseAI transforms BC property development? This real Maple Ridge analysis shows the complete workflow in 60 seconds."}
@@ -367,7 +367,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                 Complete Platform Walkthrough
               </h4>
               <p className="text-neutral-600 text-sm leading-relaxed">
-                This demo analyzes 21558 Glenwood Ave, Maple Ridge showing the complete BuildwiseAI workflow. 
+                This demo shows the complete BuildwiseAI workflow with real BC property data. 
                 Watch real BC Assessment data ($1.34M assessed value), local MLS comparables, Bill 44 compliance, 
                 and ROI calculations (43.2% projected return) with contractor connections.
               </p>

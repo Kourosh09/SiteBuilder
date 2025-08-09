@@ -145,7 +145,7 @@ export default function InteractivePropertyDemo() {
           <div className="flex justify-center gap-4 mb-8">
             <Button
               onClick={() => {
-                setAddress("21558 Glenwood Ave");
+                setAddress("123 Main Street");
                 setCity("Maple Ridge");
               }}
               variant="outline"

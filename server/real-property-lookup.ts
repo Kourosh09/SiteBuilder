@@ -71,20 +71,7 @@ export class RealPropertyLookupService {
    */
   private generatePropertyDataForAddress(address: string, city: string) {
     // Special case for demo property to ensure consistent data with video
-    if (address.includes("21558 Glenwood Ave") && city === "Maple Ridge") {
-      return {
-        assessedValue: 1340000,
-        landValue: 890000,
-        improvementValue: 450000,
-        propertyType: "Single Family Dwelling",
-        yearBuilt: 1985,
-        lotSize: 8712,
-        floorArea: 1950,
-        bedrooms: 4,
-        bathrooms: 3,
-        zoning: "RS-1"
-      };
-    }
+    // Removed 21558 Glenwood demo property as requested
     
     const addressHash = this.getAddressHash(address);
     const cityMultiplier = this.getCityMultiplier(city);
