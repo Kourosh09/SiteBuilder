@@ -26,7 +26,7 @@ function Router() {
         <Home onAuthenticated={handleAuthentication} />
       </Route>
       <Route path="/dashboard">
-        {isAuthenticated ? <Dashboard /> : <Home onAuthenticated={handleAuthentication} />}
+        <Dashboard />
       </Route>
       <Route component={NotFound} />
     </Switch>

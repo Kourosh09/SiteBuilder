@@ -22,12 +22,12 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
     phone: ''
   });
   const [analysis, setAnalysis] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   
   // Debug: Log analysis state changes
   useEffect(() => {
     console.log('Analysis state changed:', analysis);
   }, [analysis]);
-  const [loading, setLoading] = useState(false);
   
   const scrollToContact = () => {
     const element = document.getElementById("contact");
