@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Pause, Volume2, VolumeX, Maximize, CheckCircle, Music } from "lucide-react";
@@ -11,8 +11,52 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [voiceoverPhase, setVoiceoverPhase] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const totalDuration = 60; // Faster 1:00 demo video
+  
+  // Check speech synthesis support
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      setSpeechSupported(true);
+    }
+  }, []);
+
+  const voiceoverTexts: Record<number, string> = {
+    0: "Ready to see how BuildwiseAI transforms BC property development? This real Vancouver analysis shows the complete workflow in 60 seconds.",
+    1: "Let's analyze a Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data and property details from real MLS records.",
+    2: "Now we're comparing with recent MLS sales in the area. Similar properties show strong market trends and development potential.",
+    3: "Next, BuildwiseAI checks Vancouver zoning laws and Bill 44/47 compliance. This property shows excellent potential for multiplex development.",
+    4: "The financial engine calculates ROI based on real costs. With 1.34 million investment plus 580K construction, projected value reaches 2.75 million for 43.2% return.",
+    5: "Analysis complete! 87% feasibility score confirms this is an excellent opportunity. BuildwiseAI connects you with 15+ qualified contractors."
+  };
+
+  const speakText = (text: string) => {
+    if (!speechSupported || isMuted) return;
+    
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    
+    // Try to use a professional-sounding voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => 
+      voice.name.includes('Google') || 
+      voice.name.includes('Microsoft') ||
+      voice.lang.startsWith('en-')
+    );
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    speechRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -25,6 +69,9 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
     
     // Simulate video playback with time progression
     if (!isPlaying) {
+      // Start initial narration
+      speakText(voiceoverTexts[0]);
+      
       // Start playing - faster time progression with voiceover phases
       const interval = setInterval(() => {
         setCurrentTime(prev => {
@@ -37,11 +84,18 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
           }
           
           // Update voiceover phase based on timeline
-          if (newTime < 12) setVoiceoverPhase(1);
-          else if (newTime < 24) setVoiceoverPhase(2);
-          else if (newTime < 36) setVoiceoverPhase(3);
-          else if (newTime < 48) setVoiceoverPhase(4);
-          else setVoiceoverPhase(5);
+          let newPhase = voiceoverPhase;
+          if (newTime < 12) newPhase = 1;
+          else if (newTime < 24) newPhase = 2;
+          else if (newTime < 36) newPhase = 3;
+          else if (newTime < 48) newPhase = 4;
+          else newPhase = 5;
+          
+          // Speak when phase changes
+          if (newPhase !== voiceoverPhase) {
+            setVoiceoverPhase(newPhase);
+            speakText(voiceoverTexts[newPhase]);
+          }
           
           return newTime;
         });
@@ -50,10 +104,22 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
       // Store interval reference to clear later
       (window as any).videoInterval = interval;
     } else {
-      // Pause - stop time progression
+      // Pause - stop time progression and speech
+      window.speechSynthesis.cancel();
       if ((window as any).videoInterval) {
         clearInterval((window as any).videoInterval);
       }
+    }
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (!isMuted) {
+      // Muting - stop current speech
+      window.speechSynthesis.cancel();
+    } else if (isPlaying) {
+      // Unmuting - speak current phase text
+      speakText(voiceoverTexts[voiceoverPhase]);
     }
   };
 
@@ -133,15 +199,32 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                           <p className="text-sm text-neutral-600">Sample BC Property Analysis</p>
                         </div>
 
-                        {/* Demo Status - No Voice */}
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-lg mb-4 text-xs">
-                          <div className="flex items-center gap-2 mb-2">
-                            <VolumeX className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium text-blue-800">Silent Demo Mode</span>
+                        {/* Narrator Commentary */}
+                        <div className="bg-blue-900 text-white p-3 rounded-lg mb-4 text-xs">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              {!isMuted && speechSupported ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                              <span className="font-medium">Narrator:</span>
+                            </div>
+                            {speechSupported && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleMute}
+                                className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                              >
+                                {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                              </Button>
+                            )}
                           </div>
-                          <p className="text-blue-700">
-                            Visual demonstration of BuildwiseAI's complete BC property analysis workflow with authentic municipal data integration.
+                          <p className="italic">
+                            {voiceoverTexts[voiceoverPhase]}
                           </p>
+                          {!speechSupported && (
+                            <p className="text-xs text-blue-300 mt-1">
+                              Voice narration not supported in this browser
+                            </p>
+                          )}
                         </div>
 
                         {/* Dynamic Content Based on Time - Faster Phases */}
