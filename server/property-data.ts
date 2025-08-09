@@ -1,4 +1,6 @@
 // BC Assessment Data Interface
+import { LTSAEnterpriseService } from './ltsa-enterprise-service';
+
 export interface BCAssessmentData {
   pid: string;
   address: string;
@@ -38,6 +40,13 @@ export interface PropertyDataResult {
 }
 
 export class PropertyDataService {
+  private ltsaService: LTSAEnterpriseService;
+
+  constructor() {
+    this.ltsaService = new LTSAEnterpriseService();
+    console.log(`🏛️ LTSA Enterprise Service ${this.ltsaService.isConfigured() ? 'configured' : 'not configured'}`);
+  }
+
   /**
    * Dual search approach: Active MLS + BC Assessment
    */
@@ -101,10 +110,23 @@ export class PropertyDataService {
     console.log(`🔍 Method 2: Searching BC Assessment database using direct data sources`);
     
     try {
-      // Method 2A: LTSA Land Title Records (highest authority)
-      const ltsaData = await this.getDirectLTSAData(address, city);
+      // Method 2A: LTSA Enterprise Account (highest authority)
+      const ltsaData = await this.ltsaService.searchPropertyByAddress(address, city);
       if (ltsaData) {
-        return this.convertLTSAToAssessmentData(ltsaData, address, city);
+        console.log(`✅ Found authentic LTSA data for ${address}`);
+        return {
+          pid: ltsaData.pid || "",
+          address: ltsaData.address || `${address}, ${city}, BC`,
+          landValue: ltsaData.landValue || 0,
+          improvementValue: ltsaData.improvementValue || 0,
+          totalAssessedValue: ltsaData.totalAssessedValue || 0,
+          lotSize: ltsaData.lotSize || 0,
+          zoning: ltsaData.zoning || this.getZoningEstimate(city),
+          propertyType: ltsaData.propertyClass || "Residential",
+          yearBuilt: ltsaData.yearBuilt || 0,
+          buildingArea: ltsaData.buildingArea || 0,
+          legalDescription: ltsaData.legalDescription || `${address}, ${city}, BC`
+        };
       }
       
       // Method 2B: Direct GIS integration
@@ -131,20 +153,27 @@ export class PropertyDataService {
   }
 
   /**
-   * Get data directly from LTSA (Land Title and Survey Authority)
+   * Get data directly from LTSA Enterprise Account
    */
   private async getDirectLTSAData(address: string, city: string): Promise<any | null> {
     try {
-      console.log(`🏛️ Method 2A: Querying LTSA for ${address}, ${city}`);
+      console.log(`🏛️ Method 2A: Querying LTSA Enterprise for ${address}, ${city}`);
       
-      // LTSA myLTSA web service integration
-      const ltsaSearchUrl = 'https://www.myltsa.ca/api/propertySearch';
+      // Check for enterprise credentials
+      if (!process.env.LTSA_ENTERPRISE_USERNAME || !process.env.LTSA_ENTERPRISE_PASSWORD) {
+        console.log(`❌ LTSA Enterprise credentials not configured`);
+        return null;
+      }
+      
+      // LTSA Enterprise Search API - using proper business account
+      const ltsaSearchUrl = 'https://apps.ltsa.ca/api/search/property';
       
       const response = await fetch(ltsaSearchUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Basic ${Buffer.from(`${process.env.LTSA_ENTERPRISE_USERNAME}:${process.env.LTSA_ENTERPRISE_PASSWORD}`).toString('base64')}`
         },
         body: JSON.stringify({
           searchType: 'ADDRESS',
@@ -152,7 +181,9 @@ export class PropertyDataService {
           city: city,
           province: 'BC',
           includeAssessment: true,
-          includePropertyDetails: true
+          includePropertyDetails: true,
+          includeLandTitle: true,
+          includeOwnership: true
         })
       });
       
@@ -180,17 +211,23 @@ export class PropertyDataService {
     } catch (error) {
       console.log('LTSA query failed:', error);
       
-      // Try alternative LTSA endpoint
+      // Try alternative LTSA Enterprise endpoint
       try {
-        console.log(`🏛️ Trying alternative LTSA endpoint for ${address}`);
+        console.log(`🏛️ Trying LTSA Enterprise SRS API for ${address}`);
         
-        const altResponse = await fetch('https://ltsa.ca/api/parcel-search', {
+        // Use the SRS (Search and Registration Services) API endpoint
+        const altResponse = await fetch('https://apps.ltsa.ca/srs/api/property/search', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${Buffer.from(`${process.env.LTSA_ENTERPRISE_USERNAME}:${process.env.LTSA_ENTERPRISE_PASSWORD}`).toString('base64')}`
           },
           body: JSON.stringify({
-            address: `${address}, ${city}, BC`
+            searchCriteria: {
+              address: `${address}, ${city}, BC`,
+              includeAssessment: true,
+              includeTitleInfo: true
+            }
           })
         });
         
