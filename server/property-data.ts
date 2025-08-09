@@ -95,7 +95,7 @@ export class PropertyDataService {
       console.log("🔍 Scraping BC Assessment website for real property data...");
       
       const axios = (await import('axios')).default;
-      const cheerio = (await import('cheerio')).default;
+      const { load } = await import('cheerio');
       
       // BC Assessment property search URL
       const searchUrl = 'https://www.bcassessment.ca/Property/Search';
@@ -109,7 +109,7 @@ export class PropertyDataService {
         }
       });
       
-      const $ = cheerio.load(response.data);
+      const $ = load(response.data);
       
       // Step 2: Look for the search form and submit it
       const searchForm = $('form[action*="Search"]').first();
@@ -133,7 +133,7 @@ export class PropertyDataService {
         }
       });
       
-      const searchResults = cheerio.load(searchResponse.data);
+      const searchResults = load(searchResponse.data);
       
       // Step 4: Extract property data from results
       const propertyData = this.extractBCAssessmentData(searchResults, address, city);
@@ -159,7 +159,7 @@ export class PropertyDataService {
   private async tryBCAssessmentDirectSearch(address: string, city: string): Promise<BCAssessmentData | null> {
     try {
       const axios = (await import('axios')).default;
-      const cheerio = (await import('cheerio')).default;
+      const { load } = await import('cheerio');
       
       console.log("🔍 Trying BC Assessment direct property lookup...");
       
@@ -173,7 +173,7 @@ export class PropertyDataService {
         timeout: 10000
       });
       
-      const $ = cheerio.load(response.data);
+      const $ = load(response.data);
       
       // Extract data from the direct property page
       const propertyData = this.extractBCAssessmentData($, address, city);

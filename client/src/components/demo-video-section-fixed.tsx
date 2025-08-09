@@ -11,7 +11,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [currentTime, setCurrentTime] = useState(0);
   const [currentPhase, setCurrentPhase] = useState(0);
   const [showCaptions, setShowCaptions] = useState(true);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const totalDuration = 60;
 
   // Cleanup on unmount
