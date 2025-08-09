@@ -202,6 +202,67 @@ export async function registerUnifiedRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Partner Network Signup endpoint
+  app.post("/api/partners/signup", async (req, res) => {
+    try {
+      const partnerData = req.body;
+      
+      console.log("Partner signup request:", {
+        name: partnerData.name,
+        company: partnerData.company,
+        email: partnerData.email,
+        partnership: partnerData.partnership
+      });
+      
+      // In production, save to database
+      // For demo, just return success
+      res.json({
+        success: true,
+        message: "Partner application submitted successfully",
+        data: {
+          id: 'partner_' + Date.now(),
+          status: 'pending_review',
+          submittedAt: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error("Partner signup error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to submit partner application"
+      });
+    }
+  });
+
+  // Get partner opportunities
+  app.get("/api/partners/opportunities", async (req, res) => {
+    res.json({
+      success: true,
+      data: {
+        opportunities: [
+          {
+            id: 1,
+            title: "Vancouver Duplex Development",
+            location: "Vancouver, BC",
+            budget: "$2.1M",
+            timeline: "6 months",
+            type: "Joint Venture Development"
+          },
+          {
+            id: 2,
+            title: "Richmond Townhouse Project", 
+            location: "Richmond, BC",
+            budget: "$3.8M",
+            timeline: "9 months",
+            type: "Build-to-Suit Projects"
+          }
+        ],
+        totalCount: 2
+      }
+    });
+  });
+
   // Legacy lot analysis (now uses unified service)
   app.post('/api/lot/analyze', async (req, res) => {
     try {
