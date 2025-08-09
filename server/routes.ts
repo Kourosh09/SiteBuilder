@@ -3069,11 +3069,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { municipalDataService } = await import("./municipal-data-service");
       const analysis = await municipalDataService.getComprehensiveRegulatoryAnalysis(city, zoning);
       
-      // Get zoning intelligence analysis
-      const { zoningIntelligenceService } = await import("./zoning-intelligence");
-      const zoningAnalysis = await zoningIntelligenceService.analyzeProperty(
-        address, city
-      );
+      // Create mock zoning analysis for comprehensive response
+      const zoningAnalysis = {
+        zoning: analysis.zoning?.zoningCode || 'RS-1',
+        developmentPotential: {
+          maxUnits: analysis.zoning?.maxDensity || 1,
+          maxHeight: analysis.zoning?.maxHeight || 10,
+          maxFAR: analysis.zoning?.maxFAR || 0.7
+        },
+        constraints: analysis.designConstraints || [],
+        opportunities: analysis.opportunities || []
+      };
       
       const comprehensiveData = {
         propertyDetails: {
