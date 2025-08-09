@@ -597,7 +597,6 @@ export class PropertyDataService {
     const cityLower = city.toLowerCase();
     
     console.log(`🔍 Address lookup: "${addressLower}" in "${cityLower}"`);
-    console.log(`🔍 Checking for 20387 dale: includes 20387? ${addressLower.includes('20387')}, includes dale? ${addressLower.includes('dale')}`);
     
     // Known specific properties with authentic BC Assessment data
     if (addressLower.includes('21558 glenwood') && cityLower.includes('maple ridge')) {
@@ -605,13 +604,8 @@ export class PropertyDataService {
       return 11325; // Actual lot size for 21558 Glenwood Ave
     }
     
-    if ((addressLower.includes('20387') && addressLower.includes('dale')) && cityLower.includes('maple ridge')) {
-      console.log("🎯 Using authentic lot size for 20387 Dale Drive: 7,800 sq ft");
-      return 7800; // Authentic lot size for 20387 Dale Drive
-    }
-    
     if (addressLower.includes('123 main') && cityLower.includes('vancouver')) {
-      return 4200; // Typical Vancouver main street lot
+      return 4200; // Example Vancouver property
     }
     
     // Return null - no specific lot size data available
