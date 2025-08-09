@@ -238,12 +238,22 @@ export class PropertyDataService {
       // 2. BC Assessment Folios - Property identification via folio numbers (FREE)
       // 3. Common Property Records - Strata common property info (FREE)
       
-      // Implement LTSA ParcelMap BC integration
+      // Implement LTSA ParcelMap BC integration (FREE service)
       const ltsaData = await this.queryLTSAParcelMap(address, city);
       
-      if (ltsaData) {
-        console.log(`✅ Found LTSA free property data: PID ${ltsaData.pid}`);
-        return ltsaData;
+      if (ltsaData && ltsaData.pid && ltsaData.pid !== 'LTSA-FREE-LOOKUP') {
+        console.log(`✅ Found LTSA FREE property data: PID ${ltsaData.pid}`);
+        return {
+          pid: ltsaData.pid,
+          address: `${address}, ${city}, BC`,
+          landValue: 0, // LTSA ParcelMap doesn't provide assessment values
+          improvementValue: 0, // Assessment data comes from other sources
+          totalAssessedValue: 0, // Combined with Vancouver Open Data for complete profile
+          lotSize: ltsaData.lotSize || 0,
+          propertyType: ltsaData.propertyType || 'Property',
+          yearBuilt: 0, // Not available in LTSA ParcelMap
+          source: 'LTSA ParcelMap BC (FREE)'
+        };
       }
       
       console.log(`⚠️ No LTSA free data found for ${address}, ${city}`);
@@ -342,33 +352,61 @@ export class PropertyDataService {
   }
 
   /**
-   * Query LTSA by coordinates (FREE ParcelMap BC implementation)
+   * Query LTSA ParcelMap BC (FREE service) by coordinates
    */
   private async queryLTSAByCoordinates(lat: number, lon: number): Promise<any> {
     try {
-      // LTSA ParcelMap BC provides free property identification
-      // Web map service: https://maps.ltsa.ca/pmbc/
+      // LTSA ParcelMap BC Public Map Service (FREE)
+      // Base URL: https://parcelmapbc.ltsa.ca/pmsspub/
       
-      console.log(`🗺️ LTSA ParcelMap BC lookup for coordinates: ${lat}, ${lon}`);
+      console.log(`🗺️ Querying FREE LTSA ParcelMap BC at: ${lat}, ${lon}`);
       
-      // Try to access LTSA ParcelMap BC web services
-      // Note: LTSA provides map services but we need proper API access
-      const ltsaMapUrl = `https://apps.ltsa.ca/pmbc/help/ParcelMapBC_REST_API.pdf`;
+      // LTSA ParcelMap BC REST API endpoints (FREE access)
+      const ltsaBaseUrl = 'https://parcelmapbc.ltsa.ca/pmsspub/rest/services';
       
-      console.log(`📋 LTSA REST API documentation available`);
-      console.log(`🗺️ ParcelMap BC provides: PID lookup, legal descriptions, boundaries`);
+      // Query for parcel information at coordinates using LTSA's FREE service
+      const identifyUrl = `${ltsaBaseUrl}/PMBC_Parcel/MapServer/identify`;
+      const params = new URLSearchParams({
+        'f': 'json',
+        'tolerance': '3',
+        'returnGeometry': 'false',
+        'mapExtent': `${lon-0.001},${lat-0.001},${lon+0.001},${lat+0.001}`,
+        'imageDisplay': '400,400,96',
+        'geometry': `${lon},${lat}`,
+        'geometryType': 'esriGeometryPoint',
+        'sr': '4326',
+        'layers': 'all'
+      });
       
-      // For now, return structured data indicating LTSA capability
-      // Real integration requires LTSA API key setup
+      const response = await fetch(`${identifyUrl}?${params}`);
       
-      return {
-        pid: `LTSA-FREE-LOOKUP`, // Placeholder for LTSA ParcelMap response
-        lotSize: 0, // Would come from LTSA property boundaries
-        propertyType: 'Property', // Would come from LTSA classification
-        legalDescription: `Coordinates: ${lat}, ${lon} - LTSA ParcelMap BC available`,
-        ltsaSource: 'ParcelMap BC (FREE)',
-        needsApiKey: true
-      };
+      if (!response.ok) {
+        throw new Error(`LTSA ParcelMap BC error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 LTSA ParcelMap BC returned ${data.results?.length || 0} results`);
+      
+      if (data.results && data.results.length > 0) {
+        const parcel = data.results[0];
+        const attributes = parcel.attributes;
+        
+        console.log(`✅ Found LTSA parcel: PID ${attributes.PID}`);
+        
+        return {
+          pid: attributes.PID || attributes.PARCEL_FABRIC_POLY_ID,
+          lotSize: parseFloat(attributes.AREA_SQM) || 0,
+          propertyType: attributes.OWNER_TYPE || 'Property',
+          legalDescription: attributes.LEGAL_DESCRIPTION || '',
+          planNumber: attributes.PLAN_NUMBER || '',
+          municipality: attributes.MUNICIPALITY || '',
+          ltsaSource: 'ParcelMap BC (FREE)',
+          coordinates: { lat, lon }
+        };
+      }
+      
+      console.log(`⚠️ No LTSA parcel found at coordinates: ${lat}, ${lon}`);
+      return null;
       
     } catch (error) {
       console.log(`❌ LTSA ParcelMap BC query failed:`, error);
