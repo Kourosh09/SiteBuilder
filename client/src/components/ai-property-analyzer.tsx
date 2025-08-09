@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download } from "lucide-react";
+import { Brain, Building, TrendingUp, AlertTriangle, CheckCircle, Loader2, MapPin, Download, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePropertyData } from "@/hooks/usePropertyData";
 import { apiRequest } from "@/lib/queryClient";
@@ -44,6 +44,7 @@ interface PropertyAnalysisResult {
 
 export default function AIPropertyAnalyzer() {
   const [loading, setLoading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
   const [analysis, setAnalysis] = useState<PropertyAnalysisResult | null>(null);
   const [formData, setFormData] = useState({
     address: "",
@@ -69,6 +70,60 @@ export default function AIPropertyAnalyzer() {
       });
     }
   }, [hasPropertyData, propertyData]);
+
+  // Auto-lookup property data when address and city are entered
+  const handlePropertyLookup = async () => {
+    if (!formData.address || !formData.city || lookupLoading) {
+      return;
+    }
+
+    setLookupLoading(true);
+    try {
+      const response = await fetch("/api/property/lookup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          address: formData.address,
+          city: formData.city
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data?.bcAssessment) {
+        const bcData = result.data.bcAssessment;
+        
+        // Auto-populate fields with authentic BC Assessment data
+        setFormData(prev => ({
+          ...prev,
+          currentValue: bcData.totalAssessedValue ? bcData.totalAssessedValue.toString() : prev.currentValue,
+          lotSize: bcData.lotSize ? bcData.lotSize.toString() : prev.lotSize
+        }));
+        
+        toast({
+          title: "Property Data Retrieved",
+          description: `Found BC Assessment data: $${bcData.totalAssessedValue?.toLocaleString() || 'N/A'} assessed value, ${bcData.lotSize || 'N/A'} sq ft lot`,
+        });
+      } else {
+        toast({
+          title: "Property Not Found",
+          description: "Could not find BC Assessment data for this address. Please enter values manually.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Property lookup error:", error);
+      toast({
+        title: "Lookup Failed",
+        description: "Unable to retrieve property data. Please enter values manually.",
+        variant: "destructive"
+      });
+    } finally {
+      setLookupLoading(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     if (!analysis) return;
@@ -246,6 +301,32 @@ export default function AIPropertyAnalyzer() {
                   />
                 </div>
               </div>
+
+              {/* Auto-lookup property data button */}
+              {formData.address && formData.city && (
+                <div className="flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePropertyLookup}
+                    disabled={lookupLoading}
+                    className="flex items-center gap-2"
+                    data-testid="button-lookup-property"
+                  >
+                    {lookupLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Looking up property...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Auto-Fill from BC Assessment
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
