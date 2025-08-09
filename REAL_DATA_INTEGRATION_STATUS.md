@@ -171,7 +171,9 @@ Our technical platform is actually more advanced (AI integration, development wo
 3. **Professional Marketing**: Target REBGV members and licensed realtors
 4. **Customer Acquisition**: Convert 10+ premium subscribers ($1,970+ MRR)
 
-**Timeline to Market Parity:**
-- **Week 1**: Production LTSA automation + premium subscriber onboarding
-- **Month 1**: BC Assessment commercial license approved
-- **Month 3**: 50+ premium subscribers with full AutoProp feature parity
+**Timeline to Market Leadership:**
+- **Week 1**: Deploy FREE data integration (BC Assessment public + Municipal APIs)
+- **Month 1**: Launch $29/67/127 pricing tiers with zero data costs
+- **Month 3**: Achieve 100+ subscribers = $6,700+ MRR pure profit
+
+**CRITICAL ADVANTAGE**: While AutoProp pays LTSA costs, we use FREE data + AI = higher margins at lower prices!
