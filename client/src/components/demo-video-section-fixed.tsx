@@ -154,7 +154,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                     <div className="bg-white/10 rounded-lg p-4">
                       <div className="text-white text-sm mb-2">Property Address</div>
                       <div className="bg-white/20 rounded px-3 py-2 text-white">
-                        21558 Glenwood Ave, Maple Ridge, BC
+                        Enter any BC property address...
                       </div>
                     </div>
                   </div>
@@ -165,11 +165,11 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <div className="text-emerald-300">Assessed Value</div>
-                        <div className="text-white text-xl font-bold">$2,720,000</div>
+                        <div className="text-white text-xl font-bold">Dynamic BC Data</div>
                       </div>
                       <div>
                         <div className="text-emerald-300">Lot Size</div>
-                        <div className="text-white text-xl font-bold">6,158 sq ft</div>
+                        <div className="text-white text-xl font-bold">Real MLS Data</div>
                       </div>
                     </div>
                   </div>
