@@ -108,22 +108,129 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                       </p>
                     </div>
                   ) : (
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-emerald-500/80 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
-                        <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                    <div className="w-full h-full bg-white p-6 text-left overflow-y-auto">
+                      {/* Simulated Property Analysis Interface */}
+                      <div className="space-y-4">
+                        {/* Header */}
+                        <div className="border-b pb-4">
+                          <h3 className="text-lg font-bold text-neutral-900">BuildwiseAI Analysis Dashboard</h3>
+                          <p className="text-sm text-neutral-600">1234 Example Street, Vancouver, BC</p>
+                        </div>
+
+                        {/* Dynamic Content Based on Time */}
+                        {currentTime < 30 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium">Fetching BC Assessment Data...</span>
+                            </div>
+                            <div className="bg-emerald-50 p-4 rounded-lg">
+                              <div className="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                  <span className="font-medium">Assessed Value:</span>
+                                  <div className="text-lg font-bold text-emerald-600">$1,850,000</div>
+                                </div>
+                                <div>
+                                  <span className="font-medium">Land Value:</span>
+                                  <div className="text-lg font-bold">$1,200,000</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentTime >= 30 && currentTime < 60 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium">Analyzing MLS Comparables...</span>
+                            </div>
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <div className="space-y-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span>1236 Example Street</span>
+                                  <span className="font-bold">$1,720,000</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>1238 Example Street</span>
+                                  <span className="font-bold">$1,940,000</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>1240 Example Street</span>
+                                  <span className="font-bold">$1,880,000</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentTime >= 60 && currentTime < 90 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium">Checking Zoning & Compliance...</span>
+                            </div>
+                            <div className="bg-purple-50 p-4 rounded-lg">
+                              <div className="space-y-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Current Zoning:</span>
+                                  <span className="font-bold">RS-1</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Bill 44 Compliance:</span>
+                                  <span className="text-emerald-600 font-bold">✓ Eligible</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Development Potential:</span>
+                                  <span className="font-bold">High</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentTime >= 90 && currentTime < 120 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium">Calculating ROI Projections...</span>
+                            </div>
+                            <div className="bg-orange-50 p-4 rounded-lg">
+                              <div className="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                  <span className="font-medium">Projected ROI:</span>
+                                  <div className="text-lg font-bold text-orange-600">45.2%</div>
+                                </div>
+                                <div>
+                                  <span className="font-medium">Development Value:</span>
+                                  <div className="text-lg font-bold">$2,400,000</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentTime >= 120 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                              <span className="text-sm font-medium">Analysis Complete!</span>
+                            </div>
+                            <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-emerald-600 mb-2">89% Feasibility Score</div>
+                                <p className="text-xs text-emerald-700">Excellent development opportunity</p>
+                                <Button 
+                                  onClick={onGetStarted}
+                                  className="mt-3 bg-emerald-600 text-white px-4 py-2 rounded text-xs hover:bg-emerald-700"
+                                >
+                                  Start Your Analysis
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        Demo Playing...
-                      </h3>
-                      <p className="text-blue-100 text-sm">
-                        Analyzing {Math.floor(currentTime/30) % 5 === 0 ? "BC Assessment Data" : 
-                                Math.floor(currentTime/30) % 5 === 1 ? "MLS Comparables" :
-                                Math.floor(currentTime/30) % 5 === 2 ? "Zoning Intelligence" :
-                                Math.floor(currentTime/30) % 5 === 3 ? "ROI Calculations" : "Partner Directory"}
-                      </p>
-                      <p className="text-emerald-200 text-xs mt-1">
-                        ● LIVE • Professional Analysis in Progress
-                      </p>
                     </div>
                   )}
                 </div>
