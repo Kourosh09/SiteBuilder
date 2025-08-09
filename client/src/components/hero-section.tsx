@@ -79,9 +79,12 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
 
       const result = await response.json();
       console.log('Analysis result:', result);
+      console.log('Analysis data:', result.analysis);
 
       if (result.success && result.analysis) {
+        console.log('Setting analysis data:', result.analysis);
         setAnalysis(result.analysis);
+        console.log('Analysis state should now be set');
         
         // Store property data for use in other calculators
         const propertyDetails = result.analysis.propertyDetails;
@@ -95,6 +98,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         });
       } else {
         console.error('Analysis failed:', result);
+        alert('Analysis failed: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -161,6 +165,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
               </p>
               
               {!analysis ? (
+                /* Show form when no analysis */
                 <>
                   {/* Property Analysis Form */}
                   <div className="space-y-4 mb-6">
@@ -248,7 +253,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                   </div>
                 </>
               ) : (
-                /* Analysis Results Display */
+                /* Show results when analysis exists */
                 <div className="space-y-6">
                   <div className="text-center">
                     <h4 className="text-xl font-bold text-white mb-2">Analysis Complete!</h4>
