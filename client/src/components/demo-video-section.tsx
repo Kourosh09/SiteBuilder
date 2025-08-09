@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2, Maximize, CheckCircle } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, CheckCircle, Music } from "lucide-react";
 
 interface DemoVideoSectionProps {
   onGetStarted?: () => void;
@@ -10,7 +10,9 @@ interface DemoVideoSectionProps {
 export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const totalDuration = 150; // 2:30 demo video
+  const [voiceoverPhase, setVoiceoverPhase] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const totalDuration = 60; // Faster 1:00 demo video
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -23,17 +25,27 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
     
     // Simulate video playback with time progression
     if (!isPlaying) {
-      // Start playing - simulate time progression
+      // Start playing - faster time progression with voiceover phases
       const interval = setInterval(() => {
         setCurrentTime(prev => {
-          if (prev >= totalDuration) {
+          const newTime = prev + 1;
+          if (newTime >= totalDuration) {
             setIsPlaying(false);
+            setVoiceoverPhase(0);
             clearInterval(interval);
             return 0; // Reset to beginning
           }
-          return prev + 1;
+          
+          // Update voiceover phase based on timeline
+          if (newTime < 12) setVoiceoverPhase(1);
+          else if (newTime < 24) setVoiceoverPhase(2);
+          else if (newTime < 36) setVoiceoverPhase(3);
+          else if (newTime < 48) setVoiceoverPhase(4);
+          else setVoiceoverPhase(5);
+          
+          return newTime;
         });
-      }, 1000);
+      }, 500); // Faster playback - 2x speed
       
       // Store interval reference to clear later
       (window as any).videoInterval = interval;
@@ -104,8 +116,12 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                         21558 Glenwood Ave, Maple Ridge Analysis
                       </p>
                       <p className="text-blue-200 text-xs mt-1">
-                        Duration: 2:30 • HD Quality
+                        Duration: 1:00 • HD Quality • With Voiceover
                       </p>
+                      <div className="flex items-center justify-center gap-2 mt-2 text-yellow-300">
+                        <Music className="w-3 h-3" />
+                        <span className="text-xs">Background Music</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="w-full h-full bg-white p-6 text-left overflow-y-auto">
@@ -117,12 +133,28 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                           <p className="text-sm text-neutral-600">1234 Example Street, Vancouver, BC</p>
                         </div>
 
-                        {/* Dynamic Content Based on Time */}
-                        {currentTime < 30 && (
+                        {/* Voiceover Commentary */}
+                        <div className="bg-blue-900 text-white p-3 rounded-lg mb-4 text-xs">
+                          <div className="flex items-center gap-2 mb-2">
+                            {!isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                            <span className="font-medium">Narrator:</span>
+                          </div>
+                          <p className="italic">
+                            {voiceoverPhase === 1 && "Let's analyze a real Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data, property values, and zoning information..."}
+                            {voiceoverPhase === 2 && "Now we're comparing this property with recent MLS sales in the neighborhood. The AI finds similar properties and calculates market trends..."}
+                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks municipal zoning laws and Bill 44 compliance. This ensures any development will meet city requirements..."}
+                            {voiceoverPhase === 4 && "The financial engine calculates potential ROI, construction costs, and development scenarios. Multiple options are analyzed instantly..."}
+                            {voiceoverPhase === 5 && "Complete analysis finished! The AI provides actionable insights, development recommendations, and connects you with qualified contractors."}
+                            {voiceoverPhase === 0 && "Ready to see how BuildwiseAI transforms BC property development? Click play to watch the complete analysis."}
+                          </p>
+                        </div>
+
+                        {/* Dynamic Content Based on Time - Faster Phases */}
+                        {currentTime < 12 && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">Fetching BC Assessment Data...</span>
+                              <span className="text-sm font-medium">🏠 Fetching BC Assessment Data...</span>
                             </div>
                             <div className="bg-emerald-50 p-4 rounded-lg">
                               <div className="grid grid-cols-2 gap-4 text-xs">
@@ -134,41 +166,55 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                                   <span className="font-medium">Land Value:</span>
                                   <div className="text-lg font-bold">$1,200,000</div>
                                 </div>
+                                <div>
+                                  <span className="font-medium">Zoning:</span>
+                                  <div className="text-sm font-bold">RS-1</div>
+                                </div>
+                                <div>
+                                  <span className="font-medium">Lot Size:</span>
+                                  <div className="text-sm font-bold">7,200 sq ft</div>
+                                </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {currentTime >= 30 && currentTime < 60 && (
+                        {currentTime >= 12 && currentTime < 24 && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">Analyzing MLS Comparables...</span>
+                              <span className="text-sm font-medium">📊 Analyzing MLS Comparables...</span>
                             </div>
                             <div className="bg-blue-50 p-4 rounded-lg">
                               <div className="space-y-2 text-xs">
                                 <div className="flex justify-between">
-                                  <span>1236 Example Street</span>
-                                  <span className="font-bold">$1,720,000</span>
+                                  <span>1236 Example Street • Sold 15 days</span>
+                                  <span className="font-bold text-blue-600">$1,720,000</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>1238 Example Street</span>
-                                  <span className="font-bold">$1,940,000</span>
+                                  <span>1238 Example Street • Sold 8 days</span>
+                                  <span className="font-bold text-blue-600">$1,940,000</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>1240 Example Street</span>
-                                  <span className="font-bold">$1,880,000</span>
+                                  <span>1240 Example Street • Sold 22 days</span>
+                                  <span className="font-bold text-blue-600">$1,880,000</span>
+                                </div>
+                                <div className="border-t pt-2 mt-2">
+                                  <div className="flex justify-between font-bold">
+                                    <span>Market Trend:</span>
+                                    <span className="text-emerald-600">↗ Rising 3.2%</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {currentTime >= 60 && currentTime < 90 && (
+                        {currentTime >= 24 && currentTime < 36 && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">Checking Zoning & Compliance...</span>
+                              <span className="text-sm font-medium">⚖️ Checking Zoning & Bill 44 Compliance...</span>
                             </div>
                             <div className="bg-purple-50 p-4 rounded-lg">
                               <div className="space-y-2 text-xs">
@@ -177,49 +223,75 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                                   <span className="font-bold">RS-1</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Bill 44 Compliance:</span>
-                                  <span className="text-emerald-600 font-bold">✓ Eligible</span>
+                                  <span>Bill 44/47 Compliance:</span>
+                                  <span className="text-emerald-600 font-bold">✓ Eligible for Multiplex</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Transit-Oriented Area:</span>
+                                  <span className="text-emerald-600 font-bold">✓ Yes - 800m to SkyTrain</span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Development Potential:</span>
-                                  <span className="font-bold">High</span>
+                                  <span className="font-bold text-purple-600">High - Up to 6 Units</span>
                                 </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {currentTime >= 90 && currentTime < 120 && (
+                        {currentTime >= 36 && currentTime < 48 && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">Calculating ROI Projections...</span>
+                              <span className="text-sm font-medium">💰 Calculating ROI & Financial Projections...</span>
                             </div>
                             <div className="bg-orange-50 p-4 rounded-lg">
                               <div className="grid grid-cols-2 gap-4 text-xs">
                                 <div>
-                                  <span className="font-medium">Projected ROI:</span>
-                                  <div className="text-lg font-bold text-orange-600">45.2%</div>
+                                  <span className="font-medium">Current Investment:</span>
+                                  <div className="text-sm font-bold">$1,850,000</div>
                                 </div>
                                 <div>
-                                  <span className="font-medium">Development Value:</span>
-                                  <div className="text-lg font-bold">$2,400,000</div>
+                                  <span className="font-medium">Construction Cost:</span>
+                                  <div className="text-sm font-bold">$650,000</div>
+                                </div>
+                                <div>
+                                  <span className="font-medium">Projected Value:</span>
+                                  <div className="text-lg font-bold text-orange-600">$3,100,000</div>
+                                </div>
+                                <div>
+                                  <span className="font-medium">Estimated ROI:</span>
+                                  <div className="text-lg font-bold text-emerald-600">52.4%</div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {currentTime >= 120 && (
+                        {currentTime >= 48 && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                              <span className="text-sm font-medium">Analysis Complete!</span>
+                              <span className="text-sm font-medium">🎯 Analysis Complete - Ready for Action!</span>
                             </div>
                             <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                              <div className="text-center">
-                                <div className="text-2xl font-bold text-emerald-600 mb-2">89% Feasibility Score</div>
+                              <div className="text-center space-y-2">
+                                <div className="text-2xl font-bold text-emerald-600">92% Feasibility Score</div>
                                 <p className="text-xs text-emerald-700">Excellent development opportunity</p>
+                                <div className="flex justify-center gap-4 text-xs mt-3">
+                                  <div className="text-center">
+                                    <div className="font-bold text-blue-600">6-Unit</div>
+                                    <div>Multiplex</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="font-bold text-green-600">18 Months</div>
+                                    <div>Timeline</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="font-bold text-purple-600">15+</div>
+                                    <div>Contractors</div>
+                                  </div>
+                                </div>
                                 <Button 
                                   onClick={onGetStarted}
                                   className="mt-3 bg-emerald-600 text-white px-4 py-2 rounded text-xs hover:bg-emerald-700"
@@ -260,12 +332,21 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                       {formatTime(currentTime)} / {formatTime(totalDuration)}
                     </span>
                     
+                    {isPlaying && (
+                      <div className="flex items-center space-x-2 text-xs text-yellow-300">
+                        <Music className="w-3 h-3" />
+                        <span>Music + Voice</span>
+                      </div>
+                    )}
+                    
                     <Button
                       size="sm"
                       variant="ghost"
+                      onClick={() => setIsMuted(!isMuted)}
                       className="text-white hover:bg-white/20"
+                      title={isMuted ? "Unmute" : "Mute"}
                     >
-                      <Volume2 className="w-4 h-4" />
+                      {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </Button>
                     
                     <Button
