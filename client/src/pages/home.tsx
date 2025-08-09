@@ -4,7 +4,6 @@ import HeroSection from "@/components/hero-section";
 import InteractivePropertyDemo from "@/components/interactive-property-demo";
 import FeaturesOverview from "@/components/features-overview";
 import LandownerJVSection from "@/components/landowner-jv-section";
-
 import HowItWorks from "@/components/how-it-works";
 import PropertyLookup from "@/components/property-lookup";
 import ZoningIntelligence from "@/components/zoning-intelligence";

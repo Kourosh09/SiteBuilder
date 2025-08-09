@@ -46,13 +46,7 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                   Features
                 </button>
                 <button
-                  onClick={() => {
-                    const contractorSection = document.querySelector('section.bg-gradient-to-br.from-orange-50');
-                    if (contractorSection) {
-                      contractorSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    setIsMenuOpen(false);
-                  }}
+                  onClick={onLoginClick}
                   className="text-orange-600 hover:text-orange-700 px-3 py-2 text-sm font-medium transition-colors border border-orange-200 rounded-md bg-orange-50"
                   data-testid="nav-professionals"
                 >
@@ -65,13 +59,7 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                 >
                   Land Owner JV
                 </button>
-                <button
-                  onClick={() => scrollToSection("development-network")}
-                  className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
-                  data-testid="nav-development-network"
-                >
-                  Join BC's Premier Development Network
-                </button>
+
                 <button
                   onClick={() => scrollToSection("calculator")}
                   className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
