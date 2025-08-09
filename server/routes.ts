@@ -11,6 +11,7 @@ import { partnerFinderService } from "./partner-finder";
 import { aiDesignGeneratorService } from "./ai-design-generator";
 import { getVancouverPermits, searchVancouverPermitsByAddress, getVancouverPermitStats } from "./vancouver-open-data";
 import { mlsService, ddfService } from "./mls-integration";
+import { LotAnalysisService } from "./lot-analysis-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -3887,6 +3888,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         error: 'Failed to process partner application'
+      });
+    }
+  });
+
+  // Comprehensive lot-by-lot analysis endpoint
+  app.post("/api/lot/analyze", async (req, res) => {
+    try {
+      const { address, city } = req.body;
+      
+      if (!address || !city) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Address and city are required" 
+        });
+      }
+
+      const lotAnalysisService = new LotAnalysisService();
+      const analysis = await lotAnalysisService.analyzeLot(address, city);
+
+      res.json({ 
+        success: true, 
+        data: analysis,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Lot analysis error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to analyze lot",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });

@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/components/dashboard";
 import ContractorApplications from "@/pages/ContractorApplications";
+import LotAnalysisDemo from "@/components/lot-analysis-demo";
 
 function Router() {
   const [, setLocation] = useLocation();
@@ -31,6 +32,9 @@ function Router() {
       </Route>
       <Route path="/contractor-applications">
         <ContractorApplications />
+      </Route>
+      <Route path="/lot-analysis">
+        <LotAnalysisDemo />
       </Route>
       <Route component={NotFound} />
     </Switch>
