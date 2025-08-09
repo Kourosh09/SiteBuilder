@@ -137,6 +137,12 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                 Start Free Trial
               </Button>
               <Button
+                onClick={() => {
+                  const videoSection = document.getElementById('demo-video');
+                  if (videoSection) {
+                    videoSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
                 variant="outline"
                 className="border-2 border-white text-white bg-transparent px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-800 transition-colors"
                 data-testid="button-watch-demo"
