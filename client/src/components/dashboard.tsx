@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ import CalculatorDemo from "./calculator-demo";
 import ContractorSignupSection from "./contractor-signup-section";
 import Partners from "@/pages/Partners";
 import TrialBanner from "./trial-banner";
+import ProfessionalProfile from "@/pages/professional-profile";
 
 interface DashboardStats {
   totalProjects: number;
@@ -43,6 +44,15 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Check URL params for tab switching
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, []);
   // const { propertyData, hasPropertyData } = usePropertySession();
   
   // Mock trial status - would come from API in real implementation
@@ -151,7 +161,7 @@ export default function Dashboard() {
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full min-w-fit grid-cols-9 gap-1">
+            <TabsList className="grid w-full min-w-fit grid-cols-10 gap-1">
               <TabsTrigger value="overview" data-testid="tab-overview" className="whitespace-nowrap">Overview</TabsTrigger>
               <TabsTrigger value="property-analyzer" data-testid="tab-property-analyzer" className="whitespace-nowrap">AI Analysis</TabsTrigger>
               <TabsTrigger value="zoning" data-testid="tab-zoning" className="whitespace-nowrap">Zoning</TabsTrigger>
@@ -160,6 +170,7 @@ export default function Dashboard() {
               <TabsTrigger value="marketing" data-testid="tab-marketing" className="whitespace-nowrap">Lead Gen</TabsTrigger>
               <TabsTrigger value="calculator" data-testid="tab-calculator" className="whitespace-nowrap">Calculator</TabsTrigger>
               <TabsTrigger value="marketplace" data-testid="tab-marketplace" className="whitespace-nowrap">Marketplace</TabsTrigger>
+              <TabsTrigger value="professional-profile" data-testid="tab-professional-profile" className="whitespace-nowrap">Create Profile</TabsTrigger>
               <TabsTrigger value="partners" data-testid="tab-partners" className="whitespace-nowrap">Partners</TabsTrigger>
             </TabsList>
           </div>
@@ -322,6 +333,11 @@ export default function Dashboard() {
           {/* Marketplace Tab */}
           <TabsContent value="marketplace">
             <ContractorSignupSection />
+          </TabsContent>
+
+          {/* Professional Profile Tab */}
+          <TabsContent value="professional-profile">
+            <ProfessionalProfile onBack={() => setActiveTab("overview")} />
           </TabsContent>
 
           {/* Partners Tab - Premium Feature */}

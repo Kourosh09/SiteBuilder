@@ -260,38 +260,8 @@ export default function DevelopmentNetworkSection() {
               className="bg-blue-600 hover:bg-blue-700"
               data-testid="button-create-profile"
               onClick={() => {
-                // Open professional profile creation
-                const profileData = {
-                  type: 'Professional Profile',
-                  service: 'Development Network Registration',
-                  details: 'I want to create a professional profile and join the BC Development Network'
-                };
-                
-                // Store the profile creation intent
-                sessionStorage.setItem('profileCreation', JSON.stringify(profileData));
-                
-                // Scroll to contact section
-                const contactElement = document.getElementById('contact');
-                if (contactElement) {
-                  contactElement.scrollIntoView({ behavior: 'smooth' });
-                  
-                  // Pre-fill the contact form after scrolling
-                  setTimeout(() => {
-                    const messageField = document.querySelector('textarea') as HTMLTextAreaElement;
-                    if (messageField) {
-                      messageField.value = 'I want to create a professional profile and join the BC Development Network. Please send me information about:\n\n• Professional profile setup\n• Network membership benefits\n• Project matching opportunities\n• Monthly subscription details ($49/month)';
-                      messageField.focus();
-                      
-                      // Also trigger change event to update React state
-                      const event = new Event('input', { bubbles: true });
-                      messageField.dispatchEvent(event);
-                    } else {
-                      console.error('Contact form textarea not found');
-                    }
-                  }, 1500);
-                } else {
-                  alert('Contact form not found. Please scroll down to the contact section to create your professional profile.');
-                }
+                // Redirect to professional profile creation in dashboard
+                window.location.href = '/dashboard?tab=professional-profile';
               }}
             >
               Create Professional Profile
