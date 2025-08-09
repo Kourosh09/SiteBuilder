@@ -1,5 +1,4 @@
-import { ZoningIntelligenceService } from './zoning-intelligence';
-import { PropertyDataService } from './property-data';
+// Services imported dynamically to avoid circular dependencies
 
 export interface LotAnalysisResult {
   address: string;
@@ -81,13 +80,6 @@ export interface LotAnalysisResult {
 }
 
 export class LotAnalysisService {
-  private zoningService: ZoningIntelligenceService;
-  private propertyService: PropertyDataService;
-  
-  constructor() {
-    this.zoningService = new ZoningIntelligenceService();
-    this.propertyService = new PropertyDataService();
-  }
   
   /**
    * Comprehensive lot-by-lot analysis using authentic BC data
@@ -95,17 +87,17 @@ export class LotAnalysisService {
   async analyzeLot(address: string, city: string): Promise<LotAnalysisResult> {
     console.log(`📍 Analyzing lot: ${address}, ${city}`);
     
+    // Import services dynamically
+    const { propertyDataService } = await import('./property-data');
+    
     // Get property data
-    const propertyData = await this.propertyService.getPropertyData(address, city);
+    const propertyData = await propertyDataService.getPropertyData(address, city);
     if (!propertyData.bcAssessment || !propertyData.mlsComparables) {
       throw new Error('Unable to retrieve property data for analysis');
     }
     
     const lotSize = propertyData.bcAssessment.lotSize;
     const zoning = propertyData.bcAssessment.zoning;
-    
-    // Get zoning analysis
-    const zoningAnalysis = await this.zoningService.analyzeZoning(address, city, lotSize);
     
     // Analyze transit accessibility
     const transitAccessibility = this.analyzeTransitAccessibility(city);

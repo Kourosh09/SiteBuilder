@@ -95,13 +95,22 @@ export default function LotAnalysisDemo() {
     setError(null);
     
     try {
-      const response = await apiRequest('/api/lot/analyze', {
+      const response = await fetch('/api/lot/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, city })
       });
       
-      setResult(response.data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Analysis failed');
+      }
+      
+      setResult(data.data);
     } catch (error) {
       console.error('Analysis failed:', error);
       setError(error instanceof Error ? error.message : 'Analysis failed');
