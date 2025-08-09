@@ -746,26 +746,44 @@ export class ZoningIntelligenceService {
       'vancouver': {
         withinTOA: true,
         distanceToStation: 400,
-        stationType: 'SkyTrain',
-        transitService: 'Frequent (2-5 min)'
+        stationType: 'SkyTrain (Expo/Millennium)',
+        transitService: 'Peak: 2-3 min | Off-peak: 6 min'
       },
       'burnaby': {
         withinTOA: true,
         distanceToStation: 600,
-        stationType: 'SkyTrain',
-        transitService: 'Frequent (3-6 min)'
+        stationType: 'SkyTrain (Expo/Millennium)',
+        transitService: 'Peak: 2-5 min | Off-peak: 6 min'
       },
       'richmond': {
         withinTOA: true,
         distanceToStation: 800,
         stationType: 'Canada Line',
-        transitService: 'Frequent (4-7 min)'
+        transitService: 'Peak: 2-4 min | Off-peak: up to 20 min'
       },
       'surrey': {
         withinTOA: true,
         distanceToStation: 500,
         stationType: 'SkyTrain Extension',
-        transitService: 'Frequent (5-8 min)'
+        transitService: 'Peak: 2-7 min | Off-peak: 6 min'
+      },
+      'new westminster': {
+        withinTOA: true,
+        distanceToStation: 450,
+        stationType: 'SkyTrain (Expo)',
+        transitService: 'Peak: 2-3 min | Off-peak: 6 min'
+      },
+      'coquitlam': {
+        withinTOA: true,
+        distanceToStation: 700,
+        stationType: 'SkyTrain (Millennium)',
+        transitService: 'Peak: 2-5 min | Off-peak: 6 min'
+      },
+      'port moody': {
+        withinTOA: true,
+        distanceToStation: 600,
+        stationType: 'SkyTrain (Millennium)',
+        transitService: 'Peak: 2-5 min | Off-peak: 6 min'
       }
     };
     
