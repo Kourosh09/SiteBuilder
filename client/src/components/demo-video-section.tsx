@@ -16,12 +16,36 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const totalDuration = 60; // Faster 1:00 demo video
   
-  // Check speech synthesis support
+  // Check speech synthesis support and cleanup on unmount
   useEffect(() => {
     if ('speechSynthesis' in window) {
       setSpeechSupported(true);
     }
+    
+    // Cleanup function to prevent voice repeating
+    return () => {
+      window.speechSynthesis.cancel();
+      if ((window as any).videoInterval) {
+        clearInterval((window as any).videoInterval);
+      }
+    };
   }, []);
+
+  // Stop speech when component state changes
+  useEffect(() => {
+    if (!isPlaying) {
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+    }
+  }, [isPlaying]);
+
+  // Stop speech when muted
+  useEffect(() => {
+    if (isMuted) {
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+    }
+  }, [isMuted]);
 
   const voiceoverTexts: Record<number, string> = {
     0: "Ready to see how BuildwiseAI transforms BC property development? This real Vancouver analysis shows the complete workflow in 60 seconds.",
@@ -35,27 +59,48 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const speakText = (text: string) => {
     if (!speechSupported || isMuted) return;
     
-    // Stop any current speech
+    // Stop any current speech immediately and clear queue
     window.speechSynthesis.cancel();
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
-    
-    // Try to use a professional-sounding voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => 
-      voice.name.includes('Google') || 
-      voice.name.includes('Microsoft') ||
-      voice.lang.startsWith('en-')
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-    
-    speechRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    // Wait a moment for cancellation to complete
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 0.8;
+      
+      // Prevent speech from repeating
+      utterance.onstart = () => {
+        console.log('Speech started');
+      };
+      
+      utterance.onend = () => {
+        console.log('Speech ended');
+        speechRef.current = null;
+      };
+      
+      utterance.onerror = () => {
+        console.log('Speech error occurred');
+        speechRef.current = null;
+      };
+      
+      // Try to use a professional-sounding voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') || 
+        voice.name.includes('Microsoft') ||
+        voice.lang.startsWith('en-')
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      // Only speak if no current speech is active
+      if (!speechRef.current && window.speechSynthesis.pending === false) {
+        speechRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+      }
+    }, 100);
   };
 
   const formatTime = (seconds: number) => {
