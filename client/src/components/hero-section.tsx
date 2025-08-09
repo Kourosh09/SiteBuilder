@@ -64,8 +64,11 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
 
     setLoading(true);
     try {
-      const result = await apiRequest('/api/ai/analyze-property', {
+      const response = await fetch('/api/ai/analyze-property', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           address: propertyForm.address,
           city: propertyForm.city,
@@ -74,7 +77,10 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         })
       });
 
-      if (result.success) {
+      const result = await response.json();
+      console.log('Analysis result:', result);
+
+      if (result.success && result.analysis) {
         setAnalysis(result.analysis);
         
         // Store property data for use in other calculators
@@ -87,6 +93,8 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           currentUse: 'single-family',
           proposedUse: 'multi-family'
         });
+      } else {
+        console.error('Analysis failed:', result);
       }
     } catch (error) {
       console.error('Analysis error:', error);
