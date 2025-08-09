@@ -82,7 +82,8 @@ export class UnifiedDataService {
     console.log(`🔄 Fetching unified authentic BC data for ${address}, ${city}`);
     
     // Load all services
-    const { propertyDataService } = await import('./property-data');
+    const { PropertyDataService } = await import('./property-data');
+    const propertyDataService = new PropertyDataService();
     
     // Get authentic property data
     const propertyData = await propertyDataService.getPropertyData(address, city);
