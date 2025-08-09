@@ -3746,7 +3746,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Import PDF generator
-      const { generatePropertyAnalysisReport } = await import('./pdf-generator');
+      const { PDFReportGenerator } = await import('./pdf-generator');
+      const generator = new PDFReportGenerator();
       
       // Transform analysis data into the expected format for PDF generation
       const reportData = {
@@ -3813,7 +3814,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      const pdfBuffer = generatePropertyAnalysisReport(reportData);
+      const pdfBuffer = generator.generateZoningReport(reportData);
       
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Analysis-${address.replace(/\s+/g, '-')}.pdf"`);
