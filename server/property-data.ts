@@ -79,10 +79,13 @@ export class PropertyDataService {
         limit: 50
       });
       
-      // Find exact address match
+      // Find exact address match - but don't convert to synthetic BC Assessment data
       const targetProperty = this.findExactAddressMatch(listings, address);
       if (targetProperty) {
-        return this.convertMLSToAssessmentData(targetProperty, address, city);
+        console.log(`✅ Found active MLS listing for ${address}`);
+        console.log(`❌ REJECTED: Not converting MLS data to synthetic BC Assessment format`);
+        console.log(`📊 Use MLS data for market analysis only, not BC Assessment replacement`);
+        return null; // Maintain data integrity - MLS ≠ BC Assessment
       }
     } catch (error) {
       console.log("Active MLS search failed:", error);
@@ -116,20 +119,9 @@ export class PropertyDataService {
         return this.convertMunicipalToAssessmentData(municipalData, address, city);
       }
       
-      // Method 2D: Historical MLS data fallback
-      const { DDFService } = await import('./mls-integration');
-      const ddfService = new DDFService();
-      
-      const listings = await ddfService.getPropertyListings({ 
-        city, 
-        status: 'Sold',
-        limit: 100
-      });
-      
-      const targetProperty = this.findExactAddressMatch(listings, address);
-      if (targetProperty) {
-        return this.convertMLSToAssessmentData(targetProperty, address, city);
-      }
+      // Method 2D: No synthetic data generation from MLS
+      console.log(`❌ REJECTED: Not generating synthetic BC Assessment data from MLS`);
+      console.log(`📊 Data integrity maintained - BC Assessment requires authentic sources only`);
       
     } catch (error) {
       console.log("Direct BC Assessment search failed:", error);
@@ -593,22 +585,12 @@ export class PropertyDataService {
   /**
    * Fallback BC Assessment data when no authentic sources available
    */
-  private getFallbackBCAssessmentData(address: string, city: string): BCAssessmentData {
-    console.log(`📝 No authentic BC Assessment data available for ${address}`);
+  private getFallbackBCAssessmentData(address: string, city: string): BCAssessmentData | null {
+    console.log(`❌ REJECTED: No authentic BC Assessment data available for ${address}`);
+    console.log(`📊 Data integrity maintained - refusing to generate synthetic estimates`);
     
-    return {
-      pid: "", // No authentic PID available
-      address: `${address}, ${city}, BC`,
-      landValue: 0,
-      improvementValue: 0,
-      totalAssessedValue: 0,
-      lotSize: 0, // No authentic lot size available
-      zoning: this.getZoningEstimate(city),
-      propertyType: "Unknown",
-      yearBuilt: 0,
-      buildingArea: 0,
-      legalDescription: ""
-    };
+    // Return null to maintain data integrity
+    return null;
   }
 
   /**
@@ -690,8 +672,20 @@ export class PropertyDataService {
     // Calculate market analysis from authentic MLS data
     const marketAnalysis = this.calculateMarketAnalysis(mlsComparables);
     
+    // CRITICAL: Do not use synthetic fallback data - maintain data integrity
+    if (!bcAssessment || !bcAssessment.pid || bcAssessment.totalAssessedValue === 0) {
+      console.log(`❌ No authentic BC Assessment data found - maintaining data integrity`);
+      console.log(`📊 MLS market data available: ${mlsComparables.length} comparables`);
+      
+      return {
+        bcAssessment: null, // No synthetic data - maintain integrity
+        mlsComparables,
+        marketAnalysis
+      };
+    }
+    
     return {
-      bcAssessment: bcAssessment || this.getFallbackBCAssessmentData(address, city),
+      bcAssessment,
       mlsComparables,
       marketAnalysis
     };

@@ -88,8 +88,18 @@ export class UnifiedDataService {
     // Get authentic property data
     const propertyData = await propertyDataService.getPropertyData(address, city);
     
-    if (!propertyData.bcAssessment) {
-      throw new Error(`Unable to retrieve authentic BC Assessment data for ${address}, ${city}`);
+    // Validate authentic data integrity
+    const hasAuthentic = propertyData.bcAssessment && 
+                        propertyData.bcAssessment.pid && 
+                        propertyData.bcAssessment.totalAssessedValue > 0 &&
+                        propertyData.bcAssessment.lotSize > 0;
+    
+    if (!hasAuthentic) {
+      console.log(`❌ CRITICAL: No authentic BC Assessment data found for ${address}, ${city}`);
+      console.log(`📊 Available: MLS comparables (${propertyData.mlsComparables.length}), Market data only`);
+      
+      // Return error for missing authentic data - DO NOT use synthetic estimates
+      throw new Error(`No authentic BC Assessment data available for ${address}, ${city}. Property may not exist in official BC records or requires manual verification. ${propertyData.mlsComparables.length} MLS comparables available for market context.`);
     }
     
     // Skip lot analysis service for now - integrate data directly
@@ -97,17 +107,15 @@ export class UnifiedDataService {
     // const lotAnalysisService = new LotAnalysisService();
     // const analysis = await lotAnalysisService.analyzeLot(address, city);
     
-    // Ensure data consistency across all sources
-    let lotSize = propertyData.bcAssessment.lotSize;
+    // At this point, we know bcAssessment is valid due to the check above
+    const bcAssessment = propertyData.bcAssessment!;
     
-    // Fix specific property lot sizes with accurate data
-    console.log(`🔍 CHECKING: "${address.toLowerCase()}" contains "21558 glenwood": ${address.toLowerCase().includes('21558 glenwood')}`);
-    console.log(`🔍 CHECKING: "${city.toLowerCase()}" contains "maple ridge": ${city.toLowerCase().includes('maple ridge')}`);
+    // Ensure data consistency across all sources
+    let lotSize = bcAssessment.lotSize;
     
     // Use authentic lot size from MLS/BC Assessment data without manual corrections
-    
     const lotSizeM2 = lotSize * 0.092903; // Convert to square meters
-    const zoning = propertyData.bcAssessment.zoning || 'RS-1';
+    const zoning = bcAssessment.zoning || 'RS-1';
     
     // Get authentic municipal data
     const municipalData = this.getAuthenticMunicipalData(city);
@@ -124,15 +132,15 @@ export class UnifiedDataService {
       address,
       city,
       bcAssessment: {
-        pid: propertyData.bcAssessment.pid,
-        assessedValue: propertyData.bcAssessment.totalAssessedValue,
-        landValue: propertyData.bcAssessment.landValue,
-        improvementValue: propertyData.bcAssessment.improvementValue,
-        lotSize: propertyData.bcAssessment.lotSize,
-        lotSizeM2: propertyData.bcAssessment.lotSize * 0.092903,
+        pid: bcAssessment.pid,
+        assessedValue: bcAssessment.totalAssessedValue,
+        landValue: bcAssessment.landValue,
+        improvementValue: bcAssessment.improvementValue,
+        lotSize: bcAssessment.lotSize,
+        lotSizeM2: bcAssessment.lotSize * 0.092903,
         zoning: zoning,
-        yearBuilt: propertyData.bcAssessment.yearBuilt || 0,
-        buildingArea: propertyData.bcAssessment.buildingArea || 0
+        yearBuilt: bcAssessment.yearBuilt || 0,
+        buildingArea: bcAssessment.buildingArea || 0
       },
       marketData: {
         averagePrice: propertyData.marketAnalysis.priceRange.min + 

@@ -41,10 +41,24 @@ export async function registerUnifiedRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Unified analysis error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Analysis failed' 
-      });
+      
+      // Check if this is a data integrity error (no authentic data)
+      if (error instanceof Error && error.message.includes('No authentic BC Assessment data')) {
+        res.status(404).json({
+          success: false,
+          error: 'No authentic property data available',
+          message: error.message,
+          dataIntegrity: 'maintained',
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: 'Failed to retrieve unified property data',
+          message: error instanceof Error ? error.message : 'Analysis failed',
+          timestamp: new Date().toISOString()
+        });
+      }
     }
   });
   
