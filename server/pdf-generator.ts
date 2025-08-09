@@ -93,7 +93,15 @@ export class PDFReportGenerator {
     this.addRecommendations(data);
     this.addFooter();
 
-    return Buffer.from(this.doc.output('arraybuffer'));
+    try {
+      return Buffer.from(this.doc.output('arraybuffer'));
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      // Try alternative output method
+      const pdfData = this.doc.output('datauristring');
+      const base64Data = pdfData.split(',')[1];
+      return Buffer.from(base64Data, 'base64');
+    }
   }
 
   private addHeader(data: ZoningReportData): void {

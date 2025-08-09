@@ -466,8 +466,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pdfBuffer = generator.generateZoningReport(reportData);
       
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Zoning-Report-${reportData.address.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
-      res.send(pdfBuffer);
+      res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Analysis-${reportData.address.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length.toString());
+      res.end(pdfBuffer, 'binary');
     } catch (error) {
       console.error("Error generating PDF report:", error);
       res.status(500).json({ message: "Failed to generate PDF report" });
