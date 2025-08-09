@@ -45,6 +45,8 @@ export default function InteractivePropertyDemo() {
     
     setIsRunningDemo(true);
     try {
+      console.log(`🚀 Running demo for: ${address}, ${city}`);
+      
       const response = await fetch('/api/marketing/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,13 +57,24 @@ export default function InteractivePropertyDemo() {
         })
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
-      setDemoResult(data.data);
-      if (!showContactForm) {
-        setShowContactForm(true);
+      console.log('✅ Demo response received:', data);
+      
+      if (data.success && data.data) {
+        setDemoResult(data.data);
+        if (!showContactForm) {
+          setShowContactForm(true);
+        }
+      } else {
+        throw new Error(data.error || 'Demo failed');
       }
     } catch (error) {
-      console.error('Demo failed:', error);
+      console.error('❌ Demo failed:', error);
+      alert(`Demo failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsRunningDemo(false);
     }
@@ -106,10 +119,23 @@ export default function InteractivePropertyDemo() {
           <h2 className="text-4xl lg:text-5xl font-bold mb-4">
             See BuildwiseAI in Action
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-100 mb-4 max-w-3xl mx-auto">
             Enter any BC property address and watch AI analyze everything in real-time:
             BC Assessment data, MLS comparables, zoning codes, and generate development scenarios with ROI.
           </p>
+          <div className="flex justify-center gap-4 mb-8">
+            <Button
+              onClick={() => {
+                setAddress("123 Main Street");
+                setCity("Vancouver");
+              }}
+              variant="outline"
+              className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+              data-testid="button-try-demo-property"
+            >
+              Try Demo Property
+            </Button>
+          </div>
         </div>
 
         {/* Property Input Section */}
