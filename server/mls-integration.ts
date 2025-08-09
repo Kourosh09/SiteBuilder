@@ -115,6 +115,7 @@ export class DDFService {
   // Get MLS listings using official DDF OData API
   async getPropertyListings(filters: {
     city?: string;
+    address?: string;
     minPrice?: number;
     maxPrice?: number;
     propertyType?: string;
@@ -131,6 +132,8 @@ export class DDFService {
       if (filters.city) {
         odataFilters.push(`City eq '${filters.city}'`);
       }
+      
+      // Note: DDF API doesn't support contains() function, so we'll filter after retrieval
       if (filters.minPrice) {
         odataFilters.push(`ListPrice ge ${filters.minPrice}`);
       }
