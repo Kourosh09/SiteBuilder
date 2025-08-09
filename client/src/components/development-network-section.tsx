@@ -232,6 +232,10 @@ export default function DevelopmentNetworkSection() {
                 size="lg" 
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 data-testid="button-join-network"
+                onClick={() => {
+                  // Scroll to contact section for network signup
+                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 Join Development Network
               </Button>
@@ -255,6 +259,10 @@ export default function DevelopmentNetworkSection() {
               size="lg" 
               className="bg-blue-600 hover:bg-blue-700"
               data-testid="button-create-profile"
+              onClick={() => {
+                // Scroll to contact section for profile creation
+                document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               Create Professional Profile
             </Button>
@@ -262,6 +270,10 @@ export default function DevelopmentNetworkSection() {
               size="lg" 
               variant="outline"
               data-testid="button-browse-network"
+              onClick={() => {
+                // Show network directory (placeholder functionality)
+                alert('Network Directory coming soon! Contact us to join the waitlist and get early access to BC\'s premier development professional network.');
+              }}
             >
               Browse Network Directory
             </Button>
