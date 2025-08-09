@@ -77,7 +77,7 @@ export class PropertyDataService {
         }
         
         return {
-          pid: "", // No PID available from MLS data
+          pid: property.pid || "", // Extract PID from MLS data if available
           address: `${address}, ${city}, BC`,
           landValue: 0, // Not available in MLS
           improvementValue: 0, // Not available in MLS  

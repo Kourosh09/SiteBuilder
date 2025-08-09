@@ -30,6 +30,7 @@ interface MLSListing {
   virtualTour?: string;
   description: string;
   features: string[];
+  pid?: string; // Property Identification Number from BC Assessment
   agentInfo: {
     name: string;
     brokerage: string;
@@ -265,6 +266,7 @@ export class DDFService {
       virtualTour: property.VirtualTourURLUnbranded,
       description: property.PublicRemarks || '',
       features: this.extractFeatures(property),
+      pid: property.ParcelNumber || property.PID || property.LegalDescription || '', // Extract PID from MLS data
       agentInfo: {
         name: `${property.ListAgentFirstName || ''} ${property.ListAgentLastName || ''}`.trim(),
         brokerage: property.ListOfficeName || '',
