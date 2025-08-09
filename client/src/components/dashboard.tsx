@@ -24,7 +24,7 @@ import {
 
 // Import existing components
 import ZoningIntelligence from "./zoning-intelligence";
-import AIPropertyAnalyzer from "./ai-property-analyzer";
+import AIPropertyAnalyzer from "./ai-property-analyzer-fixed";
 import PartnerFinder from "./partner-finder";
 import PropertyAlerts from "./property-alerts";
 import FinancialModeling from "./financial-modeling";
