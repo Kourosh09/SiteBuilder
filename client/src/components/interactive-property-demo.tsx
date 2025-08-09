@@ -144,15 +144,27 @@ export default function InteractivePropertyDemo() {
           </p>
           <div className="flex justify-center gap-4 mb-8">
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setAddress("123 Main Street");
                 setCity("Maple Ridge");
+                // Auto-run demo after setting address
+                setTimeout(() => {
+                  runPropertyDemo();
+                }, 100);
               }}
               variant="outline"
               className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+              disabled={isRunningDemo}
               data-testid="button-try-demo-property"
             >
-              Try Demo Property
+              {isRunningDemo ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Running Demo...
+                </>
+              ) : (
+                "Try Demo Property"
+              )}
             </Button>
           </div>
         </div>
