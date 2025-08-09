@@ -11,41 +11,45 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [voiceoverPhase, setVoiceoverPhase] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Start muted by default
   const [speechSupported, setSpeechSupported] = useState(false);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const intervalRef = useRef<number | null>(null);
   const totalDuration = 60; // Faster 1:00 demo video
   
-  // Check speech synthesis support and cleanup on unmount
+  // Initialize and cleanup
   useEffect(() => {
     if ('speechSynthesis' in window) {
       setSpeechSupported(true);
     }
     
-    // Cleanup function to prevent voice repeating
+    // Complete cleanup on unmount
     return () => {
-      window.speechSynthesis.cancel();
-      if ((window as any).videoInterval) {
-        clearInterval((window as any).videoInterval);
+      if (speechRef.current) {
+        window.speechSynthesis.cancel();
+        speechRef.current = null;
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, []);
 
-  // Stop speech when component state changes
-  useEffect(() => {
-    if (!isPlaying) {
+  // Comprehensive speech management
+  const stopAllSpeech = () => {
+    if (speechRef.current) {
       window.speechSynthesis.cancel();
       speechRef.current = null;
     }
-  }, [isPlaying]);
+  };
 
-  // Stop speech when muted
+  // Stop speech when paused or muted
   useEffect(() => {
-    if (isMuted) {
-      window.speechSynthesis.cancel();
-      speechRef.current = null;
+    if (!isPlaying || isMuted) {
+      stopAllSpeech();
     }
-  }, [isMuted]);
+  }, [isPlaying, isMuted]);
 
   const voiceoverTexts: Record<number, string> = {
     0: "Ready to see how BuildwiseAI transforms BC property development? This real Vancouver analysis shows the complete workflow in 60 seconds.",
@@ -57,50 +61,42 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   };
 
   const speakText = (text: string) => {
-    if (!speechSupported || isMuted) return;
+    if (!speechSupported || isMuted || !isPlaying) return;
     
-    // Stop any current speech immediately and clear queue
-    window.speechSynthesis.cancel();
+    // Always stop current speech first
+    stopAllSpeech();
     
-    // Wait a moment for cancellation to complete
+    // Wait for proper cleanup
     setTimeout(() => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 0.8;
+      if (!isPlaying || isMuted) return; // Double check state
       
-      // Prevent speech from repeating
-      utterance.onstart = () => {
-        console.log('Speech started');
-      };
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.7;
       
       utterance.onend = () => {
-        console.log('Speech ended');
         speechRef.current = null;
       };
       
       utterance.onerror = () => {
-        console.log('Speech error occurred');
         speechRef.current = null;
       };
       
-      // Try to use a professional-sounding voice
+      // Use a clear, professional voice
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => 
-        voice.name.includes('Google') || 
-        voice.name.includes('Microsoft') ||
-        voice.lang.startsWith('en-')
+        voice.name.includes('Microsoft') || 
+        voice.name.includes('Google') ||
+        (voice.lang.startsWith('en-') && voice.name.includes('Female'))
       );
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
       
-      // Only speak if no current speech is active
-      if (!speechRef.current && window.speechSynthesis.pending === false) {
-        speechRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
-      }
-    }, 100);
+      speechRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    }, 150);
   };
 
   const formatTime = (seconds: number) => {
