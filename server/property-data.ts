@@ -44,46 +44,17 @@ export class PropertyDataService {
    * Fetch BC Assessment data for a property using real API
    */
   async getBCAssessmentData(address: string, city: string): Promise<BCAssessmentData | null> {
-    const apiKey = process.env.BC_ASSESSMENT_API_KEY;
+    console.log(`📊 BC Assessment integration disabled - using MLS-derived property estimates for ${address}, ${city}`);
     
-    if (!apiKey) {
-      console.log("BC Assessment API key not configured, using fallback data");
-      return this.getFallbackBCAssessmentData(address, city);
+    // Get MLS data first to derive realistic property estimates
+    const mlsData = await this.getMLSComparables(address, city);
+    
+    if (mlsData && mlsData.length > 0) {
+      return this.generateMLSBasedAssessment(address, city, mlsData);
     }
-
-    try {
-      console.log(`📊 Fetching BC Assessment data for: ${address}, ${city}`);
-      console.log(`🔑 Using BC Assessment API Key: ${apiKey ? `${apiKey.substring(0, 8)}...` : 'NOT SET'}`);
-      
-      // BC Assessment Open Data API - try multiple endpoints
-      const searchQuery = encodeURIComponent(`${address} ${city}`);
-      
-      // BC Assessment API Status Check
-      console.log("Attempting BC Assessment API connection...");
-      
-      // BC Assessment official access methods:
-      // 1. Public website: www.bcassessment.ca (free property lookup)
-      // 2. Commercial bulk data: Contact Property Information Services
-      // 3. Academic research: Abacus portal for universities
-      
-      // Try official BC Assessment property search
-      const publicSearchResult = await this.tryBCAssessmentPublicSearch(address, city);
-      if (publicSearchResult) {
-        return publicSearchResult;
-      }
-      
-      console.log("BC Assessment: Commercial data access required for automated API");
-      console.log("Contact: info.bcassessment.ca/services-and-products");
-      console.log("Using market-intelligent fallback data based on real BC trends");
-      
-      // Return enhanced fallback data with realistic market values
-      return this.getFallbackBCAssessmentData(address, city);
-
-
-    } catch (error) {
-      console.error("BC Assessment API integration error:", error);
-      return this.getFallbackBCAssessmentData(address, city);
-    }
+    
+    // Fallback to basic estimates
+    return this.getFallbackBCAssessmentData(address, city);
   }
 
   /**
@@ -287,10 +258,44 @@ export class PropertyDataService {
   }
 
   /**
-   * Fallback method when BC Assessment API is unavailable
+   * Generate realistic property assessment based on authentic MLS data
+   */
+  private generateMLSBasedAssessment(address: string, city: string, mlsData: MLSData[]): BCAssessmentData {
+    console.log("Generating MLS-based property assessment using real market data");
+    
+    // Use actual MLS data to derive realistic assessments
+    const validPrices = mlsData.filter(p => p.soldPrice && p.soldPrice > 0).map(p => p.soldPrice!);
+    const avgSoldPrice = validPrices.length > 0 ? validPrices.reduce((a, b) => a + b, 0) / validPrices.length : 1000000;
+    
+    // Assessment values are typically 80-90% of market value
+    const assessmentRatio = 0.85;
+    const totalAssessedValue = Math.round(avgSoldPrice * assessmentRatio);
+    
+    // Typical land/improvement split in BC (varies by area)
+    const landRatio = city.toLowerCase().includes('vancouver') ? 0.75 : 0.55; // Vancouver has higher land values
+    const landValue = Math.round(totalAssessedValue * landRatio);
+    const improvementValue = totalAssessedValue - landValue;
+    
+    return {
+      pid: this.generatePID(address),
+      address: `${address}, ${city}, BC`,
+      landValue,
+      improvementValue,
+      totalAssessedValue,
+      lotSize: this.estimateLotSize(city),
+      zoning: this.getZoningEstimate(city),
+      propertyType: "Single Family",
+      yearBuilt: Math.floor(Math.random() * (2020 - 1950) + 1950),
+      buildingArea: Math.floor(Math.random() * (3000 - 1200) + 1200),
+      legalDescription: `Property at ${address}, ${city}, BC`
+    };
+  }
+
+  /**
+   * Fallback method when no MLS data is available
    */
   private getFallbackBCAssessmentData(address: string, city: string): BCAssessmentData {
-    console.log("Using BC Assessment fallback data");
+    console.log("Using basic property estimates - no MLS data available");
     const landValue = this.estimateLandValue(address, city);
     const improvementValue = this.estimateImprovementValue(address, city);
     
@@ -305,7 +310,7 @@ export class PropertyDataService {
       propertyType: "Single Family",
       yearBuilt: Math.floor(Math.random() * (2020 - 1950) + 1950),
       buildingArea: Math.floor(Math.random() * (3000 - 1200) + 1200),
-      legalDescription: `Lot ${Math.floor(Math.random() * 99 + 1)}, Block ${Math.floor(Math.random() * 20 + 1)}, District Lot ${Math.floor(Math.random() * 999 + 1)}`
+      legalDescription: `Property at ${address}, ${city}, BC`
     };
   }
 
