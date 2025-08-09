@@ -277,12 +277,18 @@ export default function DevelopmentNetworkSection() {
                   
                   // Pre-fill the contact form after scrolling
                   setTimeout(() => {
-                    const messageField = document.querySelector('textarea[placeholder*="message"]') as HTMLTextAreaElement;
+                    const messageField = document.querySelector('textarea') as HTMLTextAreaElement;
                     if (messageField) {
                       messageField.value = 'I want to create a professional profile and join the BC Development Network. Please send me information about:\n\n• Professional profile setup\n• Network membership benefits\n• Project matching opportunities\n• Monthly subscription details ($49/month)';
                       messageField.focus();
+                      
+                      // Also trigger change event to update React state
+                      const event = new Event('input', { bubbles: true });
+                      messageField.dispatchEvent(event);
+                    } else {
+                      console.error('Contact form textarea not found');
                     }
-                  }, 1000);
+                  }, 1500);
                 } else {
                   alert('Contact form not found. Please scroll down to the contact section to create your professional profile.');
                 }
