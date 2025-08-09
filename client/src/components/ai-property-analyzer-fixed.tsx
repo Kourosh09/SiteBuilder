@@ -119,12 +119,19 @@ export default function AIPropertyAnalyzer() {
       if (result.success && result.data?.bcAssessment) {
         const bcData = result.data.bcAssessment;
         
+        console.log("Received BC Assessment data:", bcData);
+        console.log("Assessed value:", bcData.assessedValue);
+        console.log("Lot size:", bcData.lotSize);
+        
         // Auto-populate fields with authentic BC Assessment data
-        setFormData(prev => ({
-          ...prev,
-          currentValue: bcData.assessedValue ? bcData.assessedValue.toString() : prev.currentValue,
-          lotSize: bcData.lotSize ? bcData.lotSize.toString() : prev.lotSize
-        }));
+        const newFormData = {
+          ...formData,
+          currentValue: bcData.assessedValue ? bcData.assessedValue.toString() : formData.currentValue,
+          lotSize: bcData.lotSize ? bcData.lotSize.toString() : formData.lotSize
+        };
+        
+        console.log("Updating form data:", newFormData);
+        setFormData(newFormData);
         
         toast({
           title: "Property Data Retrieved",
