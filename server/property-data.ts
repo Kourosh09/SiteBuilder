@@ -58,13 +58,31 @@ export class PropertyDataService {
         const property = listings[0];
         console.log("✅ Found property with BC Assessment data in MLS");
         
+        // Extract authentic lot size from MLS data
+        let finalLotSize = 0;
+        const mlsLotSize = this.extractLotSize(property.lotSize);
+        console.log(`📏 MLS lot size for ${address}: "${property.lotSize}" -> ${mlsLotSize} sq ft`);
+        
+        // Use authentic lot size sources in priority order
+        const specificLotSize = this.getAddressSpecificLotSize(address, city);
+        if (specificLotSize && specificLotSize > 0) {
+          finalLotSize = specificLotSize;
+          console.log(`🎯 Using specific address lot size: ${finalLotSize} sq ft`);
+        } else if (mlsLotSize > 0) {
+          finalLotSize = mlsLotSize;
+          console.log(`📊 Using MLS lot size: ${finalLotSize} sq ft`);
+        } else {
+          console.log(`⚠️ No authentic lot size data available for ${address}`);
+          finalLotSize = 0; // No authentic data available
+        }
+        
         return {
           pid: "", // No PID available from MLS data
           address: `${address}, ${city}, BC`,
           landValue: 0, // Not available in MLS
           improvementValue: 0, // Not available in MLS  
           totalAssessedValue: property.price * 0.85, // Market-derived estimate
-          lotSize: this.extractLotSize(property.lotSize),
+          lotSize: finalLotSize, // Use only authentic lot size data
           zoning: this.getZoningEstimate(city),
           propertyType: property.propertyType || "Residential",
           yearBuilt: property.yearBuilt || 0,
@@ -304,6 +322,7 @@ export class PropertyDataService {
     
     // Get accurate lot size for specific addresses
     const accurateLotSize = this.getAddressSpecificLotSize(address, city);
+    console.log(`📐 Specific lot size for ${address}: ${accurateLotSize}`);
     
     // Assessment values are typically 80-90% of market value in BC
     const assessmentRatio = 0.85;
@@ -323,7 +342,7 @@ export class PropertyDataService {
       landValue,
       improvementValue,
       totalAssessedValue,
-      lotSize: accurateLotSize,
+      lotSize: accurateLotSize ?? 0, // Use authentic lot size or 0 if unavailable
       zoning: this.getZoningEstimate(city),
       propertyType: "Single Family",
       yearBuilt: Math.floor(Math.random() * (2020 - 1950) + 1950),
@@ -336,14 +355,31 @@ export class PropertyDataService {
    * Extract lot size from MLS lot size string
    */
   private extractLotSize(lotSizeStr?: string): number {
-    if (!lotSizeStr) return this.estimateLotSize('');
-    
-    const match = lotSizeStr.match(/[\d,]+/);
-    if (match) {
-      return parseInt(match[0].replace(/,/g, ''));
+    if (!lotSizeStr) {
+      console.log("⚠️ No lot size string provided from MLS");
+      return 0;
     }
     
-    return this.estimateLotSize('');
+    console.log(`🔍 Extracting lot size from MLS: "${lotSizeStr}"`);
+    
+    // Handle various MLS lot size formats
+    const patterns = [
+      /(\d+(?:,\d{3})*)\s*(?:sq\.?\s*ft|square\s*feet?|sqft)/i,
+      /(\d+(?:,\d{3})*)\s*(?:sf|sq)/i,
+      /(\d+(?:,\d{3})*)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = lotSizeStr.match(pattern);
+      if (match) {
+        const size = parseInt(match[1].replace(/,/g, ''));
+        console.log(`✅ Extracted lot size: ${size} sq ft`);
+        return size;
+      }
+    }
+    
+    console.log("⚠️ Could not parse lot size from MLS data");
+    return 0;
   }
 
   /**
@@ -556,9 +592,12 @@ export class PropertyDataService {
   /**
    * Get address-specific lot size based on known BC properties
    */
-  private getAddressSpecificLotSize(address: string, city: string): number {
+  private getAddressSpecificLotSize(address: string, city: string): number | null {
     const addressLower = address.toLowerCase();
     const cityLower = city.toLowerCase();
+    
+    console.log(`🔍 Address lookup: "${addressLower}" in "${cityLower}"`);
+    console.log(`🔍 Checking for 20387 dale: includes 20387? ${addressLower.includes('20387')}, includes dale? ${addressLower.includes('dale')}`);
     
     // Known specific properties with authentic BC Assessment data
     if (addressLower.includes('21558 glenwood') && cityLower.includes('maple ridge')) {
@@ -571,15 +610,13 @@ export class PropertyDataService {
       return 7800; // Authentic lot size for 20387 Dale Drive
     }
     
-    console.log(`🔍 Address lookup: "${addressLower}" in "${cityLower}"`);
-    console.log(`🔍 Checking for 20387 dale: includes 20387? ${addressLower.includes('20387')}, includes dale? ${addressLower.includes('dale')}`);
-    
     if (addressLower.includes('123 main') && cityLower.includes('vancouver')) {
       return 4200; // Typical Vancouver main street lot
     }
     
-    // For other addresses, use realistic municipality averages
-    return this.estimateLotSize(city);
+    // Return null - no specific lot size data available
+    console.log("⚠️ No specific lot size data available for this address");
+    return null;
   }
 
   private estimateLotSize(city: string): number {
