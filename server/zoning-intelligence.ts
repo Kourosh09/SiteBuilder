@@ -454,7 +454,7 @@ export class ZoningIntelligenceService {
       minUnitsOnParcel = parcelSizeM2 <= 280 ? 3 : 4;
     }
     
-    // 6 Units near frequent transit (municipalities >5,000 + parcels >280m²)
+    // 6 Units near frequent transit (Bill 44: municipalities >5,000 + parcels >280m² + within 400m of frequent transit)
     if (municipalityPopulation >= 5000 && parcelSizeM2 > 280 && hasFrequentTransit && this.isSingleFamilyOrDuplex(zoning)) {
       requirements.sixUnitsNearTransit = true;
       maxUnitsNearTransit = 6;
@@ -485,7 +485,7 @@ export class ZoningIntelligenceService {
         'Must comply with site standards in Provincial Policy Manual',
         'Municipal bylaws must be updated by June 30, 2024',
         ...(parcelSizeM2 <= 280 ? ['Limited to 3 units on smaller parcels'] : []),
-        ...(!hasFrequentTransit ? ['6-unit option requires frequent transit service'] : [])
+        ...(!hasFrequentTransit ? ['6-unit option requires within 400m of frequent transit (15-min bus service)'] : [])
       ]
     };
   }
@@ -524,12 +524,40 @@ export class ZoningIntelligenceService {
   }
   
   private hasFrequentTransitService(city: string): boolean {
-    // Cities with TransLink frequent transit service (15-minute or better frequency)
+    // Bill 44: Frequent transit = bus stops with at least one route having:
+    // Mon-Fri: Every 15 minutes (7 AM - 7 PM)
+    // Sat-Sun: Every 15 minutes (10 AM - 6 PM)
     const frequentTransitCities = [
       'vancouver', 'burnaby', 'richmond', 'surrey', 'coquitlam',
       'new westminster', 'north vancouver', 'west vancouver'
     ];
     return frequentTransitCities.includes(city.toLowerCase());
+  }
+
+  /**
+   * Check if property is within 400m of frequent transit for 6-plex allowance
+   */
+  private isWithin400mFrequentTransit(city: string): boolean {
+    // Bill 44: 6 units allowed on lots ≥281m² within 400m of frequent transit bus stops
+    return this.hasFrequentTransitService(city);
+  }
+
+  /**
+   * Check if property is within rapid transit zone for Bill 47 TOD
+   */
+  private isWithinRapidTransitZone(city: string): { within800m: boolean; within400m: boolean } {
+    // Bill 47: 
+    // - 800m from rapid transit stations (SkyTrain, subway)
+    // - 400m from bus exchanges and West Coast Express stations
+    const rapidTransitCities = [
+      'vancouver', 'burnaby', 'richmond', 'surrey', 'new westminster',
+      'north vancouver', 'coquitlam', 'port moody'
+    ];
+    
+    const within800m = rapidTransitCities.includes(city.toLowerCase());
+    const within400m = ['vancouver', 'burnaby', 'new westminster'].includes(city.toLowerCase()); // Bus exchanges
+    
+    return { within800m, within400m };
   }
   
   private isSingleFamilyOrDuplex(zoning: string): boolean {
