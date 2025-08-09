@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Check, Play, Search, Building, MapPin, TrendingUp, Users, CheckCircle, ArrowRight, Loader2, Brain, AlertTriangle, Shield } from "lucide-react";
+import { Check, Play, Search, Building, MapPin, TrendingUp, Users, CheckCircle, ArrowRight, Loader2, Brain, AlertTriangle, Shield, Download } from "lucide-react";
 import { usePropertyData } from "@/hooks/usePropertyData";
 import { apiRequest } from '@/lib/queryClient';
 import PrivacyNotice from './privacy-notice';
@@ -107,6 +107,47 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
       }
     } catch (error) {
       console.error('Analysis error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    if (!analysis) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/reports/property-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: propertyForm.address,
+          city: propertyForm.city,
+          analysis: analysis,
+          email: propertyForm.email
+        })
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `BuildwiseAI-Analysis-${propertyForm.address.replace(/\s+/g, '-')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        console.error('Failed to generate report');
+        alert('Failed to generate report. Please try again.');
+      }
+    } catch (error) {
+      console.error('Report download error:', error);
+      alert('Failed to download report. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -301,21 +342,32 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                     </div>
                   </div>
                   
-                  <Button
-                    onClick={onGetStarted}
-                    className="w-full bg-emerald-500 text-white py-3 rounded-lg font-semibold hover:bg-emerald-400 transition-colors shadow-lg"
-                  >
-                    <ArrowRight className="w-5 h-5 mr-2" />
-                    View Full Analysis
-                  </Button>
-                  
-                  <Button
-                    onClick={() => setAnalysis(null)}
-                    variant="outline"
-                    className="w-full border-white/30 text-white bg-transparent py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
-                  >
-                    Analyze Another Property
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={onGetStarted}
+                      className="w-full bg-emerald-500 text-white py-3 rounded-lg font-semibold hover:bg-emerald-400 transition-colors shadow-lg"
+                    >
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      View Full Analysis
+                    </Button>
+                    
+                    <Button
+                      onClick={handleDownloadReport}
+                      className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-500 transition-colors shadow-lg"
+                      disabled={loading}
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Download PDF Report
+                    </Button>
+                    
+                    <Button
+                      onClick={() => setAnalysis(null)}
+                      variant="outline"
+                      className="w-full border-white/30 text-white bg-transparent py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
+                    >
+                      Analyze Another Property
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

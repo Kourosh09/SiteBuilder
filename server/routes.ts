@@ -3733,6 +3733,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Property Analysis PDF Report generation endpoint
+  app.post("/api/reports/property-analysis", async (req, res) => {
+    try {
+      const { address, city, analysis, email } = req.body;
+      
+      if (!address || !city || !analysis) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: address, city, analysis" 
+        });
+      }
+
+      // Import PDF generator
+      const { generatePropertyAnalysisReport } = await import('./pdf-generator');
+      
+      // Transform analysis data into the expected format for PDF generation
+      const reportData = {
+        address,
+        city,
+        coordinates: { lat: 0, lng: 0 }, // Default coordinates
+        lotSize: analysis.propertyDetails?.lotSize || 7200,
+        frontage: 60, // Default frontage
+        analysisDate: new Date().toISOString(),
+        zoning: {
+          zoningCode: analysis.propertyDetails?.currentZoning || 'RS-1',
+          description: `${analysis.propertyDetails?.currentZoning || 'RS-1'} Zoning`,
+          maxHeight: 35,
+          maxFAR: 0.7,
+          maxDensity: 1,
+          permittedUses: ['Single Family Dwelling', 'Secondary Suite'],
+          setbacks: { front: 6, rear: 7.5, side: 1.2 },
+          parkingRequirements: '1 space per unit'
+        },
+        developmentPotential: {
+          maxUnits: analysis.developmentPotential?.maxUnits || 2,
+          bill44MaxUnits: 4,
+          bill47MaxUnits: 6,
+          todMaxUnits: 0,
+          combinedMaxUnits: analysis.developmentPotential?.maxUnits || 2,
+          recommendedUnits: analysis.developmentPotential?.maxUnits || 2,
+          suggestedUnitMix: [{ bedrooms: 2, count: 1 }, { bedrooms: 3, count: 1 }],
+          buildingType: analysis.developmentPotential?.scenario || 'Infill Development',
+          estimatedGFA: analysis.propertyDetails?.floorArea || 2100,
+          estimatedValue: analysis.developmentPotential?.estimatedValue || analysis.propertyDetails?.assessedValue,
+          feasibilityScore: analysis.feasibilityScore || 8.7,
+          constraints: analysis.riskFactors?.map(r => r.description) || [],
+          opportunities: analysis.nextSteps || [],
+          bill44Compliance: {
+            eligible: true,
+            benefits: ['Streamlined approvals', 'Reduced parking requirements'],
+            requirements: ['Transit accessibility'],
+            incentives: ['Development cost charges reduction']
+          },
+          bill47Compliance: {
+            eligible: true,
+            benefits: ['Increased density allowance'],
+            requirements: ['Design guidelines compliance'],
+            incentives: ['Property tax reduction']
+          },
+          todCompliance: {
+            eligible: false,
+            benefits: [],
+            requirements: [],
+            incentives: []
+          },
+          ssmuhCompliance: {
+            eligible: true,
+            benefits: ['Additional unit allowance'],
+            requirements: ['Secondary suite compliance'],
+            incentives: []
+          }
+        },
+        marketContext: {
+          averageHomePrices: analysis.marketAnalysis?.averagePrice || analysis.propertyDetails?.assessedValue,
+          constructionCosts: analysis.financialProjection?.estimatedCost || 412500,
+          saleVelocity: analysis.marketAnalysis?.marketTrend || 'Stable',
+          demographics: 'Mixed demographics'
+        }
+      };
+
+      const pdfBuffer = generatePropertyAnalysisReport(reportData);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="BuildwiseAI-Analysis-${address.replace(/\s+/g, '-')}.pdf"`);
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('Property analysis PDF generation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to generate PDF report' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
