@@ -33,6 +33,7 @@ export default function Home({ onAuthenticated }: HomeProps) {
     <div className="bg-white">
       <Navigation onLoginClick={() => setShowLogin(true)} />
       <HeroSection onGetStarted={() => setShowLogin(true)} />
+      <ContractorSignupSection />
       <DemoVideoSection onGetStarted={() => setShowLogin(true)} />
       <InteractivePropertyDemo />
       <FeaturesOverview />

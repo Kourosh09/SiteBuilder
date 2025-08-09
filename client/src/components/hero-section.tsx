@@ -204,6 +204,29 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                 Watch Demo
               </Button>
             </div>
+            
+            {/* Professional Sign Up Call-to-Action */}
+            <div className="mt-8 p-6 bg-orange-500/20 border border-orange-300/50 rounded-xl backdrop-blur-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-semibold text-white mb-2">Are you a BC Professional?</h4>
+                  <p className="text-blue-100 text-sm">Contractors • Architects • Engineers • Trades</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    const contractorSection = document.querySelector('section.bg-gradient-to-br.from-orange-50');
+                    if (contractorSection) {
+                      contractorSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-400 transition-colors shadow-lg whitespace-nowrap"
+                  data-testid="button-professional-signup"
+                >
+                  <Building className="w-5 h-5 mr-2" />
+                  Join Network
+                </Button>
+              </div>
+            </div>
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 text-sm text-blue-200">
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
