@@ -37,7 +37,10 @@ export default function ProfessionalProfile({ onBack }: ProfessionalProfileProps
 
   const availableCities = [
     "Vancouver", "Burnaby", "Richmond", "Surrey", "Maple Ridge",
-    "Coquitlam", "Port Coquitlam", "Port Moody", "Mission"
+    "Coquitlam", "Port Coquitlam", "Port Moody", "Mission",
+    "North Vancouver", "West Vancouver", "New Westminster", 
+    "Langley", "Langley City", "White Rock", "Delta", 
+    "Abbotsford", "Chilliwack", "Pitt Meadows"
   ];
 
   const availableTrades = [

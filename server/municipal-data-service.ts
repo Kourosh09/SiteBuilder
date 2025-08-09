@@ -89,6 +89,37 @@ export class MunicipalDataService {
     this.addMapleRidgeZoningData();
     this.addMapleRidgeBylaws();
     
+    // Additional BC Cities
+    this.addNorthVancouverZoningData();
+    this.addNorthVancouverBylaws();
+    
+    this.addWestVancouverZoningData(); 
+    this.addWestVancouverBylaws();
+    
+    this.addNewWestminsterZoningData();
+    this.addNewWestminsterBylaws();
+    
+    this.addLangleyZoningData();
+    this.addLangleyBylaws();
+    
+    this.addLangleyCityZoningData();
+    this.addLangleyCityBylaws();
+    
+    this.addWhiteRockZoningData();
+    this.addWhiteRockBylaws();
+    
+    this.addDeltaZoningData();
+    this.addDeltaBylaws();
+    
+    this.addAbbotsfordZoningData();
+    this.addAbbotsfordBylaws();
+    
+    this.addChilliwackZoningData();
+    this.addChilliwackBylaws();
+    
+    this.addPittMeadowsZoningData();
+    this.addPittMeadowsBylaws();
+    
     // Tri-Cities - Comprehensive municipal data integration
     this.addCoquitlamZoningData();
     this.addCoquitlamBylaws();
@@ -1228,6 +1259,206 @@ export class MunicipalDataService {
     this.zoningDatabase.set('Mission', missionZoning);
   }
 
+  // North Vancouver City
+  private addNorthVancouverZoningData(): void {
+    const northVancouverZoning = new Map<string, MunicipalZoningData>();
+    
+    northVancouverZoning.set('RS-1', {
+      city: 'North Vancouver',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.60,
+      maxDensity: 4,
+      minLotSize: 557, // 6000 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.5, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Secondary suite', 'Small-scale multi-unit housing', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('North Vancouver', northVancouverZoning);
+  }
+
+  // West Vancouver  
+  private addWestVancouverZoningData(): void {
+    const westVancouverZoning = new Map<string, MunicipalZoningData>();
+    
+    westVancouverZoning.set('RS1', {
+      city: 'West Vancouver',
+      zoningCode: 'RS1',
+      description: 'Single Family Residential',
+      maxHeight: 10.7,
+      maxFAR: 0.40,
+      maxDensity: 1,
+      minLotSize: 929, // 10000 sq ft
+      setbacks: { front: 9.0, rear: 9.0, side: 3.0, flanking: 6.0 },
+      parkingRequirements: '2 spaces per dwelling',
+      permittedUses: ['Single detached dwelling', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('West Vancouver', westVancouverZoning);
+  }
+
+  // New Westminster
+  private addNewWestminsterZoningData(): void {
+    const newWestminsterZoning = new Map<string, MunicipalZoningData>();
+    
+    newWestminsterZoning.set('RS-1', {
+      city: 'New Westminster',
+      zoningCode: 'RS-1',
+      description: 'Single Detached Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.60,
+      maxDensity: 6,
+      minLotSize: 464, // 5000 sq ft
+      setbacks: { front: 6.0, rear: 7.5, side: 1.2, flanking: 3.7 },
+      parkingRequirements: '1.5 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Laneway house']
+    });
+
+    this.zoningDatabase.set('New Westminster', newWestminsterZoning);
+  }
+
+  // Langley Township
+  private addLangleyZoningData(): void {
+    const langleyZoning = new Map<string, MunicipalZoningData>();
+    
+    langleyZoning.set('RU-1', {
+      city: 'Langley',
+      zoningCode: 'RU-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.65,
+      maxDensity: 4,
+      minLotSize: 557, // 6000 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.5, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('Langley', langleyZoning);
+  }
+
+  // Langley City
+  private addLangleyCityZoningData(): void {
+    const langleyCityZoning = new Map<string, MunicipalZoningData>();
+    
+    langleyCityZoning.set('R1A', {
+      city: 'Langley City',
+      zoningCode: 'R1A',
+      description: 'Single Family Residential',
+      maxHeight: 9.5,
+      maxFAR: 0.60,
+      maxDensity: 4,
+      minLotSize: 464, // 5000 sq ft
+      setbacks: { front: 6.0, rear: 7.5, side: 1.2, flanking: 3.0 },
+      parkingRequirements: '1.5 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Coach house']
+    });
+
+    this.zoningDatabase.set('Langley City', langleyCityZoning);
+  }
+
+  // White Rock
+  private addWhiteRockZoningData(): void {
+    const whiteRockZoning = new Map<string, MunicipalZoningData>();
+    
+    whiteRockZoning.set('RS-1', {
+      city: 'White Rock',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.55,
+      maxDensity: 4,
+      minLotSize: 464, // 5000 sq ft
+      setbacks: { front: 6.0, rear: 6.0, side: 1.5, flanking: 3.0 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('White Rock', whiteRockZoning);
+  }
+
+  // Delta
+  private addDeltaZoningData(): void {
+    const deltaZoning = new Map<string, MunicipalZoningData>();
+    
+    deltaZoning.set('RS-1', {
+      city: 'Delta',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 9.5,
+      maxFAR: 0.50,
+      maxDensity: 4,
+      minLotSize: 600, // 6458 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.5, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('Delta', deltaZoning);
+  }
+
+  // Abbotsford
+  private addAbbotsfordZoningData(): void {
+    const abbotsfordZoning = new Map<string, MunicipalZoningData>();
+    
+    abbotsfordZoning.set('RS-1', {
+      city: 'Abbotsford',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.60,
+      maxDensity: 4,
+      minLotSize: 557, // 6000 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.8, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Coach house']
+    });
+
+    this.zoningDatabase.set('Abbotsford', abbotsfordZoning);
+  }
+
+  // Chilliwack
+  private addChilliwackZoningData(): void {
+    const chilliwackZoning = new Map<string, MunicipalZoningData>();
+    
+    chilliwackZoning.set('RS-1', {
+      city: 'Chilliwack',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.55,
+      maxDensity: 4,
+      minLotSize: 557, // 6000 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.5, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('Chilliwack', chilliwackZoning);
+  }
+
+  // Pitt Meadows
+  private addPittMeadowsZoningData(): void {
+    const pittMeadowsZoning = new Map<string, MunicipalZoningData>();
+    
+    pittMeadowsZoning.set('RS-1', {
+      city: 'Pitt Meadows',
+      zoningCode: 'RS-1',
+      description: 'Single Family Residential',
+      maxHeight: 10.5,
+      maxFAR: 0.60,
+      maxDensity: 4,
+      minLotSize: 557, // 6000 sq ft
+      setbacks: { front: 7.5, rear: 7.5, side: 1.5, flanking: 4.5 },
+      parkingRequirements: '2 spaces per unit',
+      permittedUses: ['Single detached dwelling', 'Small-scale multi-unit housing', 'Secondary suite', 'Home occupation']
+    });
+
+    this.zoningDatabase.set('Pitt Meadows', pittMeadowsZoning);
+  }
+
   private addMissionBylaws(): void {
     const missionBylaws: MunicipalBylaw[] = [
       {
@@ -1299,6 +1530,177 @@ export class MunicipalDataService {
         'Forest ecosystem protection requirements'
       ]
     });
+  }
+
+  // Add bylaws for new cities
+  private addNorthVancouverBylaws(): void {
+    const northVancouverBylaws: MunicipalBylaw[] = [
+      {
+        city: 'North Vancouver',
+        bylawNumber: '8900',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of North Vancouver Zoning Bylaw',
+        requirement: 'Compliance with zoning regulations required',
+        applicableZones: ['RS-1', 'RS-2', 'RT-1', 'RM-1', 'RM-2'],
+        lastUpdated: new Date('2024-02-01'),
+        effectiveDate: new Date('2014-05-26')
+      }
+    ];
+    this.bylawDatabase.set('North Vancouver', northVancouverBylaws);
+  }
+
+  private addWestVancouverBylaws(): void {
+    const westVancouverBylaws: MunicipalBylaw[] = [
+      {
+        city: 'West Vancouver',
+        bylawNumber: '4662',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'District of West Vancouver Zoning Bylaw',
+        requirement: 'Development permit areas and character retention',
+        applicableZones: ['RS1', 'RS2', 'RS3', 'RS4', 'RS5'],
+        lastUpdated: new Date('2023-11-15'),
+        effectiveDate: new Date('2010-03-08')
+      }
+    ];
+    this.bylawDatabase.set('West Vancouver', westVancouverBylaws);
+  }
+
+  private addNewWestminsterBylaws(): void {
+    const newWestminsterBylaws: MunicipalBylaw[] = [
+      {
+        city: 'New Westminster',
+        bylawNumber: '6680',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of New Westminster Zoning Bylaw',
+        requirement: 'Small-scale multi-unit housing regulations',
+        applicableZones: ['RS-1', 'RS-2', 'RS-4', 'RT-1', 'RT-2'],
+        lastUpdated: new Date('2024-01-30'),
+        effectiveDate: new Date('2003-05-26')
+      }
+    ];
+    this.bylawDatabase.set('New Westminster', newWestminsterBylaws);
+  }
+
+  private addLangleyBylaws(): void {
+    const langleyBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Langley',
+        bylawNumber: '2500',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'Township of Langley Zoning Bylaw',
+        requirement: 'Agricultural Land Reserve and rural development',
+        applicableZones: ['RU-1', 'RU-2', 'A-1', 'A-2', 'CD'],
+        lastUpdated: new Date('2023-12-20'),
+        effectiveDate: new Date('1996-07-15')
+      }
+    ];
+    this.bylawDatabase.set('Langley', langleyBylaws);
+  }
+
+  private addLangleyCityBylaws(): void {
+    const langleyCityBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Langley City',
+        bylawNumber: '1200',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of Langley Zoning Bylaw',
+        requirement: 'Compact urban development regulations',
+        applicableZones: ['R1A', 'R1B', 'R2', 'R3', 'RM1'],
+        lastUpdated: new Date('2024-01-10'),
+        effectiveDate: new Date('1987-04-27')
+      }
+    ];
+    this.bylawDatabase.set('Langley City', langleyCityBylaws);
+  }
+
+  private addWhiteRockBylaws(): void {
+    const whiteRockBylaws: MunicipalBylaw[] = [
+      {
+        city: 'White Rock',
+        bylawNumber: '2200',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of White Rock Zoning Bylaw',
+        requirement: 'Hillside development and ocean view protection',
+        applicableZones: ['RS-1', 'RS-2', 'RT-1', 'RM-1', 'RM-2'],
+        lastUpdated: new Date('2023-10-15'),
+        effectiveDate: new Date('2011-02-28')
+      }
+    ];
+    this.bylawDatabase.set('White Rock', whiteRockBylaws);
+  }
+
+  private addDeltaBylaws(): void {
+    const deltaBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Delta',
+        bylawNumber: '4100',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'Corporation of Delta Zoning Bylaw',
+        requirement: 'Agricultural protection and flood construction levels',
+        applicableZones: ['RS-1', 'RS-2', 'A1', 'A2', 'RU'],
+        lastUpdated: new Date('2023-09-30'),
+        effectiveDate: new Date('1986-12-08')
+      }
+    ];
+    this.bylawDatabase.set('Delta', deltaBylaws);
+  }
+
+  private addAbbotsfordBylaws(): void {
+    const abbotsfordBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Abbotsford',
+        bylawNumber: '1892',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of Abbotsford Zoning Bylaw',
+        requirement: 'Agricultural interface and rural transition',
+        applicableZones: ['RS-1', 'RS-2', 'A1', 'A2', 'RU1'],
+        lastUpdated: new Date('2024-02-15'),
+        effectiveDate: new Date('2007-12-10')
+      }
+    ];
+    this.bylawDatabase.set('Abbotsford', abbotsfordBylaws);
+  }
+
+  private addChilliwackBylaws(): void {
+    const chilliwackBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Chilliwack',
+        bylawNumber: '2800',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of Chilliwack Zoning Bylaw',
+        requirement: 'Agricultural protection and flood hazard management',
+        applicableZones: ['RS-1', 'RS-2', 'A1', 'A2', 'RU'],
+        lastUpdated: new Date('2023-11-20'),
+        effectiveDate: new Date('1995-06-26')
+      }
+    ];
+    this.bylawDatabase.set('Chilliwack', chilliwackBylaws);
+  }
+
+  private addPittMeadowsBylaws(): void {
+    const pittMeadowsBylaws: MunicipalBylaw[] = [
+      {
+        city: 'Pitt Meadows',
+        bylawNumber: '2000',
+        title: 'Zoning Bylaw',
+        category: 'zoning',
+        description: 'City of Pitt Meadows Zoning Bylaw',
+        requirement: 'Agricultural Land Reserve and dyke protection',
+        applicableZones: ['RS-1', 'RS-2', 'A1', 'RU', 'I1'],
+        lastUpdated: new Date('2023-12-05'),
+        effectiveDate: new Date('1997-10-13')
+      }
+    ];
+    this.bylawDatabase.set('Pitt Meadows', pittMeadowsBylaws);
   }
 }
 
