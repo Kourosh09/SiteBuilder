@@ -3233,17 +3233,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Development optimization analysis endpoint
   app.post("/api/development/optimize", async (req, res) => {
     try {
-      const { sessionId } = req.body;
+      const { sessionId: inputSessionId, address, city } = req.body;
       
-      if (!sessionId) {
+      // Handle both sessionId and direct address/city input for compatibility
+      let actualSessionId = inputSessionId;
+      let propertyData;
+      
+      if (inputSessionId) {
+        const { propertySessionManager } = await import("./property-session");
+        const session = propertySessionManager.getSession(inputSessionId);
+        if (!session) {
+          return res.status(404).json({ 
+            success: false, 
+            error: "Session not found" 
+          });
+        }
+        propertyData = session.data;
+      } else if (address && city) {
+        // Create temporary session for optimization
+        propertyData = await propertyDataService.getPropertyData(address, city);
+        const { propertySessionManager } = await import("./property-session");
+        const tempSession = propertySessionManager.createSession(address, city, propertyData);
+        actualSessionId = tempSession.id;
+      } else {
         return res.status(400).json({ 
           success: false, 
-          error: "SessionId required for development optimization" 
+          error: "SessionId or address/city required for development optimization" 
         });
       }
       
       const { developmentOptimizationService } = await import("./development-optimization");
-      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(sessionId);
+      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(actualSessionId);
       
       res.json({ 
         success: true, 
@@ -3263,18 +3283,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered construction design generation
   app.post("/api/construction/design", async (req, res) => {
     try {
-      const { sessionId, scenarioName } = req.body;
+      const { sessionId, scenarioName, address, city } = req.body;
       
-      if (!sessionId) {
+      // Handle both sessionId and direct address/city input for compatibility
+      let actualSessionId = sessionId;
+      if (!sessionId && address && city) {
+        // Create temporary session for design generation
+        const propertyData = await propertyDataService.getPropertyData(address, city);
+        const { propertySessionManager } = await import("./property-session");
+        const tempSession = propertySessionManager.createSession(address, city, propertyData);
+        actualSessionId = tempSession.id;
+      } else if (!sessionId) {
         return res.status(400).json({ 
           success: false, 
-          error: "SessionId required for construction design" 
+          error: "SessionId or address/city required for construction design" 
         });
       }
       
       // Get optimized development plan
       const { developmentOptimizationService } = await import("./development-optimization");
-      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(sessionId);
+      const optimizedPlan = await developmentOptimizationService.optimizeDevelopment(actualSessionId);
       
       // Find requested scenario or use recommended
       let targetScenario = optimizedPlan.recommendedScenario;
@@ -3288,7 +3316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get property session for context
       const { propertySessionManager } = await import("./property-session");
-      const session = propertySessionManager.getSession(sessionId);
+      const session = propertySessionManager.getSession(actualSessionId);
       
       const designRequest = {
         projectType: mapToProjectType(targetScenario.totalUnits) as "single-family" | "duplex" | "apartment" | "mixed-use" | "triplex" | "fourplex" | "townhouse",

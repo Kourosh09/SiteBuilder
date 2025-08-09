@@ -17,6 +17,7 @@ export class PropertySessionManager {
       id: sessionId,
       address,
       city,
+      data: propertyData, // Store complete property data
       bcAssessment: propertyData.bcAssessment,
       mlsComparables: propertyData.mlsComparables,
       marketAnalysis: propertyData.marketAnalysis,

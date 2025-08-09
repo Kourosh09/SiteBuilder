@@ -89,6 +89,7 @@ export interface PropertySessionData {
   id: string;
   address: string;
   city: string;
+  data?: any; // Complete property data storage for backward compatibility
   coordinates?: { lat: number; lng: number };
   
   // BC Assessment Data

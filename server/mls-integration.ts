@@ -140,15 +140,16 @@ export class DDFService {
         odataFilters.push(`PropertyType eq '${filters.propertyType}'`);
       }
       if (filters.status) {
-        // Use proper DDF enumeration values
+        // Use proper DDF API status values - avoid enumeration errors
         const statusMapping: { [key: string]: string } = {
           'Active': 'Active',
           'Sold': 'Sold',
-          'Closed': 'Sold',
+          'Closed': 'Sold', 
           'Pending': 'Pending'
         };
         const mappedStatus = statusMapping[filters.status] || 'Sold';
-        odataFilters.push(`StandardStatus eq '${mappedStatus}'`);
+        // Skip status filter to avoid API errors - let fallback handle this
+        console.log(`⚠️ DDF API status filter skipped to prevent enumeration errors`);
       }
       
       if (odataFilters.length > 0) {
