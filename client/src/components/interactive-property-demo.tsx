@@ -81,8 +81,18 @@ export default function InteractivePropertyDemo() {
   };
 
   const captureLeadAndRunDemo = async () => {
+    console.log('🔄 Starting captureLeadAndRunDemo function');
+    console.log('Contact info:', contactInfo);
+    console.log('Address:', address, 'City:', city);
+    
+    if (!contactInfo.name || !contactInfo.email) {
+      alert('Please fill in your name and email address to continue.');
+      return;
+    }
+    
     setIsRunningDemo(true);
     try {
+      console.log('📡 Sending request to /api/marketing/demo...');
       const response = await fetch('/api/marketing/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,11 +103,20 @@ export default function InteractivePropertyDemo() {
         })
       });
       
+      console.log('📡 Response received:', response.status, response.statusText);
       const data = await response.json();
-      setDemoResult(data.data);
-      setShowContactForm(false);
+      console.log('📊 Response data:', data);
+      
+      if (data.success && data.data) {
+        setDemoResult(data.data);
+        setShowContactForm(false);
+        console.log('✅ Demo completed successfully!');
+      } else {
+        throw new Error(data.error || 'Demo failed');
+      }
     } catch (error) {
-      console.error('Demo with lead capture failed:', error);
+      console.error('❌ Demo with lead capture failed:', error);
+      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Please try again'}`);
     } finally {
       setIsRunningDemo(false);
     }
@@ -374,10 +393,15 @@ export default function InteractivePropertyDemo() {
                   Maybe Later
                 </Button>
                 <Button
-                  onClick={captureLeadAndRunDemo}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log('🖱️ Button clicked! Running captureLeadAndRunDemo...');
+                    captureLeadAndRunDemo();
+                  }}
                   disabled={!contactInfo.name || !contactInfo.email || isRunningDemo}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 relative z-10"
                   data-testid="button-get-full-analysis"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   {isRunningDemo ? (
                     <>
