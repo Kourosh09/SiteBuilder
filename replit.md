@@ -30,6 +30,7 @@ User is a licensed realtor with REBGV credentials.
 Business model: Premium dashboard with 7-day trial for paying customers ($197/month).
 Main website should focus on marketing materials and service descriptions only.
 All valuable builder tools should be behind premium dashboard for trial/paying customers.
+Featured Network Members directory removed from public site - only accessible to premium subscribers.
 
 ## System Architecture
 
