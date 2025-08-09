@@ -128,6 +128,16 @@ export default function LandownerJVSection() {
             <Button 
               size="lg" 
               className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                console.log('🖱️ Get Free Property Analysis clicked');
+                const demoSection = document.getElementById('property-demo');
+                if (demoSection) {
+                  demoSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // Fallback: scroll to interactive property demo
+                  window.scrollTo({ top: 500, behavior: 'smooth' });
+                }
+              }}
               data-testid="button-landowner-analysis"
             >
               Get Free Property Analysis
@@ -135,6 +145,16 @@ export default function LandownerJVSection() {
             <Button 
               size="lg" 
               variant="outline"
+              onClick={() => {
+                console.log('🖱️ Browse Development Partners clicked');
+                const partnersSection = document.getElementById('partners');
+                if (partnersSection) {
+                  partnersSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // Fallback: scroll to bottom of page
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+              }}
               data-testid="button-landowner-partners"
             >
               Browse Development Partners

@@ -132,7 +132,7 @@ export default function InteractivePropertyDemo() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
+    <div id="property-demo" className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl lg:text-5xl font-bold mb-4">
