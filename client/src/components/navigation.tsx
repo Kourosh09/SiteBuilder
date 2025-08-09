@@ -86,13 +86,6 @@ export default function Navigation({ onLoginClick }: NavigationProps) {
                 >
                   Dashboard
                 </button>
-                <button
-                  onClick={() => window.location.href = '/contractor-applications'}
-                  className="text-green-600 hover:text-green-700 px-3 py-2 text-sm font-medium transition-colors border border-green-200 rounded-md bg-green-50"
-                  data-testid="nav-admin-contractors"
-                >
-                  Applications (2)
-                </button>
                 <Button
                   onClick={() => scrollToSection("contact")}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
