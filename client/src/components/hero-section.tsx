@@ -44,12 +44,12 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   };
 
   const demoProperty = () => {
-    // Set demo property data that will auto-populate all calculators
+    // Set demo property data to match the video demo exactly
     setPropertyData({
-      address: "1234 Example Street",
-      city: "Vancouver",
-      currentValue: 1850000,
-      lotSize: 7200,
+      address: "21558 Glenwood Ave",
+      city: "Maple Ridge", 
+      currentValue: 1340000,
+      lotSize: 8712,
       currentUse: "single-family",
       proposedUse: "multi-family"
     });

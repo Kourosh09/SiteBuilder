@@ -70,6 +70,22 @@ export class RealPropertyLookupService {
    * Generate property data based on the actual address input
    */
   private generatePropertyDataForAddress(address: string, city: string) {
+    // Special case for demo property to ensure consistent data with video
+    if (address.includes("21558 Glenwood Ave") && city === "Maple Ridge") {
+      return {
+        assessedValue: 1340000,
+        landValue: 890000,
+        improvementValue: 450000,
+        propertyType: "Single Family Dwelling",
+        yearBuilt: 1985,
+        lotSize: 8712,
+        floorArea: 1950,
+        bedrooms: 4,
+        bathrooms: 3,
+        zoning: "RS-1"
+      };
+    }
+    
     const addressHash = this.getAddressHash(address);
     const cityMultiplier = this.getCityMultiplier(city);
     
@@ -97,6 +113,39 @@ export class RealPropertyLookupService {
    * Generate comparable sales based on the area
    */
   private generateComparablesForArea(address: string, city: string, basePrice: number) {
+    // Special case for demo property to show consistent comparables with video
+    if (address.includes("21558 Glenwood Ave") && city === "Maple Ridge") {
+      return [
+        {
+          address: "21560 Glenwood Ave",
+          price: 1295000,
+          soldDate: this.getRecentSoldDate(0),
+          sqft: 1850,
+          lotSize: 8200,
+          daysOnMarket: 12,
+          distance: 0.1
+        },
+        {
+          address: "21562 Glenwood Ave", 
+          price: 1385000,
+          soldDate: this.getRecentSoldDate(1),
+          sqft: 2100,
+          lotSize: 9100,
+          daysOnMarket: 8,
+          distance: 0.2
+        },
+        {
+          address: "11745 228th St",
+          price: 1320000,
+          soldDate: this.getRecentSoldDate(2),
+          sqft: 1920,
+          lotSize: 8450,
+          daysOnMarket: 18,
+          distance: 0.3
+        }
+      ];
+    }
+    
     const addressHash = this.getAddressHash(address);
     const comparables = [];
     
@@ -123,6 +172,17 @@ export class RealPropertyLookupService {
    * Generate market analysis for the area
    */
   private generateMarketAnalysis(city: string, basePrice: number) {
+    // Special case for demo property to show consistent market data with video
+    if (city === "Maple Ridge") {
+      return {
+        averagePrice: 1333000, // Average of the demo comparables
+        pricePerSqft: 650,
+        marketTrend: "Rising 2.8%",
+        inventoryLevel: "Balanced market",
+        absorption: 2.1
+      };
+    }
+    
     const cityMultiplier = this.getCityMultiplier(city);
     const averagePrice = Math.round(basePrice * (0.95 + Math.random() * 0.1));
     
