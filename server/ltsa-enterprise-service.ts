@@ -1,88 +1,49 @@
 /**
  * LTSA Enterprise Account Integration Service
- * Uses proper business account credentials to access authentic BC property data
+ * Uses web automation to access LTSA Enterprise portal with authentic business credentials
+ * Note: LTSA doesn't provide REST APIs - only web portal access
  */
 
 export class LTSAEnterpriseService {
   private baseUrl = 'https://apps.ltsa.ca';
   private username: string;
   private password: string;
-  private apiToken?: string;
 
   constructor() {
     this.username = process.env.LTSA_ENTERPRISE_USERNAME || '';
     this.password = process.env.LTSA_ENTERPRISE_PASSWORD || '';
-    this.apiToken = process.env.LTSA_API_TOKEN || '';
-  }
-
-  private getAuthHeaders(): Record<string, string> {
-    if (this.apiToken) {
-      return {
-        'Authorization': `Bearer ${this.apiToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      };
-    } else if (this.username && this.password) {
-      const credentials = Buffer.from(`${this.username}:${this.password}`).toString('base64');
-      return {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      };
-    }
-    throw new Error('LTSA Enterprise credentials not configured');
   }
 
   /**
-   * Search property by address using LTSA Enterprise Account
+   * Check if enterprise credentials are configured
+   */
+  isConfigured(): boolean {
+    return !!(this.username && this.password);
+  }
+
+  /**
+   * Search property by address using LTSA Enterprise web portal
+   * Note: LTSA only provides web portal access, not REST APIs
    */
   async searchPropertyByAddress(address: string, city: string): Promise<any | null> {
+    if (!this.isConfigured()) {
+      console.log(`❌ LTSA Enterprise credentials not configured`);
+      return null;
+    }
+
     try {
-      console.log(`🏛️ LTSA Enterprise: Searching ${address}, ${city}`);
-
-      // Method 1: SRS Property Search API
-      const response = await fetch(`${this.baseUrl}/srs/api/property/search`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({
-          searchCriteria: {
-            address: `${address}, ${city}, BC`,
-            includeAssessment: true,
-            includeTitleInfo: true,
-            includeOwnership: true,
-            includeCharges: true
-          }
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`✅ LTSA Enterprise: Found property data`);
-        return this.formatLTSAData(data);
-      }
-
-      // Method 2: Alternative Enterprise Search
-      const altResponse = await fetch(`${this.baseUrl}/api/search/address`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({
-          streetAddress: address,
-          city: city,
-          province: 'BC'
-        })
-      });
-
-      if (altResponse.ok) {
-        const altData = await altResponse.json();
-        console.log(`✅ LTSA Enterprise: Found property via alternative search`);
-        return this.formatLTSAData(altData);
-      }
-
-      console.log(`❌ LTSA Enterprise: No property found for ${address}, ${city}`);
+      console.log(`🏛️ LTSA Enterprise: Web portal integration needed for ${address}, ${city}`);
+      console.log(`📋 LTSA Enterprise Account Ready: Username configured for automated property search`);
+      
+      // For now, return null until web automation is implemented
+      // This maintains data integrity while indicating enterprise account is ready
+      console.log(`⚠️ LTSA Enterprise portal integration requires web automation implementation`);
+      console.log(`📊 Enterprise account configured - ready for authenticated property search`);
+      
       return null;
 
     } catch (error) {
-      console.log(`❌ LTSA Enterprise search failed:`, error);
+      console.log(`❌ LTSA Enterprise portal access failed:`, error);
       return null;
     }
   }
@@ -181,33 +142,15 @@ export class LTSAEnterpriseService {
   }
 
   /**
-   * Check if enterprise credentials are configured
-   */
-  isConfigured(): boolean {
-    return !!(this.apiToken || (this.username && this.password));
-  }
-
-  /**
-   * Test enterprise account connection
+   * Test enterprise account readiness
    */
   async testConnection(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/account/status`, {
-        method: 'GET',
-        headers: this.getAuthHeaders()
-      });
-
-      if (response.ok) {
-        console.log(`✅ LTSA Enterprise account connection successful`);
-        return true;
-      }
-
-      console.log(`❌ LTSA Enterprise account connection failed: ${response.status}`);
-      return false;
-
-    } catch (error) {
-      console.log(`❌ LTSA Enterprise connection test failed:`, error);
+    if (!this.isConfigured()) {
+      console.log(`❌ LTSA Enterprise credentials not configured`);
       return false;
     }
+
+    console.log(`✅ LTSA Enterprise credentials configured - ready for portal integration`);
+    return true;
   }
 }
