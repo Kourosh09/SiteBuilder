@@ -27,6 +27,13 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   // Debug: Log analysis state changes
   useEffect(() => {
     console.log('Analysis state changed:', analysis);
+    if (analysis) {
+      console.log('Analysis details:', {
+        propertyDetails: analysis.propertyDetails,
+        developmentPotential: analysis.developmentPotential,
+        feasibilityScore: analysis.feasibilityScore
+      });
+    }
   }, [analysis]);
   
   const scrollToContact = () => {
@@ -88,8 +95,8 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
 
       if (result.success && result.analysis) {
         console.log('Setting analysis data:', result.analysis);
+        console.log('Analysis state changed:', result.analysis);
         setAnalysis(result.analysis);
-        console.log('Analysis state should now be set');
         
         // Store property data for use in other calculators
         const propertyDetails = result.analysis.propertyDetails;
