@@ -1648,28 +1648,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Create contractor application
-      const contractorApplication = {
+      // Create contractor application - map form fields to schema fields
+      const contractorData = {
         companyName,
-        contactPerson,
+        contactName: contactPerson, // Map contactPerson to contactName 
         email,
         phone,
+        city: serviceAreas && serviceAreas.length > 0 ? serviceAreas[0] : "Vancouver", // Use first service area as city
         trades,
-        experience: experience || "Not specified",
         serviceAreas: serviceAreas || [],
-        licenseNumber: licenseNumber || null,
-        status: "pending",
-        appliedAt: new Date().toISOString(),
-        id: Date.now().toString()
+        yearsExperience: experience || "Not specified",
+        businessLicense: licenseNumber || null,
       };
 
-      // In a real app, this would save to database
-      // For now, we'll just return success
+      // Save contractor application to database
+      const { contractorMarketplaceService } = await import('./contractor-marketplace-service');
+      const savedContractor = await contractorMarketplaceService.createContractor(contractorData);
       
       res.json({
         success: true,
         message: "Contractor application submitted successfully",
-        applicationId: contractorApplication.id
+        applicationId: savedContractor.id,
+        contractor: savedContractor
       });
 
     } catch (error) {

@@ -9,6 +9,7 @@ import { SupportWidget } from "@/components/support-widget";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/components/dashboard";
+import ContractorApplications from "@/pages/ContractorApplications";
 
 function Router() {
   const [, setLocation] = useLocation();
@@ -27,6 +28,9 @@ function Router() {
       </Route>
       <Route path="/dashboard">
         <Dashboard />
+      </Route>
+      <Route path="/contractor-applications">
+        <ContractorApplications />
       </Route>
       <Route component={NotFound} />
     </Switch>
