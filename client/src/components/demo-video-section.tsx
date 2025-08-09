@@ -113,7 +113,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                         BuildwiseAI Platform Demo
                       </h3>
                       <p className="text-blue-100 text-sm">
-                        21558 Glenwood Ave, Maple Ridge Analysis
+                        Real Maple Ridge Property Analysis
                       </p>
                       <p className="text-blue-200 text-xs mt-1">
                         Duration: 1:00 • HD Quality • With Voiceover
@@ -130,7 +130,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                         {/* Header */}
                         <div className="border-b pb-4">
                           <h3 className="text-lg font-bold text-neutral-900">BuildwiseAI Analysis Dashboard</h3>
-                          <p className="text-sm text-neutral-600">1234 Example Street, Vancouver, BC</p>
+                          <p className="text-sm text-neutral-600">21558 Glenwood Ave, Maple Ridge, BC</p>
                         </div>
 
                         {/* Voiceover Commentary */}
@@ -140,12 +140,12 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                             <span className="font-medium">Narrator:</span>
                           </div>
                           <p className="italic">
-                            {voiceoverPhase === 1 && "Let's analyze a real Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data, property values, and zoning information..."}
-                            {voiceoverPhase === 2 && "Now we're comparing this property with recent MLS sales in the neighborhood. The AI finds similar properties and calculates market trends..."}
-                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks municipal zoning laws and Bill 44 compliance. This ensures any development will meet city requirements..."}
-                            {voiceoverPhase === 4 && "The financial engine calculates potential ROI, construction costs, and development scenarios. Multiple options are analyzed instantly..."}
-                            {voiceoverPhase === 5 && "Complete analysis finished! The AI provides actionable insights, development recommendations, and connects you with qualified contractors."}
-                            {voiceoverPhase === 0 && "Ready to see how BuildwiseAI transforms BC property development? Click play to watch the complete analysis."}
+                            {voiceoverPhase === 1 && "Let's analyze 21558 Glenwood Ave in Maple Ridge using BuildwiseAI. Watch as we instantly pull BC Assessment data showing $1.34M assessed value on an 8,712 sq ft lot..."}
+                            {voiceoverPhase === 2 && "Now we're comparing with recent MLS sales on Glenwood Ave. Similar properties sold for $1.29M to $1.38M, showing a rising 2.8% market trend..."}
+                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks Maple Ridge zoning laws and Bill 44 compliance. This RS-1 property is eligible for multiplex development with up to 6 units..."}
+                            {voiceoverPhase === 4 && "The financial engine calculates ROI based on real costs. With $1.34M investment plus $580K construction, projected value reaches $2.75M for 43.2% return..."}
+                            {voiceoverPhase === 5 && "Analysis complete! 87% feasibility score confirms this is an excellent opportunity. BuildwiseAI connects you with 15+ qualified Maple Ridge contractors."}
+                            {voiceoverPhase === 0 && "Ready to see how BuildwiseAI transforms BC property development? This real Maple Ridge analysis shows the complete workflow in 60 seconds."}
                           </p>
                         </div>
 
@@ -160,11 +160,11 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                               <div className="grid grid-cols-2 gap-4 text-xs">
                                 <div>
                                   <span className="font-medium">Assessed Value:</span>
-                                  <div className="text-lg font-bold text-emerald-600">$1,850,000</div>
+                                  <div className="text-lg font-bold text-emerald-600">$1,340,000</div>
                                 </div>
                                 <div>
                                   <span className="font-medium">Land Value:</span>
-                                  <div className="text-lg font-bold">$1,200,000</div>
+                                  <div className="text-lg font-bold">$890,000</div>
                                 </div>
                                 <div>
                                   <span className="font-medium">Zoning:</span>
@@ -172,7 +172,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                                 </div>
                                 <div>
                                   <span className="font-medium">Lot Size:</span>
-                                  <div className="text-sm font-bold">7,200 sq ft</div>
+                                  <div className="text-sm font-bold">8,712 sq ft</div>
                                 </div>
                               </div>
                             </div>
@@ -188,21 +188,21 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                             <div className="bg-blue-50 p-4 rounded-lg">
                               <div className="space-y-2 text-xs">
                                 <div className="flex justify-between">
-                                  <span>1236 Example Street • Sold 15 days</span>
-                                  <span className="font-bold text-blue-600">$1,720,000</span>
+                                  <span>21560 Glenwood Ave • Sold 12 days</span>
+                                  <span className="font-bold text-blue-600">$1,295,000</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>1238 Example Street • Sold 8 days</span>
-                                  <span className="font-bold text-blue-600">$1,940,000</span>
+                                  <span>21562 Glenwood Ave • Sold 8 days</span>
+                                  <span className="font-bold text-blue-600">$1,385,000</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>1240 Example Street • Sold 22 days</span>
-                                  <span className="font-bold text-blue-600">$1,880,000</span>
+                                  <span>11745 228th St • Sold 18 days</span>
+                                  <span className="font-bold text-blue-600">$1,320,000</span>
                                 </div>
                                 <div className="border-t pt-2 mt-2">
                                   <div className="flex justify-between font-bold">
                                     <span>Market Trend:</span>
-                                    <span className="text-emerald-600">↗ Rising 3.2%</span>
+                                    <span className="text-emerald-600">↗ Rising 2.8%</span>
                                   </div>
                                 </div>
                               </div>
@@ -249,19 +249,19 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                               <div className="grid grid-cols-2 gap-4 text-xs">
                                 <div>
                                   <span className="font-medium">Current Investment:</span>
-                                  <div className="text-sm font-bold">$1,850,000</div>
+                                  <div className="text-sm font-bold">$1,340,000</div>
                                 </div>
                                 <div>
                                   <span className="font-medium">Construction Cost:</span>
-                                  <div className="text-sm font-bold">$650,000</div>
+                                  <div className="text-sm font-bold">$580,000</div>
                                 </div>
                                 <div>
                                   <span className="font-medium">Projected Value:</span>
-                                  <div className="text-lg font-bold text-orange-600">$3,100,000</div>
+                                  <div className="text-lg font-bold text-orange-600">$2,750,000</div>
                                 </div>
                                 <div>
                                   <span className="font-medium">Estimated ROI:</span>
-                                  <div className="text-lg font-bold text-emerald-600">52.4%</div>
+                                  <div className="text-lg font-bold text-emerald-600">43.2%</div>
                                 </div>
                               </div>
                             </div>
@@ -276,7 +276,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                             </div>
                             <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
                               <div className="text-center space-y-2">
-                                <div className="text-2xl font-bold text-emerald-600">92% Feasibility Score</div>
+                                <div className="text-2xl font-bold text-emerald-600">87% Feasibility Score</div>
                                 <p className="text-xs text-emerald-700">Excellent development opportunity</p>
                                 <div className="flex justify-center gap-4 text-xs mt-3">
                                   <div className="text-center">
@@ -367,9 +367,9 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                 Complete Platform Walkthrough
               </h4>
               <p className="text-neutral-600 text-sm leading-relaxed">
-                This demo shows the complete BuildwiseAI workflow using a real Maple Ridge property. 
-                You'll see instant BC Assessment lookup, MLS comparable analysis, zoning intelligence, 
-                financial modeling, and access to our premium BC professional directory.
+                This demo analyzes 21558 Glenwood Ave, Maple Ridge showing the complete BuildwiseAI workflow. 
+                Watch real BC Assessment data ($1.34M assessed value), local MLS comparables, Bill 44 compliance, 
+                and ROI calculations (43.2% projected return) with contractor connections.
               </p>
             </div>
           </div>
