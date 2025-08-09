@@ -103,10 +103,7 @@ export class UnifiedDataService {
     console.log(`🔍 CHECKING: "${address.toLowerCase()}" contains "21558 glenwood": ${address.toLowerCase().includes('21558 glenwood')}`);
     console.log(`🔍 CHECKING: "${city.toLowerCase()}" contains "maple ridge": ${city.toLowerCase().includes('maple ridge')}`);
     
-    if (address.toLowerCase().includes('21558') && address.toLowerCase().includes('glenwood') && city.toLowerCase().includes('maple ridge')) {
-      console.log(`🎯 UNIFIED: Correcting lot size for 21558 Glenwood Ave from ${lotSize} to 11,325 sq ft`);
-      lotSize = 11325; // Authentic lot size for this specific property
-    }
+    // Use authentic lot size from MLS/BC Assessment data without manual corrections
     
     const lotSizeM2 = lotSize * 0.092903; // Convert to square meters
     const zoning = propertyData.bcAssessment.zoning || 'RS-1';
@@ -130,8 +127,8 @@ export class UnifiedDataService {
         assessedValue: propertyData.bcAssessment.totalAssessedValue,
         landValue: propertyData.bcAssessment.landValue,
         improvementValue: propertyData.bcAssessment.improvementValue,
-        lotSize: 7368, // Exact lot size from BC Assessment for 21558 Glenwood Ave
-        lotSizeM2: 7368 * 0.092903,
+        lotSize: propertyData.bcAssessment.lotSize,
+        lotSizeM2: propertyData.bcAssessment.lotSize * 0.092903,
         zoning: zoning,
         yearBuilt: propertyData.bcAssessment.yearBuilt || 0,
         buildingArea: propertyData.bcAssessment.buildingArea || 0

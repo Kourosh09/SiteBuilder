@@ -169,7 +169,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                       </div>
                       <div>
                         <div className="text-emerald-300">Lot Size</div>
-                        <div className="text-white text-xl font-bold">7,368 sq ft</div>
+                        <div className="text-white text-xl font-bold">6,158 sq ft</div>
                       </div>
                     </div>
                   </div>
