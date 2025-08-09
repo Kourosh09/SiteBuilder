@@ -2975,7 +2975,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/municipal/:city/zoning/:code", async (req, res) => {
+  app.get("/api/municipal/zoning/:city/:code", async (req, res) => {
     try {
       const { city, code } = req.params;
       const { municipalDataService } = await import("./municipal-data-service");
@@ -3010,7 +3010,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/municipal/:city/bylaws", async (req, res) => {
+  app.get("/api/municipal/bylaws/:city", async (req, res) => {
     try {
       const { city } = req.params;
       const { category } = req.query;

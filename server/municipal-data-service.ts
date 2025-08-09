@@ -208,7 +208,7 @@ export class MunicipalDataService {
       ]
     });
 
-    this.zoningDatabase.set('vancouver', vancouverZoning);
+    this.zoningDatabase.set('Vancouver', vancouverZoning);
   }
 
   private addVancouverBylaws(): void {
@@ -249,7 +249,7 @@ export class MunicipalDataService {
       }
     ];
 
-    this.bylawDatabase.set('vancouver', vancouverBylaws);
+    this.bylawDatabase.set('Vancouver', vancouverBylaws);
   }
 
   private addBurnabyZoningData(): void {
@@ -276,7 +276,7 @@ export class MunicipalDataService {
       ]
     });
 
-    this.zoningDatabase.set('burnaby', burnabyZoning);
+    this.zoningDatabase.set('Burnaby', burnabyZoning);
   }
 
   private addBurnabyBylaws(): void {
@@ -294,7 +294,7 @@ export class MunicipalDataService {
       }
     ];
 
-    this.bylawDatabase.set('burnaby', burnabyBylaws);
+    this.bylawDatabase.set('Burnaby', burnabyBylaws);
   }
 
   private addRichmondZoningData(): void {
@@ -321,7 +321,7 @@ export class MunicipalDataService {
       ]
     });
 
-    this.zoningDatabase.set('richmond', richmondZoning);
+    this.zoningDatabase.set('Richmond', richmondZoning);
   }
 
   private addRichmondBylaws(): void {
@@ -339,7 +339,7 @@ export class MunicipalDataService {
       }
     ];
 
-    this.bylawDatabase.set('richmond', richmondBylaws);
+    this.bylawDatabase.set('Richmond', richmondBylaws);
   }
 
   private addSurreyZoningData(): void {
@@ -366,7 +366,7 @@ export class MunicipalDataService {
       ]
     });
 
-    this.zoningDatabase.set('surrey', surreyZoning);
+    this.zoningDatabase.set('Surrey', surreyZoning);
   }
 
   private addSurreyBylaws(): void {
@@ -384,12 +384,12 @@ export class MunicipalDataService {
       }
     ];
 
-    this.bylawDatabase.set('surrey', surreyBylaws);
+    this.bylawDatabase.set('Surrey', surreyBylaws);
   }
 
   private addBuildingCodeRequirements(): void {
     // Vancouver Building Code Requirements
-    this.buildingCodeDatabase.set('vancouver', {
+    this.buildingCodeDatabase.set('Vancouver', {
       city: 'Vancouver',
       bcbc2018Modifications: [
         'Energy Step Code Level 3 mandatory',
@@ -423,8 +423,7 @@ export class MunicipalDataService {
    * Get comprehensive zoning data for a specific property
    */
   async getZoningData(city: string, zoningCode: string): Promise<MunicipalZoningData | null> {
-    const cityKey = city.toLowerCase().replace(/\s+/g, '');
-    const cityZoning = this.zoningDatabase.get(cityKey);
+    const cityZoning = this.zoningDatabase.get(city);
     
     if (!cityZoning) {
       console.log(`Municipal data not available for ${city}. Adding to enhancement queue.`);
@@ -438,8 +437,7 @@ export class MunicipalDataService {
    * Get all applicable bylaws for a property
    */
   async getApplicableBylaws(city: string, zoningCode: string): Promise<MunicipalBylaw[]> {
-    const cityKey = city.toLowerCase().replace(/\s+/g, '');
-    const cityBylaws = this.bylawDatabase.get(cityKey) || [];
+    const cityBylaws = this.bylawDatabase.get(city) || [];
     
     return cityBylaws.filter(bylaw => 
       bylaw.applicableZones.includes(zoningCode) || 
@@ -451,8 +449,7 @@ export class MunicipalDataService {
    * Get building code requirements for a city
    */
   async getBuildingCodeRequirements(city: string): Promise<BuildingCodeRequirements | null> {
-    const cityKey = city.toLowerCase().replace(/\s+/g, '');
-    return this.buildingCodeDatabase.get(cityKey) || null;
+    return this.buildingCodeDatabase.get(city) || null;
   }
 
   /**
