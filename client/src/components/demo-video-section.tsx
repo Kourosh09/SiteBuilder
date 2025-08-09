@@ -11,7 +11,7 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [voiceoverPhase, setVoiceoverPhase] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const totalDuration = 60; // Faster 1:00 demo video
 
   const formatTime = (seconds: number) => {
@@ -133,19 +133,14 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                           <p className="text-sm text-neutral-600">Sample BC Property Analysis</p>
                         </div>
 
-                        {/* Voiceover Commentary */}
-                        <div className="bg-blue-900 text-white p-3 rounded-lg mb-4 text-xs">
+                        {/* Demo Status - No Voice */}
+                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-lg mb-4 text-xs">
                           <div className="flex items-center gap-2 mb-2">
-                            {!isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                            <span className="font-medium">Narrator:</span>
+                            <VolumeX className="w-4 h-4 text-blue-600" />
+                            <span className="font-medium text-blue-800">Silent Demo Mode</span>
                           </div>
-                          <p className="italic">
-                            {voiceoverPhase === 1 && "Let's analyze a Vancouver property using BuildwiseAI. Watch as we instantly pull BC Assessment data and property details from real MLS records..."}
-                            {voiceoverPhase === 2 && "Now we're comparing with recent MLS sales in the area. Similar properties show strong market trends and development potential..."}
-                            {voiceoverPhase === 3 && "Next, BuildwiseAI checks Vancouver zoning laws and Bill 44/47 compliance. This property shows excellent potential for multiplex development..."}
-                            {voiceoverPhase === 4 && "The financial engine calculates ROI based on real costs. With $1.34M investment plus $580K construction, projected value reaches $2.75M for 43.2% return..."}
-                            {voiceoverPhase === 5 && "Analysis complete! 87% feasibility score confirms this is an excellent opportunity. BuildwiseAI connects you with 15+ qualified Maple Ridge contractors."}
-                            {voiceoverPhase === 0 && "Ready to see how BuildwiseAI transforms BC property development? This real Maple Ridge analysis shows the complete workflow in 60 seconds."}
+                          <p className="text-blue-700">
+                            Visual demonstration of BuildwiseAI's complete BC property analysis workflow with authentic municipal data integration.
                           </p>
                         </div>
 
