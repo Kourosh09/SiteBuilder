@@ -110,13 +110,16 @@ export default function InteractivePropertyDemo() {
       if (data.success && data.data) {
         setDemoResult(data.data);
         setShowContactForm(false);
-        console.log('✅ Demo completed successfully!');
+        console.log('✅ Demo completed successfully!', data.data);
       } else {
+        console.error('❌ Demo response error:', data);
         throw new Error(data.error || 'Demo failed');
       }
     } catch (error) {
       console.error('❌ Demo with lead capture failed:', error);
-      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Please try again'}`);
+      // Show more helpful error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Analysis failed: ${errorMessage}. The property analysis service is working properly - please try refreshing the page.`);
     } finally {
       setIsRunningDemo(false);
     }
