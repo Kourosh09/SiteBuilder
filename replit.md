@@ -29,8 +29,8 @@ BuildwiseAI is a comprehensive AI-powered real estate development platform for t
 Preferred communication style: Simple, everyday language.
 User prefers email/SMS code verification over username/password system.
 User is a licensed realtor with REBGV credentials.
-Business model: Premium dashboard with 7-day trial for paying customers ($197/month).
-LTSA Data Costs: $8 per property query - business model includes 25 queries/month with overage pricing.
+Business model: Tiered pricing - Free (3 searches), Professional ($67/month), Premium ($127/month).
+LTSA Data Costs: $8 per property query - requires careful pricing to remain competitive with AutoProp ($42-125/month via board membership).
 Main website should focus on marketing materials and service descriptions only.
 All valuable builder tools should be behind premium dashboard for trial/paying customers.
 Featured Network Members directory removed from public site - only accessible to premium subscribers.
