@@ -89,7 +89,23 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         })
       });
 
-      const result = await response.json();
+      // Check if response is actually JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.error('Response was:', responseText.substring(0, 200));
+        throw new Error('Invalid JSON response from server');
+      }
+      
       console.log('Analysis result:', result);
       console.log('Analysis data:', result.analysis);
 
@@ -114,6 +130,10 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
       }
     } catch (error) {
       console.error('Analysis error:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Analysis failed: ${errorMessage}. Please check the browser console for details.`);
     } finally {
       setLoading(false);
     }
