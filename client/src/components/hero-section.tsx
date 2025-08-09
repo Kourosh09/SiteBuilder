@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,11 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
     phone: ''
   });
   const [analysis, setAnalysis] = useState<any>(null);
+  
+  // Debug: Log analysis state changes
+  useEffect(() => {
+    console.log('Analysis state changed:', analysis);
+  }, [analysis]);
   const [loading, setLoading] = useState(false);
   
   const scrollToContact = () => {
