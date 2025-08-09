@@ -796,23 +796,26 @@ export class ZoningIntelligenceService {
   }
 
   /**
-   * Calculate minimum density required in Transit-Oriented Areas
+   * Calculate minimum density required in Transit-Oriented Areas per Bill 47
    */
   private calculateMinimumTOADensity(zoning: ZoningData, lotSize: number, transitProximity: any): number {
     if (!transitProximity.withinTOA) return zoning.maxDensity;
     
-    // Bill 47 prescribed minimum densities based on distance from transit station
+    // Bill 47 TOD distance requirements from SkyTrain stations
     const distance = transitProximity.distanceToStation;
     
-    if (distance <= 400) { // Within 400m - highest density requirement
-      return Math.max(zoning.maxDensity * 2, 6);
-    } else if (distance <= 800) { // 400-800m - medium density requirement
-      return Math.max(zoning.maxDensity * 1.5, 4);
-    } else if (distance <= 1200) { // 800-1200m - moderate density requirement
-      return Math.max(zoning.maxDensity * 1.25, 3);
+    if (distance <= 200) {
+      // Within 200m: Up to 20 storeys, 5.0 FSR minimum
+      return Math.max(zoning.maxDensity * 3, 8); // Highest density tier
+    } else if (distance <= 400) {
+      // 200m-400m: Up to 12 storeys, 4.0 FSR minimum  
+      return Math.max(zoning.maxDensity * 2.5, 6); // Medium-high density
+    } else if (distance <= 800) {
+      // 400m-800m: Up to 8 storeys, 3.0 FSR minimum
+      return Math.max(zoning.maxDensity * 2, 4); // Medium density
     }
     
-    return zoning.maxDensity;
+    return zoning.maxDensity; // Outside TOA boundary
   }
 
   /**
@@ -821,17 +824,21 @@ export class ZoningIntelligenceService {
   private getBill47PrescribedDensity(zoningCode: string, transitProximity: any): number {
     if (!transitProximity.withinTOA) return 1;
     
-    // Bill 47 regulations for different zones in Transit-Oriented Areas
-    const prescribedDensities: Record<string, number> = {
-      'RS-1': 4, // Single-family can be upzoned to 4 units in TOA
-      'RS-2': 4,
-      'RS-3': 6, // Duplex zones can go to 6 units
-      'RT-1': 8, // Townhouse zones enhanced
-      'RM-1': 12 // Multiple residential enhanced
-    };
+    const distance = transitProximity.distanceToStation;
     
-    const baseCode = zoningCode.split('-')[0] + '-' + zoningCode.split('-')[1];
-    return prescribedDensities[baseCode] || 1;
+    // Bill 47 TOD prescribed densities based on distance zones
+    if (distance <= 200) {
+      // Within 200m: 5.0 FSR minimum, up to 20 storeys
+      return 12; // High-density units allowance
+    } else if (distance <= 400) {
+      // 200m-400m: 4.0 FSR minimum, up to 12 storeys
+      return 8; // Medium-high density
+    } else if (distance <= 800) {
+      // 400m-800m: 3.0 FSR minimum, up to 8 storeys  
+      return 6; // Medium density
+    }
+    
+    return 1; // Outside TOA zones
   }
 
   /**
