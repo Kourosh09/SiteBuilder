@@ -2,6 +2,13 @@
  * ArcGIS FeatureServer helpers: build URL, validate, sample fetch, normalize lat/lng
  */
 
+export function isGenericAddressToken(q: string) {
+  const s = (q || "").trim().toLowerCase();
+  if (s.length < 3) return true;
+  const generic = ["rd","road","st","street","ave","avenue","blvd","lane","ln","dr","drive","hwy","highway","way","ct","court","pl","place"];
+  return generic.includes(s);
+}
+
 export type FSOptions = {
   where?: string;
   outFields?: string;           // default "*"

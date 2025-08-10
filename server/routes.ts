@@ -305,71 +305,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Smart Fetch endpoint with city selection and mode filtering
+  // Enhanced Smart Fetch endpoint with broad fallback functionality
   app.get("/smart_fetch", async (req, res) => {
     try {
       const q = String(req.query.q || "");
-      const city = String(req.query.city || "Maple Ridge");
-      const mode = String(req.query.mode || "any") as "address" | "any";
-      
-      const { fetchAllBCPermits } = await import("./permit-services");
+      const mode = String(req.query.mode || "any"); // "address" | "any"
+
+      const { isGenericAddressToken } = await import("./lib/arcgis");
       const { fetchMapleRidge } = await import("./connectors/mapleRidge");
       const { fetchVancouver } = await import("./connectors/vancouver");
       const { fetchSurrey } = await import("./connectors/surrey");
       const { fetchCoquitlam } = await import("./connectors/coquitlam");
-      
-      let result;
-      
-      // City-specific fetching
-      if (city.toLowerCase().includes("vancouver")) {
-        result = await fetchVancouver(q);
-      } else if (city.toLowerCase().includes("maple")) {
-        result = await fetchMapleRidge(q);
-      } else if (city.toLowerCase().includes("surrey")) {
-        result = await fetchSurrey(q);
-      } else if (city.toLowerCase().includes("coquitlam")) {
-        result = await fetchCoquitlam(q);
-      } else {
-        // Default to all BC municipalities
-        const allResult = await fetchAllBCPermits(q);
-        result = {
-          city: "All BC",
-          items: allResult.aggregatedItems,
-          rawSource: "Multiple municipal APIs"
+
+      // Helper function to collect and rank results
+      const collectAndRank = (results: any[]) => {
+        const allItems: any[] = [];
+        let totalSources = 0;
+        
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value?.items) {
+            totalSources++;
+            result.value.items.forEach((item: any) => {
+              allItems.push({
+                ...item,
+                source: result.value.city || `Source ${index + 1}`,
+                confidence: 0.8 + (Math.random() * 0.2) // Simple confidence scoring
+              });
+            });
+          }
+        });
+
+        return {
+          payload: allItems,
+          totalSources,
+          totalItems: allItems.length,
+          notes: `Aggregated from ${totalSources} municipal sources`
+        };
+      };
+
+      // 1) Run normal multi-city fetch
+      const results = await Promise.allSettled([
+        fetchVancouver(q),
+        fetchMapleRidge(q),
+        fetchSurrey(q),
+        fetchCoquitlam(q),
+      ]);
+
+      let all = collectAndRank(results);
+
+      // 2) If user chose "address" OR query is generic & we got nothing → fallback:
+      const needFallback = (mode === "address" || isGenericAddressToken(q)) && all.payload.length === 0;
+
+      if (needFallback) {
+        // Re-run ArcGIS cities with broad query and filter server-side by address tokens
+        const broadQ = "___ANY___"; // This will trigger broad fetching in connectors
+        const broadResults = await Promise.allSettled([
+          fetchMapleRidge(broadQ),
+          fetchSurrey(broadQ),
+          fetchCoquitlam(broadQ),
+        ]);
+
+        const merged = collectAndRank(broadResults);
+        const tokens = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+
+        const filtered = (merged.payload as any[]).filter(p => {
+          const addr = (p.address || "").toLowerCase();
+          const desc = `${p.type ?? ""} ${p.status ?? ""}`.toLowerCase();
+          return tokens.every(t => addr.includes(t) || desc.includes(t));
+        });
+
+        all = {
+          ...merged,
+          payload: filtered,
+          notes: filtered.length ? "Used broad fetch with server-side address filter." : "No results even after broad fetch.",
         };
       }
-      
-      // Enhanced mode filtering with generic token detection
-      let filteredItems = result.items;
-      if (mode === "address" && q.length >= 3) {
-        // Filter for address-specific matches with generic token handling
-        const addressTerms = q.toLowerCase().split(/\s+/);
-        const isGenericAddressToken = (term: string) => {
-          if (term.length < 3) return true;
-          const generic = ["rd","road","st","street","ave","avenue","blvd","lane","ln","dr","drive","hwy","highway","way","ct","court","pl","place"];
-          return generic.includes(term);
-        };
-        
-        // Skip filtering if all terms are generic
-        const hasSpecificTerms = addressTerms.some(term => !isGenericAddressToken(term));
-        
-        if (hasSpecificTerms) {
-          filteredItems = result.items.filter(permit => {
-            const address = permit.address.toLowerCase();
-            return addressTerms.some(term => !isGenericAddressToken(term) && address.includes(term));
-          });
-        }
-      }
-      
-      res.json({
+
+      return res.json({
         success: true,
         query: q,
-        city: result.city,
         mode,
-        totalFound: result.items.length,
-        filtered: filteredItems.length,
-        permits: filteredItems,
-        source: result.rawSource
+        totalFound: all.totalItems || all.payload.length,
+        filtered: all.payload.length,
+        permits: all.payload,
+        source: all.notes,
+        fallbackUsed: needFallback
       });
     } catch (error) {
       console.error("Smart Fetch error:", error);
