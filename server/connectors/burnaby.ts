@@ -3,11 +3,11 @@ import { PermitSchema } from "@shared/schema";
 import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchBurnaby(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  // Use centralized endpoint configuration
+  // Use centralized endpoint configuration with CKAN API
   const configuredEndpoint = CITY_ENDPOINTS.burnaby;
-  const endpoint = configuredEndpoint.startsWith('<PASTE') 
-    ? `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(query)}&rows=100`
-    : configuredEndpoint;
+  const endpoint = configuredEndpoint.includes('datastore_search')
+    ? `${configuredEndpoint}&q=${encodeURIComponent(query)}&limit=100`
+    : `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(query)}&rows=100`;
   
   try {
     const res = await fetch(endpoint);

@@ -3,6 +3,13 @@ import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchCoquitlam(query: string) {
   const endpoint = CITY_ENDPOINTS.coquitlam;
+  
+  // Handle SCRAPE mode for Coquitlam
+  if (endpoint.startsWith('SCRAPE:')) {
+    console.log("Coquitlam scraping not yet implemented");
+    return { city: "Coquitlam", items: [], rawSource: endpoint };
+  }
+  
   const config: ArcGISConfig = {
     baseUrl: endpoint.split('/FeatureServer')[0] || "https://mapping.coquitlam.ca/arcgis/rest/services", 
     layerId: "0",

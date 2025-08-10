@@ -1,0 +1,85 @@
+How to get the ArcGIS FeatureServer URL (Maple Ridge / Surrey / Coquitlam)
+You (or I) can grab the exact JSON endpoint in ~60 seconds each:
+
+Open the city’s Open Data / ArcGIS Hub dataset for Building Permits (or Development Applications if permits aren’t available).
+
+Click API or API Explorer.
+
+Choose FeatureServer → /query.
+
+Set:
+
+where: UPPER(ADDRESS) LIKE UPPER('%{yourQuery}%') (or leave 1=1 for all, we’ll filter client-side)
+
+outFields: *
+
+f: json
+
+(Optional) returnGeometry=true (if you want lat/lng)
+
+Click Run, then Copy the request URL.
+
+Paste that URL into CITY_ENDPOINTS above (mapleRidge/surrey/coquitlam).
+
+If a city publishes only a CSV download, send that URL; I’ll auto-convert to JSON in the connector. If it’s “search page only”, I’ll switch that city to SCRAPE mode (polite, cached).
+
+3) Connector templates (already wired in Vancouver; these 3 are ready to go)
+I’ve prepared normalizers for ArcGIS-style responses. Once you paste the endpoints in CITY_ENDPOINTS, they’ll Just Work™.
+
+server/connectors/mapleRidge.ts — uses CITY_ENDPOINTS.mapleRidge
+
+server/connectors/surrey.ts — uses CITY_ENDPOINTS.surrey
+
+server/connectors/coquitlam.ts — uses CITY_ENDPOINTS.coquitlam
+
+server/connectors/burnaby.ts — will detect:
+
+SCRAPE:<url> → scrape into our schema (cached)
+
+API/CSV URL → fetch + normalize
+
+No UI changes needed; Home already renders the card grid.
+
+4) Quick test strings to verify each city
+Once endpoints are pasted, try searches like:
+
+Addresses/streets: “Lougheed”, “Kingsway”, “Guildford”, “Austin”, “Dewdney”
+
+Types: “building”, “electrical”, “plumbing”
+
+Status: “issued”, “approved”
+
+You’ll see results + confidence + provenance per city.
+
+5) Safety + performance defaults (already baked in)
+1-minute memory cache per query (tunable)
+
+Timeouts & retries on each feed
+
+Schema check (drop junk rows)
+
+Trust + recency scoring → confidence badge you already see in the UI
+
+Graceful fallback note if a city is down
+
+6) What I still need from you (tiny)
+Paste the three FeatureServer URLs for Maple Ridge, Surrey, Coquitlam into CITY_ENDPOINTS.
+
+If you don’t have time, say “use any public layers you find” and I’ll pick the most complete permit/dev datasets for each city and wire them.
+
+For Burnaby, pick:
+
+“SCRAPE” the city page (fast), or
+
+“WAIT” for a formal API/dataset.
+
+7) After this is live (tomorrow)
+I’ll flip Burnaby on (per your choice).
+
+Then I’ll add the AI design / massing tab (lot → quick massing + unit guess), so we have the “wow” feature on the homepage.
+
+If you want, reply with:
+
+“Use any public endpoints you find” (I’ll source them and wire all four), or
+
+Paste the exact FeatureServer /query URLs here, and I’ll drop them into config and push the update.

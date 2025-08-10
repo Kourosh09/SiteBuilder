@@ -1,8 +1,8 @@
 export const CITY_ENDPOINTS = {
-  mapleRidge: "<PASTE FeatureServer /query URL here>",
-  surrey:     "<PASTE FeatureServer /query URL here>",
-  coquitlam:  "<PASTE FeatureServer /query URL here>",
-  burnaby:    "<PASTE API/CSV URL or 'SCRAPE:<page URL>' here>",
+  mapleRidge: "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query?where=1%3D1&outFields=*&f=json",
+  surrey:     "https://gisservices.surrey.ca/arcgis/rest/services/OpenData/MapServer/14/query?where=1%3D1&outFields=*&f=json",
+  coquitlam:  "SCRAPE:https://data.coquitlam.ca/",
+  burnaby:    "https://data.burnaby.ca/api/3/action/datastore_search?resource_id=building-permits",
 };
 
 /** Optional: per-city trust override (0–1) */
