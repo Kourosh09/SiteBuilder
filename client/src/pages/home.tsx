@@ -8,7 +8,7 @@ import Testimonials from "@/components/testimonials";
 import Pricing from "@/components/pricing";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
-import { DemoSmartFetch } from "@/components/demo-smart-fetch";
+import DemoSmartFetch from "@/components/demo-smart-fetch";
 
 export default function Home() {
   return (
