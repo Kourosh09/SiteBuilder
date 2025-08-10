@@ -61,10 +61,6 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
-        // BuildwiseAI brand colors
-        "brand-blue": "var(--brand-blue)",
-        "brand-green": "var(--brand-green)", 
-        "brand-amber": "var(--brand-amber)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

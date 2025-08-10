@@ -1,41 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Check, Play, Search, Building, MapPin, TrendingUp, Users, CheckCircle, ArrowRight, Loader2, Brain, AlertTriangle, Shield, Download } from "lucide-react";
-import { usePropertyData } from "@/hooks/usePropertyData";
-import { apiRequest } from '@/lib/queryClient';
-import PrivacyNotice from './privacy-notice';
+import { Check, Play } from "lucide-react";
 
-interface HeroSectionProps {
-  onGetStarted?: () => void;
-}
-
-export default function HeroSection({ onGetStarted }: HeroSectionProps) {
-  const { setPropertyData } = usePropertyData();
-  const [propertyForm, setPropertyForm] = useState({
-    address: '',
-    city: '',
-    email: '',
-    phone: ''
-  });
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  
-  // Debug: Log analysis state changes
-  useEffect(() => {
-    console.log('Analysis state changed:', analysis);
-    if (analysis) {
-      console.log('Analysis details:', {
-        propertyDetails: analysis.propertyDetails,
-        developmentPotential: analysis.developmentPotential,
-        feasibilityScore: analysis.feasibilityScore
-      });
-    }
-  }, [analysis]);
-  
+export default function HeroSection() {
   const scrollToContact = () => {
     const element = document.getElementById("contact");
     if (element) {
@@ -43,384 +9,53 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
     }
   };
 
-  const demoProperty = () => {
-    // Set demo property data to match the video demo exactly
-    setPropertyData({
-      address: "123 Main Street",
-      city: "Vancouver", 
-      currentValue: 1850000,
-      lotSize: 5000,
-      currentUse: "single-family",
-      proposedUse: "multi-family"
-    });
-    
-    // Navigate to dashboard after setting data
-    if (onGetStarted) {
-      onGetStarted();
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const handleAnalyzeProperty = async () => {
-    if (!propertyForm.address || !propertyForm.city || !propertyForm.email || !propertyForm.phone) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch('/api/ai/analyze-property', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address: propertyForm.address,
-          city: propertyForm.city,
-          email: propertyForm.email,
-          phone: propertyForm.phone
-        })
-      });
-
-      // Check if response is actually JSON
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-      
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        console.error('Response was:', responseText.substring(0, 200));
-        throw new Error('Invalid JSON response from server');
-      }
-      
-      console.log('Analysis result:', result);
-      console.log('Analysis data:', result.analysis);
-
-      if (result.success && result.analysis) {
-        console.log('Setting analysis data:', result.analysis);
-        console.log('Analysis state changed:', result.analysis);
-        setAnalysis(result.analysis);
-        
-        // Store property data for use in other calculators
-        const propertyDetails = result.analysis.propertyDetails;
-        setPropertyData({
-          address: propertyForm.address,
-          city: propertyForm.city,
-          currentValue: propertyDetails?.assessedValue || 1650000,
-          lotSize: propertyDetails?.lotSize || 7200,
-          currentUse: 'single-family',
-          proposedUse: 'multi-family'
-        });
-      } else {
-        console.error('Analysis failed:', result);
-        alert('Analysis failed: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Analysis error:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Analysis failed: ${errorMessage}. Please check the browser console for details.`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownloadReport = async () => {
-    if (!analysis) return;
-    
-    setLoading(true);
-    try {
-      const response = await fetch('/api/reports/property-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address: propertyForm.address,
-          city: propertyForm.city,
-          analysis: analysis,
-          email: propertyForm.email
-        })
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `BuildwiseAI-Analysis-${propertyForm.address.replace(/\s+/g, '-')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        console.error('Failed to generate report');
-        alert('Failed to generate report. Please try again.');
-      }
-    } catch (error) {
-      console.error('Report download error:', error);
-      alert('Failed to download report. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white pt-20 pb-12 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start min-h-[80vh]">
-          <div className="flex flex-col justify-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight mb-6 text-white">
-              <span className="block mb-2">Professional BC</span>
-              <span className="block mb-2">Development Analysis</span>
-              <span className="text-yellow-400 font-extrabold drop-shadow-lg block">Platform</span>
+    <section className="bg-gradient-to-br from-brand-blue to-blue-800 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+              AI-Powered Financial Management for{" "}
+              <span className="text-brand-amber">Real Estate Developers</span>
             </h1>
-            <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed font-medium max-w-2xl">
-              The only platform built specifically for BC development professionals. Access comprehensive property analysis, municipal compliance data across 9 BC cities, and connect with premier architects, engineers, and contractors.
+            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+              Transform your development process with lightning-fast feasibility analysis, intelligent budget automation, and instant investor reporting. Built by developers, for developers who demand results.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={demoProperty}
-                className="bg-yellow-500 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-400 transition-colors shadow-lg"
-                data-testid="button-property-demo"
-              >
-                <Search className="w-5 h-5 mr-2" />
-                Try Demo Property
-              </Button>
-              <Button
-                onClick={onGetStarted || scrollToContact}
-                className="bg-emerald-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-emerald-400 transition-colors shadow-lg"
+                onClick={scrollToContact}
+                className="bg-brand-amber text-brand-blue px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-400 transition-colors"
                 data-testid="button-start-trial"
               >
                 Start Free Trial
               </Button>
               <Button
-                onClick={() => {
-                  const videoSection = document.getElementById('demo-video');
-                  if (videoSection) {
-                    videoSection.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
                 variant="outline"
-                className="border-2 border-white text-white bg-transparent px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-800 transition-colors"
+                className="border border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-brand-blue transition-colors"
                 data-testid="button-watch-demo"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Watch Demo
               </Button>
             </div>
-            
-            {/* Professional Sign Up Call-to-Action */}
-            <div className="mt-8 p-6 bg-orange-500/20 border border-orange-300/50 rounded-xl backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-lg font-semibold text-white mb-2">Are you a BC Professional?</h4>
-                  <p className="text-blue-100 text-sm">Contractors • Architects • Engineers • Trades</p>
-                </div>
-                <Button
-                  onClick={() => {
-                    const contractorSection = document.querySelector('section.bg-gradient-to-br.from-orange-50');
-                    if (contractorSection) {
-                      contractorSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-400 transition-colors shadow-lg whitespace-nowrap"
-                  data-testid="button-professional-signup"
-                >
-                  <Building className="w-5 h-5 mr-2" />
-                  Join Network
-                </Button>
-              </div>
-            </div>
-            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 text-sm text-blue-200">
+            <div className="mt-8 flex items-center gap-8 text-sm text-blue-200">
               <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <span>7-day free trial</span>
+                <Check className="h-5 w-5 text-brand-green" />
+                Free 14-day trial
               </div>
               <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <span>No credit card required</span>
+                <Check className="h-5 w-5 text-brand-green" />
+                No credit card required
               </div>
             </div>
           </div>
-          {/* Right Side - Interactive Property Analysis */}
-          <div className="flex flex-col justify-center">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-6">See BuildwiseAI in Action</h3>
-              <p className="text-blue-100 mb-6">
-                Enter any BC property address with your contact info and watch AI analyze everything in real-time: BC Assessment data, MLS comparables, zoning codes, and generate development scenarios with ROI.
-              </p>
-              
-              {!analysis ? (
-                /* Show form when no analysis */
-                <>
-                  {/* Property Analysis Form */}
-                  <div className="space-y-4 mb-6">
-                    <div>
-                      <label className="block text-sm font-medium text-blue-100 mb-2">Property Address</label>
-                      <Input
-                        type="text"
-                        value={propertyForm.address}
-                        onChange={(e) => setPropertyForm({...propertyForm, address: e.target.value})}
-                        className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="Enter your BC property address"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-blue-100 mb-2">City</label>
-                      <Input
-                        type="text"
-                        value={propertyForm.city}
-                        onChange={(e) => setPropertyForm({...propertyForm, city: e.target.value})}
-                        className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="Enter BC city (e.g. Vancouver)"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-blue-100 mb-2">Email Address</label>
-                      <Input
-                        type="email"
-                        value={propertyForm.email}
-                        onChange={(e) => setPropertyForm({...propertyForm, email: e.target.value})}
-                        className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-blue-100 mb-2">Phone Number</label>
-                      <Input
-                        type="tel"
-                        value={propertyForm.phone}
-                        onChange={(e) => setPropertyForm({...propertyForm, phone: e.target.value})}
-                        className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                        placeholder="(604) 123-4567"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button
-                    onClick={handleAnalyzeProperty}
-                    disabled={loading || !propertyForm.address || !propertyForm.city || !propertyForm.email || !propertyForm.phone}
-                    className="w-full bg-yellow-500 text-blue-900 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors shadow-lg disabled:opacity-50"
-                    data-testid="button-analyze-property"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Analyzing Property...
-                      </>
-                    ) : (
-                      <>
-                        <Brain className="w-5 h-5 mr-2" />
-                        Analyze Property with AI
-                      </>
-                    )}
-                  </Button>
-                  
-                  <PrivacyNotice />
-                  
-                  {/* Feature Preview */}
-                  <div className="mt-6 space-y-3 text-sm text-blue-100">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Instant BC Assessment lookup</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Real MLS comparable sales</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Municipal zoning analysis</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Development ROI projections</span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                /* Show results when analysis exists */
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <h4 className="text-xl font-bold text-white mb-2">Analysis Complete!</h4>
-                    <p className="text-blue-100">Your property at {propertyForm.address}, {propertyForm.city}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-white/20 border-white/30">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-white">{formatCurrency(analysis.propertyDetails?.assessedValue || 0)}</div>
-                        <div className="text-sm text-blue-100">Assessed Value</div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-white/20 border-white/30">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-emerald-400">{analysis.developmentPotential?.roi || '0'}%</div>
-                        <div className="text-sm text-blue-100">Projected ROI</div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-blue-100">Lot Size:</span>
-                      <span className="text-white font-medium">{analysis.propertyDetails?.lotSize?.toLocaleString()} sqft</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-blue-100">Zoning:</span>
-                      <span className="text-white font-medium">{analysis.propertyDetails?.currentZoning}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-blue-100">Development Potential:</span>
-                      <span className="text-white font-medium">{analysis.developmentPotential?.scenario || analysis.developmentPotential?.recommended}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <Button
-                      onClick={onGetStarted}
-                      className="w-full bg-emerald-500 text-white py-3 rounded-lg font-semibold hover:bg-emerald-400 transition-colors shadow-lg"
-                    >
-                      <ArrowRight className="w-5 h-5 mr-2" />
-                      View Full Analysis
-                    </Button>
-                    
-                    <Button
-                      onClick={handleDownloadReport}
-                      className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-500 transition-colors shadow-lg"
-                      disabled={loading}
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Download PDF Report
-                    </Button>
-                    
-                    <Button
-                      onClick={() => setAnalysis(null)}
-                      variant="outline"
-                      className="w-full border-white/30 text-white bg-transparent py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
-                    >
-                      Analyze Another Property
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="lg:pl-8">
+            <img
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=800"
+              alt="Modern city skyline with construction development"
+              className="rounded-2xl shadow-2xl w-full h-auto"
+              data-testid="img-hero-cityscape"
+            />
           </div>
         </div>
       </div>

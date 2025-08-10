@@ -1,104 +1,144 @@
 import { Button } from "@/components/ui/button";
-import { Check, Clock, CreditCard } from "lucide-react";
+import { Check } from "lucide-react";
 
-interface PricingProps {
-  onGetStarted?: () => void;
-}
+export default function Pricing() {
+  const plans = [
+    {
+      name: "Starter",
+      description: "Perfect for individual developers getting started",
+      price: "Free",
+      period: "Forever",
+      features: [
+        "Basic feasibility calculator",
+        "Simple budget tracker",
+        "Up to 3 projects",
+        "Community support"
+      ],
+      buttonText: "Get Started Free",
+      buttonVariant: "outline" as const,
+      popular: false
+    },
+    {
+      name: "Pro",
+      description: "For growing development businesses",
+      price: "$199",
+      period: "per month",
+      features: [
+        "Advanced AI feasibility analysis",
+        "Complete budget management",
+        "JV structuring tools",
+        "Automated reporting",
+        "Unlimited projects",
+        "Priority support"
+      ],
+      buttonText: "Start Pro Trial",
+      buttonVariant: "default" as const,
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      description: "For large development firms and partnerships",
+      price: "Custom",
+      period: "Contact us for pricing",
+      features: [
+        "Custom AI model training",
+        "API access and integrations",
+        "White-label options",
+        "Dedicated account manager",
+        "Custom training & onboarding"
+      ],
+      buttonText: "Contact Sales",
+      buttonVariant: "secondary" as const,
+      popular: false
+    }
+  ];
 
-export default function Pricing({ onGetStarted }: PricingProps) {
-  const plan = {
-    name: "BuildwiseAI Professional",
-    description: "Complete BC development analysis platform",
-    price: "$197",
-    period: "per month",
-    trialText: "7-Day Free Trial",
-    features: [
-      "AI Property Analysis & Feasibility Reports",
-      "Municipal Zoning Intelligence (9 BC Cities)", 
-      "Advanced Financial Modeling & ROI Calculator",
-      "BC Assessment & MLS Data Integration",
-      "Development Optimization Engine",
-      "Premium Partner & Contractor Directory",
-      "Lead Generation & Marketing Automation",
-      "Permit Tracking & Compliance Monitoring",
-      "Bill 44/47 & TOD Compliance Analysis",
-      "PDF Report Generation",
-      "Email Support & Training"
-    ],
-    buttonText: "Start 7-Day Free Trial"
+  const scrollToContact = () => {
+    const element = document.getElementById("contact");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
-    <section id="pricing" className="py-20 bg-gray-50">
+    <section id="pricing" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-neutral-900 mb-4">
-            Professional Builder Tools
+            Simple, Transparent Pricing
           </h2>
           <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
-            Access comprehensive BC development analysis with your 7-day free trial. Cancel anytime.
+            Choose the plan that fits your development business. Start free and upgrade as you grow.
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="relative rounded-2xl shadow-2xl border-2 border-blue-500 bg-white overflow-hidden mt-8">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <span className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
-                <Clock className="w-4 h-4" />
-                Professional Builder Platform
-              </span>
-            </div>
-
-            <div className="p-8 pt-12 text-center">
-              <h3 className="text-3xl font-bold text-neutral-900 mb-2">{plan.name}</h3>
-              <p className="text-neutral-600 mb-6">{plan.description}</p>
-
-              <div className="mb-8">
-                <div className="text-5xl font-bold text-neutral-900 mb-2">{plan.price}</div>
-                <div className="text-neutral-600">{plan.period}</div>
-                <div className="text-blue-600 font-semibold text-lg mt-2 flex items-center justify-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  {plan.trialText}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {plans.map((plan, index) => (
+            <div
+              key={index}
+              className={`bg-white border-2 rounded-2xl p-8 hover:border-brand-blue transition-colors relative ${
+                plan.popular 
+                  ? "border-brand-blue transform scale-105" 
+                  : "border-gray-200"
+              }`}
+              data-testid={`pricing-card-${index}`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-brand-blue text-white px-4 py-2 rounded-full text-sm font-medium">
+                    Most Popular
+                  </span>
                 </div>
+              )}
+              
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-neutral-900 mb-2">{plan.name}</h3>
+                <p className="text-neutral-600 mb-6">{plan.description}</p>
+                <div className="text-4xl font-bold text-neutral-900 mb-2" data-testid={`pricing-price-${index}`}>
+                  {plan.price}
+                </div>
+                <p className="text-sm text-neutral-600">{plan.period}</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 mb-8 text-left">
-                {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-600 text-sm">{feature}</span>
-                  </div>
+              <ul className="space-y-4 mb-8">
+                {plan.features.map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-brand-green mt-0.5" />
+                    <span className="text-neutral-700">{feature}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
               <Button
-                className="w-full py-4 text-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white mb-4 flex items-center justify-center gap-2"
-                onClick={onGetStarted}
-                data-testid="start-trial-button"
+                onClick={scrollToContact}
+                variant={plan.buttonVariant}
+                className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+                  plan.buttonVariant === "default" 
+                    ? "bg-brand-blue text-white hover:bg-blue-700" 
+                    : plan.buttonVariant === "secondary"
+                    ? "bg-brand-amber text-brand-blue hover:bg-yellow-400"
+                    : "bg-gray-100 text-neutral-900 hover:bg-gray-200"
+                }`}
+                data-testid={`pricing-button-${index}`}
               >
-                <CreditCard className="w-5 h-5" />
                 {plan.buttonText}
               </Button>
-              
-              <p className="text-sm text-neutral-500">
-                No commitment • Cancel anytime • Full access during trial
-              </p>
             </div>
-          </div>
+          ))}
+        </div>
 
-          <div className="mt-12 text-center">
-            <div className="bg-blue-50 rounded-lg p-6 mb-6">
-              <h4 className="text-lg font-semibold text-blue-900 mb-2">Why Choose BuildwiseAI?</h4>
-              <p className="text-blue-700 text-sm">
-                The only platform specifically built for BC development professionals. 
-                Save weeks of research with instant access to municipal data across 9 BC cities.
-              </p>
-            </div>
-            
-            <p className="text-neutral-600 text-sm">
-              Questions about the platform? Contact our team for a personalized demo.
-            </p>
-          </div>
+        <div className="text-center mt-12">
+          <p className="text-neutral-600 mb-4">All plans include a 14-day free trial. No credit card required.</p>
+          <p className="text-sm text-neutral-500">
+            Questions about pricing?{" "}
+            <button 
+              onClick={scrollToContact}
+              className="text-brand-blue hover:underline"
+              data-testid="link-contact-pricing"
+            >
+              Contact our team
+            </button>
+          </p>
         </div>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Lead, type InsertLead, type PropertyLead, type InsertPropertyLead, type Calculation, type InsertCalculation } from "@shared/schema";
+import { type User, type InsertUser, type Lead, type InsertLead, type Calculation, type InsertCalculation } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -7,8 +7,6 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createLead(lead: InsertLead): Promise<Lead>;
   getLeads(): Promise<Lead[]>;
-  createPropertyLead(lead: InsertPropertyLead): Promise<PropertyLead>;
-  getPropertyLeads(): Promise<PropertyLead[]>;
   createCalculation(calculation: InsertCalculation): Promise<Calculation>;
   getCalculations(): Promise<Calculation[]>;
 }
@@ -16,13 +14,11 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private leads: Map<string, Lead>;
-  private propertyLeads: Map<string, PropertyLead>;
   private calculations: Map<string, Calculation>;
 
   constructor() {
     this.users = new Map();
     this.leads = new Map();
-    this.propertyLeads = new Map();
     this.calculations = new Map();
   }
 
@@ -56,22 +52,6 @@ export class MemStorage implements IStorage {
 
   async getLeads(): Promise<Lead[]> {
     return Array.from(this.leads.values());
-  }
-
-  async createPropertyLead(insertPropertyLead: InsertPropertyLead): Promise<PropertyLead> {
-    const id = randomUUID();
-    const propertyLead: PropertyLead = { 
-      ...insertPropertyLead, 
-      id, 
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.propertyLeads.set(id, propertyLead);
-    return propertyLead;
-  }
-
-  async getPropertyLeads(): Promise<PropertyLead[]> {
-    return Array.from(this.propertyLeads.values());
   }
 
   async createCalculation(insertCalculation: InsertCalculation): Promise<Calculation> {
