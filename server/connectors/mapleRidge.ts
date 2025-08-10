@@ -3,32 +3,28 @@ import { buildFSQueryUrl, parseFSJson } from "../lib/arcgis";
 import { CITY_ENDPOINTS } from "../lib/config";
 
 export async function fetchMapleRidge(query: string) {
-  const base = CITY_ENDPOINTS.mapleRidge;
+  const base = CITY_ENDPOINTS.mapleRidge; // e.g. https://.../FeatureServer/0/query
   const endpoint = buildFSQueryUrl(base, query, { resultRecordCount: 100, returnGeometry: true });
-  
   const r = await fetch(endpoint);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const j = await r.json();
-
-  // Use enhanced FeatureServer parser with normalized geometry
-  const parsedRows = parseFSJson(j);
+  const rows = parseFSJson(j);
   const items: Permit[] = [];
 
-  for (const r of parsedRows) {
-    const normalized = {
-      id: String(r.PermitNumber ?? r.PERMIT_ID ?? r.OBJECTID ?? `${r.ADDRESS ?? r.House + " " + r.Street ?? "Unknown"}-${r.IssueDate ?? ""}`),
-      address: r.House && r.Street ? `${r.House} ${r.Street}` : String(r.ADDRESS ?? "Unknown"),
+  for (const rec of rows) {
+    const p = {
+      id: String(rec.PERMIT_ID ?? rec.PERMITNUMBER ?? rec.OBJECTID ?? `${rec.ADDRESS ?? rec.SITE_ADDRESS ?? "Unknown"}-${rec.ISSUED_DATE ?? ""}`),
+      address: String(rec.ADDRESS ?? rec.SITE_ADDRESS ?? rec.CIVIC_ADDRESS ?? "Unknown"),
       city: "Maple Ridge",
-      type: String(r.FolderDesc ?? r.FolderType ?? r.PERMIT_TYPE ?? "Building Permit"),
-      status: String(r.StatusDescription ?? r.STATUS ?? "Unknown"),
-      submittedDate: r.InDate ?? r.APPLIED_DATE ?? null,
-      issuedDate: r.IssueDate ?? r.ISSUED_DATE ?? null,
-      lat: typeof r.__lat === "number" ? r.__lat : null,
-      lng: typeof r.__lng === "number" ? r.__lng : null,
+      type: String(rec.PERMIT_TYPE ?? rec.TYPE ?? "Permit"),
+      status: String(rec.STATUS ?? "Unknown"),
+      submittedDate: rec.APPLIED_DATE ?? null,
+      issuedDate: rec.ISSUED_DATE ?? null,
+      lat: typeof rec.__lat === "number" ? rec.__lat : null,
+      lng: typeof rec.__lng === "number" ? rec.__lng : null,
       source: endpoint,
-      sourceUpdatedAt: r.LAST_UPDATED ?? r.LASTUPDATE ?? null,
+      sourceUpdatedAt: rec.LAST_UPDATED ?? rec.LASTUPDATE ?? null,
     };
-    const ok = PermitSchema.safeParse(normalized);
+    const ok = PermitSchema.safeParse(p);
     if (ok.success) items.push(ok.data);
   }
 

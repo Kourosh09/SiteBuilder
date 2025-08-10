@@ -24,20 +24,20 @@ Preferred communication style: Simple, everyday language.
 - **Technical Enhancement**: Zod schema validation ensures data integrity across the entire pipeline
 - **Business Impact**: Production-ready system demonstrating sophisticated data validation and quality control
 
-### Clean ArcGIS FeatureServer Architecture with Diagnostic Tools
+### Unified Municipal Connector Architecture with Consistent Patterns
 - **Date**: August 10, 2025
-- **Status**: Production-ready modular ArcGIS integration with comprehensive testing capabilities
+- **Status**: Production-ready unified connector architecture with consistent field mapping patterns
 - **Features Implemented**:
-  - **Modular Architecture**: Clean separation with `lib/arcgis.ts` and `lib/config.ts` modules
-  - **Enhanced Field Mapping**: Comprehensive fallback patterns for PERMIT_ID, PERMITNUMBER, ADDRESS variations
-  - **Normalized Geometry**: Consistent `__lat`, `__lng` extraction with type safety
-  - **Centralized Configuration**: CITY_ENDPOINTS and CITY_TRUST_SCORES in dedicated config module
-  - **Clean Import Structure**: Simplified imports from `../lib/arcgis` and `../lib/config`
-  - **Diagnostic Endpoint**: `/admin/test-featureserver` for validating municipal API connections
-  - **Production Testing**: Real-time validation of FeatureServer responses with sample data extraction
-  - **Live BC Municipal APIs**: Production endpoints with comprehensive error handling and diagnostics
-- **Technical Achievement**: Clean, maintainable architecture with professional testing and validation tools
-- **Business Value**: Demonstrates enterprise-level municipal API integration with comprehensive quality assurance
+  - **Consistent Connector Pattern**: All connectors (Maple Ridge, Surrey, Vancouver) follow identical structure
+  - **Unified Field Mapping**: Standardized `rec.PERMIT_ID ?? rec.PERMITNUMBER ?? rec.OBJECTID` patterns
+  - **Clean Variable Naming**: Consistent `rec`, `p`, `base`, `endpoint` naming across all connectors
+  - **Centralized Configuration**: All municipal endpoints managed through `CITY_ENDPOINTS` config
+  - **Enhanced ID Generation**: Fallback ID patterns using address and date combinations
+  - **Type-Safe Validation**: Consistent Zod schema validation across all municipal sources
+  - **Diagnostic Integration**: All connectors work seamlessly with `/api/admin/test-featureserver`
+  - **Live BC Coverage**: Maple Ridge, Surrey, Vancouver all using production government APIs
+- **Technical Achievement**: Unified codebase with consistent patterns enabling easy municipal expansion
+- **Business Value**: Scalable architecture supporting rapid addition of new BC municipalities
 
 ### Enhanced Data Structure Patterns  
 - **Date**: August 10, 2025

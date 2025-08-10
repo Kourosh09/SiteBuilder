@@ -1,15 +1,17 @@
 import { PermitSchema, type Permit } from "@shared/schema";
+import { CITY_ENDPOINTS } from "../lib/config";
 
 export async function fetchVancouver(query: string) {
-  const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
+  const base = CITY_ENDPOINTS.vancouver;
+  const endpoint = `${base}&rows=100&q=${encodeURIComponent(query)}`;
   const r = await fetch(endpoint);
   const j = await r.json();
   const items: Permit[] = [];
 
   for (const rec of j.records ?? []) {
     const f = rec.fields || {};
-    const normalized = {
-      id: String(f.permitnumber ?? rec.recordid),
+    const p = {
+      id: String(f.permitnumber ?? rec.recordid ?? `${f.address ?? "Unknown"}-${f.issuedate ?? ""}`),
       address: String(f.address ?? "Unknown"),
       city: "Vancouver",
       type: String(f.typeofwork ?? "Permit"),
@@ -21,7 +23,7 @@ export async function fetchVancouver(query: string) {
       source: endpoint,
       sourceUpdatedAt: null
     };
-    const ok = PermitSchema.safeParse(normalized);
+    const ok = PermitSchema.safeParse(p);
     if (ok.success) items.push(ok.data);
   }
 
