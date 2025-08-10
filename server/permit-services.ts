@@ -101,31 +101,37 @@ export async function fetchBurnaby(query: string): Promise<{ city: string; items
     const data = await res.json();
 
     const items: Permit[] = [];
-    const records = data?.records || [];
     
-    for (const record of records) {
-      const fields = record.fields || {};
+    // Handle both direct array and records structure
+    const records = Array.isArray(data) ? data : (data?.records || []);
+    
+    for (const r of records) {
+      // Handle both direct field access and nested fields structure
+      const fields = r.fields || r;
+      
       const normalized = {
-        id: String(record.recordid || fields.permit_no || `BUR-${fields.address || Date.now()}`),
-        address: String(fields.address || fields.site_address || "Unknown Address"),
+        id: String(fields.PERMIT_NO || fields.permit_no || fields.id || `BUR-${fields.ADDRESS || fields.address}-${fields.ISSUED_DATE || fields.issued_date || ""}`),
+        address: String(fields.ADDRESS || fields.address || fields.site_address || "Unknown"),
         city: "Burnaby",
-        type: String(fields.permit_type || fields.type || "Building"),
-        status: String(fields.status || "Unknown"),
-        submittedDate: fields.application_date || fields.submitted_date || null,
-        issuedDate: fields.issue_date || fields.issued_date || null,
-        lat: typeof fields.latitude === "number" ? fields.latitude : 
-             (record.geometry?.coordinates?.[1] || null),
-        lng: typeof fields.longitude === "number" ? fields.longitude : 
-             (record.geometry?.coordinates?.[0] || null),
+        type: String(fields.PERMIT_TYPE || fields.permit_type || fields.type || "Permit"),
+        status: String(fields.STATUS || fields.status || "Unknown"),
+        submittedDate: fields.APPLIED_DATE || fields.applied_date || fields.application_date || fields.submitted_date || null,
+        issuedDate: fields.ISSUED_DATE || fields.issued_date || fields.issue_date || null,
+        lat: typeof fields.LAT === "number" ? fields.LAT : 
+             (typeof fields.latitude === "number" ? fields.latitude : 
+              (r.geometry?.coordinates?.[1] || null)),
+        lng: typeof fields.LNG === "number" ? fields.LNG : 
+             (typeof fields.longitude === "number" ? fields.longitude : 
+              (r.geometry?.coordinates?.[0] || null)),
         source: endpoint,
-        sourceUpdatedAt: fields.last_updated || record.record_timestamp || new Date().toISOString(),
+        sourceUpdatedAt: fields.LAST_UPDATED || fields.last_updated || r.record_timestamp || new Date().toISOString(),
       };
       
       const parsed = PermitSchema.safeParse(normalized);
       if (parsed.success) {
         items.push(parsed.data);
       } else {
-        console.warn(`Burnaby permit validation failed:`, parsed.error.errors);
+        console.warn(`Burnaby permit validation failed for ${normalized.id}:`, parsed.error.errors);
       }
     }
 

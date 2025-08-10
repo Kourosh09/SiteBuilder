@@ -288,6 +288,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint for permit data patterns
+  app.get("/api/permits/test", async (req, res) => {
+    try {
+      const { testAllPatterns } = await import("./permit-test");
+      const results = await testAllPatterns();
+      res.json(results);
+    } catch (error) {
+      console.error("Permit test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to run permit tests" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
