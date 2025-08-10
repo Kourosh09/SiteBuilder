@@ -1,17 +1,10 @@
 import { PermitSchema, type Permit } from "@shared/schema";
-import { CITY_ENDPOINTS } from "../city-config";
-import { buildFSQueryUrl, parseFSJson, validateFSUrl } from "../lib/queryBuilder";
+import { buildFSQueryUrl, parseFSJson } from "../lib/arcgis";
+import { CITY_ENDPOINTS } from "../lib/config";
 
 export async function fetchMapleRidge(query: string) {
-  // Build FeatureServer query using enhanced helpers
-  const baseEndpoint = CITY_ENDPOINTS.mapleRidge.split('?')[0];
-  const endpoint = buildFSQueryUrl(baseEndpoint, query);
-  
-  // Validate URL structure
-  const validation = validateFSUrl(endpoint);
-  if (!validation.ok) {
-    console.warn("Maple Ridge URL validation issues:", validation.issues);
-  }
+  const base = CITY_ENDPOINTS.mapleRidge;
+  const endpoint = buildFSQueryUrl(base, query, { resultRecordCount: 100, returnGeometry: true });
   
   const r = await fetch(endpoint);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -21,28 +14,22 @@ export async function fetchMapleRidge(query: string) {
   const parsedRows = parseFSJson(j);
   const items: Permit[] = [];
 
-  for (const row of parsedRows) {
-    // Map Maple Ridge API fields with normalized geometry from parser
-    const address = row.House && row.Street ? `${row.House} ${row.Street}` : String(row.ADDRESS ?? "Unknown");
-    const issuedDate = row.IssueDate ? new Date(row.IssueDate).toISOString().split('T')[0] : null;
-    const appliedDate = row.InDate ? new Date(row.InDate).toISOString().split('T')[0] : null;
-    
+  for (const r of parsedRows) {
     const normalized = {
-      id: String(row.PermitNumber ?? row.OBJECTID ?? `MR-${Date.now()}-${Math.random()}`),
-      address: address,
+      id: String(r.PermitNumber ?? r.PERMIT_ID ?? r.OBJECTID ?? `${r.ADDRESS ?? r.House + " " + r.Street ?? "Unknown"}-${r.IssueDate ?? ""}`),
+      address: r.House && r.Street ? `${r.House} ${r.Street}` : String(r.ADDRESS ?? "Unknown"),
       city: "Maple Ridge",
-      type: String(row.FolderDesc ?? row.FolderType ?? "Building Permit"),
-      status: String(row.StatusDescription ?? "Unknown"),
-      submittedDate: appliedDate,
-      issuedDate: issuedDate,
-      lat: row.__lat,
-      lng: row.__lng,
+      type: String(r.FolderDesc ?? r.FolderType ?? r.PERMIT_TYPE ?? "Building Permit"),
+      status: String(r.StatusDescription ?? r.STATUS ?? "Unknown"),
+      submittedDate: r.InDate ?? r.APPLIED_DATE ?? null,
+      issuedDate: r.IssueDate ?? r.ISSUED_DATE ?? null,
+      lat: typeof r.__lat === "number" ? r.__lat : null,
+      lng: typeof r.__lng === "number" ? r.__lng : null,
       source: endpoint,
-      sourceUpdatedAt: new Date().toISOString()
+      sourceUpdatedAt: r.LAST_UPDATED ?? r.LASTUPDATE ?? null,
     };
     const ok = PermitSchema.safeParse(normalized);
     if (ok.success) items.push(ok.data);
-    else console.warn("Maple Ridge validation failed:", ok.error.errors);
   }
 
   return { city: "Maple Ridge", items, rawSource: endpoint };
