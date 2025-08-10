@@ -262,9 +262,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const q = String(req.query.q || "");
       const city = String(req.query.city || "");
       
-      const { fetchAllBCPermits, fetchBurnaby, fetchSurrey } = await import("./permit-services");
+      const { fetchAllBCPermits, fetchBurnaby } = await import("./permit-services");
       const { fetchMapleRidge } = await import("./connectors/mapleRidge");
       const { fetchVancouver } = await import("./connectors/vancouver");
+      const { fetchSurrey } = await import("./connectors/surrey");
+      const { fetchCoquitlam } = await import("./connectors/coquitlam");
       
       let result;
       if (city.toLowerCase() === "vancouver") {
@@ -275,6 +277,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result = await fetchSurrey(q);
       } else if (city.toLowerCase().includes("maple")) {
         result = await fetchMapleRidge(q);
+      } else if (city.toLowerCase().includes("coquitlam")) {
+        result = await fetchCoquitlam(q);
       } else {
         const allResult = await fetchAllBCPermits(q);
         return res.json({

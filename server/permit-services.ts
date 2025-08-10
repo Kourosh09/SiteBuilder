@@ -2,6 +2,8 @@ import type { Permit } from "@shared/schema";
 import { PermitSchema } from "@shared/schema";
 import { fetchVancouver } from "./connectors/vancouver";
 import { fetchMapleRidge } from "./connectors/mapleRidge";
+import { fetchSurrey } from "./connectors/surrey";
+import { fetchCoquitlam } from "./connectors/coquitlam";
 
 // Streamlined BC connector system - Vancouver (live) + Maple Ridge (ArcGIS pattern)
 // Future: fetchBurnaby can be added when scraping or API becomes available
@@ -57,8 +59,8 @@ export async function fetchBurnaby(query: string): Promise<{ city: string; items
   }
 }
 
-export async function fetchSurrey(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  // Surrey Open Data Portal - Development Applications
+export async function fetchSurreyLegacy(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
+  // Surrey Open Data Portal - Development Applications (legacy fallback)
   const endpoint = `https://data.surrey.ca/api/records/1.0/search/?dataset=development-applications&q=${encodeURIComponent(query)}&rows=100`;
   
   try {
@@ -105,8 +107,8 @@ export async function fetchSurrey(query: string): Promise<{ city: string; items:
 // Wrapper functions for new connectors to match expected interface
 export async function fetchCoquitlamService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
   try {
-    const items = await fetchCoquitlam(query);
-    return { city: "Coquitlam", items, rawSource: "https://data.coquitlam.ca/api/permits" };
+    const result = await fetchCoquitlam(query);
+    return result;
   } catch (error) {
     console.error("Coquitlam service error:", error);
     return { city: "Coquitlam", items: [], rawSource: "https://data.coquitlam.ca/api/permits" };
@@ -115,8 +117,8 @@ export async function fetchCoquitlamService(query: string): Promise<{ city: stri
 
 export async function fetchSurreyService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
   try {
-    const items = await fetchSurreyConnector(query);
-    return { city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" };
+    const result = await fetchSurrey(query);
+    return result;
   } catch (error) {
     console.error("Surrey service error:", error);
     return { city: "Surrey", items: [], rawSource: "https://data.surrey.ca/api/permits" };
@@ -134,7 +136,9 @@ export async function fetchAllBCPermits(query: string): Promise<{
   const results = await Promise.allSettled([
     fetchMapleRidge(query),
     fetchVancouver(query),
-    // later: fetchBurnaby(query) if we scrape or get an API
+    fetchSurrey(query),
+    fetchCoquitlam(query),
+    // later: fetchBurnaby(query) if we get full API access
   ]);
 
   const cities = results
