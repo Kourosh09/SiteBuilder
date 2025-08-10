@@ -339,15 +339,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
       
-      // Mode filtering
+      // Enhanced mode filtering with generic token detection
       let filteredItems = result.items;
       if (mode === "address" && q.length >= 3) {
-        // Filter for address-specific matches
+        // Filter for address-specific matches with generic token handling
         const addressTerms = q.toLowerCase().split(/\s+/);
-        filteredItems = result.items.filter(permit => {
-          const address = permit.address.toLowerCase();
-          return addressTerms.some(term => address.includes(term));
-        });
+        const isGenericAddressToken = (term: string) => {
+          if (term.length < 3) return true;
+          const generic = ["rd","road","st","street","ave","avenue","blvd","lane","ln","dr","drive","hwy","highway","way","ct","court","pl","place"];
+          return generic.includes(term);
+        };
+        
+        // Skip filtering if all terms are generic
+        const hasSpecificTerms = addressTerms.some(term => !isGenericAddressToken(term));
+        
+        if (hasSpecificTerms) {
+          filteredItems = result.items.filter(permit => {
+            const address = permit.address.toLowerCase();
+            return addressTerms.some(term => !isGenericAddressToken(term) && address.includes(term));
+          });
+        }
       }
       
       res.json({
