@@ -1,10 +1,10 @@
-import { fetchArcGISPermits, type ArcGISConfig } from "./arcgis-base";
+import { PermitSchema, type Permit } from "@shared/schema";
 import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchSurrey(query: string) {
   // Direct API call for Surrey Development Applications
   const baseEndpoint = CITY_ENDPOINTS.surrey.split('?')[0];
-  const whereClause = query ? `UPPER(ADDRESS) LIKE UPPER('%${query}%') OR UPPER(SITE_ADDRESS) LIKE UPPER('%${query}%')` : "1=1";
+  const whereClause = query ? `UPPER(NVL(ADDRESS, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(SITE_ADDRESS, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(CIVIC_ADDRESS, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(STREET_NAME, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(ROAD_NAME, '')) LIKE UPPER('%${query}%')` : "1=1";
   const endpoint = `${baseEndpoint}?where=${encodeURIComponent(whereClause)}&outFields=*&f=json&resultRecordCount=100`;
   
   try {
@@ -29,7 +29,9 @@ export async function fetchSurrey(query: string) {
           source: endpoint,
           sourceUpdatedAt: new Date().toISOString()
         };
-        items.push(normalized);
+        const ok = PermitSchema.safeParse(normalized);
+        if (ok.success) items.push(ok.data);
+        else console.warn("Surrey validation failed:", ok.error.errors);
       }
     }
     
@@ -38,3 +40,4 @@ export async function fetchSurrey(query: string) {
     console.error("Surrey fetch error:", error);
     return { city: "Surrey", items: [], rawSource: endpoint };
   }
+}

@@ -4,7 +4,7 @@ import { CITY_ENDPOINTS } from "../city-config";
 export async function fetchMapleRidge(query: string) {
   // Build query with address filtering
   const baseEndpoint = CITY_ENDPOINTS.mapleRidge.split('?')[0];
-  const whereClause = query ? `UPPER(Street) LIKE UPPER('%${query}%') OR UPPER(House) LIKE UPPER('%${query}%')` : "1=1";
+  const whereClause = query ? `UPPER(NVL(Street, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(House, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(NeighbourhoodName, '')) LIKE UPPER('%${query}%')` : "1=1";
   const endpoint = `${baseEndpoint}?where=${encodeURIComponent(whereClause)}&outFields=*&f=json&resultRecordCount=100`;
   
   const r = await fetch(endpoint);
