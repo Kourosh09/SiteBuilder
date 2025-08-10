@@ -2,8 +2,8 @@ import { PermitSchema } from "@shared/schema";
 
 export async function fetchVancouver(query: string) {
   try {
-    // Placeholder URL - will be replaced with real Vancouver API endpoint
-    const url = `https://opendata.vancouver.ca/api/permits?q=${encodeURIComponent(query)}`;
+    // Real Vancouver Open Data API endpoint
+    const url = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -12,25 +12,27 @@ export async function fetchVancouver(query: string) {
     
     const data = await response.json();
     
-    // Handle both direct arrays and nested records structure
-    const records = Array.isArray(data) ? data : (data.records || data.result || []);
+    // Handle Vancouver Open Data format with records array
+    const records = data.records || [];
     
     return records.map((record: any) => {
-      // Extract fields - adjust based on actual Vancouver API structure
-      const item = record.fields || record;
+      // Vancouver uses nested fields structure
+      const fields = record.fields || {};
       
       return PermitSchema.parse({
-        id: item.permit_id || item.id || item.PERMIT_ID || `vancouver-${Date.now()}-${Math.random()}`,
-        address: item.address || item.ADDRESS || item.permit_address || "Address not available",
+        id: String(record.recordid || fields.permitnumber || `vancouver-${fields.propertyaddress || Date.now()}`),
+        address: String(fields.propertyaddress || fields.address || "Address not available"),
         city: "Vancouver",
-        type: item.permit_type || item.type || item.PERMIT_TYPE || "General",
-        status: item.status || item.STATUS || item.permit_status || "Unknown",
-        submittedDate: item.submitted_date || item.date_submitted || item.SUBMITTED_DATE || new Date().toISOString(),
-        issuedDate: item.issued_date || item.date_issued || item.ISSUED_DATE || null,
-        lat: parseFloat(item.latitude || item.lat || item.LAT || "0") || null,
-        lng: parseFloat(item.longitude || item.lng || item.LNG || "0") || null,
+        type: String(fields.permitcategory || fields.typeofwork || fields.category || "Building"),
+        status: "Issued", // Vancouver dataset contains only issued permits
+        submittedDate: fields.applicationdate || null,
+        issuedDate: fields.issuedate || fields.issued_date || null,
+        lat: typeof fields.geom?.coordinates?.[1] === "number" ? fields.geom.coordinates[1] : 
+             (record.geometry?.coordinates?.[1] || null),
+        lng: typeof fields.geom?.coordinates?.[0] === "number" ? fields.geom.coordinates[0] : 
+             (record.geometry?.coordinates?.[0] || null),
         source: url,
-        sourceUpdatedAt: new Date().toISOString()
+        sourceUpdatedAt: fields.extractdate || record.record_timestamp || new Date().toISOString()
       });
     });
   } catch (error) {

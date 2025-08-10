@@ -49,47 +49,15 @@ export async function fetchMapleRidge(query: string): Promise<{ city: string; it
   }
 }
 
-export async function fetchVancouver(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  // Vancouver Open Data Portal - Issued Building Permits
-  const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&q=${encodeURIComponent(query)}&rows=100`;
-  
+export async function fetchVancouverLegacy(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
+  // Use the new modular Vancouver connector
   try {
-    const res = await fetch(endpoint);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    const items: Permit[] = [];
-    const records = data?.records || [];
-    
-    for (const record of records) {
-      const fields = record.fields || {};
-      const normalized = {
-        id: String(record.recordid || fields.permitnumber || `VAN-${fields.propertyaddress || Date.now()}`),
-        address: String(fields.propertyaddress || fields.address || "Unknown Address"),
-        city: "Vancouver",
-        type: String(fields.permitcategory || fields.typeofwork || fields.category || "Building"),
-        status: "Issued", // Vancouver dataset contains only issued permits
-        submittedDate: fields.applicationdate || null,
-        issuedDate: fields.issuedate || fields.issued_date || null,
-        lat: typeof fields.geom?.coordinates?.[1] === "number" ? fields.geom.coordinates[1] : 
-             (record.geometry?.coordinates?.[1] || null),
-        lng: typeof fields.geom?.coordinates?.[0] === "number" ? fields.geom.coordinates[0] : 
-             (record.geometry?.coordinates?.[0] || null),
-        source: endpoint,
-        sourceUpdatedAt: fields.extractdate || record.record_timestamp || new Date().toISOString(),
-      };
-      
-      const parsed = PermitSchema.safeParse(normalized);
-      if (parsed.success) {
-        items.push(parsed.data);
-      } else {
-        console.warn(`Vancouver permit validation failed:`, parsed.error.errors);
-      }
-    }
-
+    const items = await fetchVancouver(query);
+    const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
     return { city: "Vancouver", items, rawSource: endpoint };
   } catch (error) {
-    console.error("Vancouver API error:", error);
+    console.error("Vancouver service error:", error);
+    const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
     return { city: "Vancouver", items: [], rawSource: endpoint };
   }
 }
@@ -228,7 +196,7 @@ export async function fetchAllBCPermits(query: string): Promise<{
   aggregatedItems: Permit[];
 }> {
   const cities = await Promise.all([
-    fetchVancouver(query),
+    fetchVancouverLegacy(query),
     fetchBurnaby(query),
     fetchSurrey(query),
     fetchMapleRidge(query),
