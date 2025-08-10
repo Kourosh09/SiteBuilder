@@ -316,19 +316,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // FeatureServer URL structure validation endpoint
+  // Enhanced FeatureServer helpers test endpoint
   app.get("/api/featureserver/test", async (req, res) => {
     const query = req.query.q as string || "main";
-    const { buildWhere, buildFeatureServerQuery } = await import("./lib/queryBuilder");
+    const { buildWhere, buildFSQueryUrl, validateFSUrl, parseFSJson } = await import("./lib/queryBuilder");
+    
+    const mapleRidgeBase = "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query";
+    const surreyBase = "https://gisservices.surrey.ca/arcgis/rest/services/OpenData/Development_Applications/MapServer/0/query";
     
     const examples = {
       maple_ridge: {
-        base: "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query",
-        where: buildWhere(query),
-        full_url: buildFeatureServerQuery(
-          "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query",
-          buildWhere(query)
-        )
+        base: mapleRidgeBase,
+        where_clause: buildWhere(query),
+        full_url: buildFSQueryUrl(mapleRidgeBase, query),
+        validation: validateFSUrl(mapleRidgeBase),
+        enhanced_fields: ["ADDRESS", "SITE_ADDRESS", "CIVIC_ADDRESS", "STREET_NAME", "STREET_TYPE", "ROAD_NAME", "PROJECT_NAME", "DESCRIPTION"]
+      },
+      surrey: {
+        base: surreyBase,
+        where_clause: buildWhere(query),
+        full_url: buildFSQueryUrl(surreyBase, query),
+        validation: validateFSUrl(surreyBase),
+        enhanced_fields: ["ADDRESS", "SITE_ADDRESS", "CIVIC_ADDRESS", "STREET_NAME", "STREET_TYPE", "ROAD_NAME", "PROJECT_NAME", "DESCRIPTION"]
       }
     };
     
@@ -336,7 +345,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       query: query,
       specification: {
         pattern: "/FeatureServer/0/query",
-        required_params: ["where", "outFields=*", "returnGeometry=true", "outSR=4326", "resultRecordCount=100", "f=json"]
+        required_params: ["where", "outFields=*", "returnGeometry=true", "outSR=4326", "resultRecordCount=100", "f=json"],
+        enhanced_features: [
+          "8-field comprehensive address matching",
+          "SQL injection protection with quote escaping",
+          "Normalized geometry extraction (__lat, __lng)",
+          "URL validation with structural checks",
+          "Enhanced parseFSJson for consistent data format"
+        ]
       },
       examples: examples
     });

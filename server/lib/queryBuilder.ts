@@ -1,22 +1,72 @@
 /**
- * Enhanced query builder for BC municipal FeatureServer APIs
- * Provides SQL injection protection and comprehensive address field matching
+ * ArcGIS FeatureServer helpers: build URL, validate, sample fetch, normalize lat/lng
  */
 
-export function buildWhere(q: string): string {
-  const s = (q || "").trim();
-  if (!s || s.length < 3) return "1=1"; // broad fetch; we'll filter client-side
+export type FSOptions = {
+  where?: string;
+  outFields?: string;           // default "*"
+  returnGeometry?: boolean;     // default true
+  outSR?: number;               // default 4326
+  resultRecordCount?: number;   // default 100
+  f?: "json";                   // default "json"
+};
 
-  const esc = s.replace(/'/g, "''"); // SQL escape single quotes
-  const clauses = [
-    `UPPER(ADDRESS) LIKE UPPER('%${esc}%')`,
-    `UPPER(SITE_ADDRESS) LIKE UPPER('%${esc}%')`,
-    `UPPER(CIVIC_ADDRESS) LIKE UPPER('%${esc}%')`,
-    `UPPER(STREET_NAME) LIKE UPPER('%${esc}%')`,
-    `UPPER(STREET_TYPE) LIKE UPPER('%${esc}%')`,
-    `UPPER(ROAD_NAME) LIKE UPPER('%${esc}%')`,
+export function buildFSQueryUrl(baseQueryUrl: string, q: string, opts: FSOptions = {}) {
+  const u = new URL(baseQueryUrl); // should end with /FeatureServer/<layerId>/query
+  const where = (opts.where ?? buildWhere(q)).trim();
+  u.searchParams.set("where", where || "1=1");
+  u.searchParams.set("outFields", opts.outFields ?? "*");
+  u.searchParams.set("returnGeometry", String(opts.returnGeometry ?? true));
+  u.searchParams.set("outSR", String(opts.outSR ?? 4326));
+  u.searchParams.set("resultRecordCount", String(opts.resultRecordCount ?? 100));
+  u.searchParams.set("f", opts.f ?? "json");
+  return u.toString();
+}
+
+export function buildWhere(q: string) {
+  const s = (q || "").trim();
+  if (s.length < 3) return "1=1"; // short/fuzzy → fetch broadly, filter client-side if needed
+  const esc = s.replace(/'/g, "''");
+  const fields = [
+    "ADDRESS","SITE_ADDRESS","CIVIC_ADDRESS",
+    "STREET_NAME","STREET_TYPE","ROAD_NAME",
+    "PROJECT_NAME","DESCRIPTION"
   ];
-  return clauses.join(" OR ");
+  return fields
+    .map(f => `(UPPER(${f}) LIKE UPPER('%${esc}%'))`)
+    .join(" OR ");
+}
+
+/** Quick structural checks for a FeatureServer /query URL */
+export function validateFSUrl(url: string) {
+  // Support both FeatureServer and MapServer patterns (ArcGIS uses both)
+  const ok = /^https?:\/\/.+\/(FeatureServer|MapServer)\/\d+\/query(\?|$)/i.test(url);
+  const issues: string[] = [];
+  if (!ok) issues.push("URL must end with /FeatureServer/<layerId>/query or /MapServer/<layerId>/query");
+  try { new URL(url); } catch { issues.push("Invalid URL format"); }
+  return { ok, issues };
+}
+
+/** Normalizes ArcGIS FeatureServer response to a simple array of attributes + geometry */
+export function parseFSJson(json: any) {
+  const features = Array.isArray(json?.features) ? json.features : [];
+  return features.map((f: any) => {
+    const attrs = f?.attributes ?? {};
+    const geom = f?.geometry ?? {};
+    let lat: number | null = null;
+    let lng: number | null = null;
+    if (typeof geom.y === "number" && typeof geom.x === "number") {
+      lat = geom.y; lng = geom.x;
+    } else if (Array.isArray(geom?.coordinates) && geom.coordinates.length >= 2) {
+      lng = Number(geom.coordinates[0]); lat = Number(geom.coordinates[1]);
+    }
+    return { ...attrs, __lat: lat, __lng: lng };
+  });
+}
+
+// Legacy functions for backwards compatibility
+export function buildFeatureServerQuery(baseUrl: string, whereClause: string): string {
+  return buildFSQueryUrl(baseUrl, "", { where: whereClause });
 }
 
 export interface FeatureServerParams {
@@ -26,39 +76,24 @@ export interface FeatureServerParams {
   maxResults?: number;
 }
 
-// Simple FeatureServer URL builder following exact specification
-export function buildFeatureServerQuery(baseUrl: string, whereClause: string): string {
-  const params = new URLSearchParams({
-    where: whereClause,
-    outFields: "*",
-    returnGeometry: "true", 
-    outSR: "4326",
-    resultRecordCount: "100",
-    f: "json"
-  });
-  
-  return `${baseUrl}?${params.toString()}`;
-}
-
 export function buildFeatureServerUrl({ 
   baseUrl, 
   query, 
   orderBy, 
   maxResults = 100 
 }: FeatureServerParams): string {
-  const params = new URLSearchParams({
-    where: buildWhere(query),
-    outFields: "*",
-    returnGeometry: "true",
-    outSR: "4326",
-    resultRecordCount: maxResults.toString(),
-    f: "json"
-  });
+  const opts: FSOptions = {
+    resultRecordCount: maxResults
+  };
   
-  // Only add orderByFields if provided
+  const url = buildFSQueryUrl(baseUrl, query, opts);
+  
+  // Add orderByFields if provided
   if (orderBy) {
-    params.set("orderByFields", orderBy);
+    const u = new URL(url);
+    u.searchParams.set("orderByFields", orderBy);
+    return u.toString();
   }
   
-  return `${baseUrl}?${params.toString()}`;
+  return url;
 }
