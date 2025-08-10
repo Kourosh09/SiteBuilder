@@ -1,5 +1,8 @@
 import type { Permit } from "@shared/schema";
 import { PermitSchema } from "@shared/schema";
+import { fetchCoquitlam } from "./connectors/coquitlam";
+import { fetchSurrey } from "./connectors/surrey";
+import { fetchVancouver } from "./connectors/vancouver";
 
 export async function fetchMapleRidge(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
   // Maple Ridge Open Data Portal - Building Permits
@@ -187,6 +190,37 @@ export async function fetchSurrey(query: string): Promise<{ city: string; items:
   }
 }
 
+// Wrapper functions for new connectors to match expected interface
+export async function fetchCoquitlamService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
+  try {
+    const items = await fetchCoquitlam(query);
+    return { city: "Coquitlam", items, rawSource: "https://data.coquitlam.ca/api/permits" };
+  } catch (error) {
+    console.error("Coquitlam service error:", error);
+    return { city: "Coquitlam", items: [], rawSource: "https://data.coquitlam.ca/api/permits" };
+  }
+}
+
+export async function fetchSurreyService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
+  try {
+    const items = await fetchSurrey(query);
+    return { city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" };
+  } catch (error) {
+    console.error("Surrey service error:", error);
+    return { city: "Surrey", items: [], rawSource: "https://data.surrey.ca/api/permits" };
+  }
+}
+
+export async function fetchVancouverService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
+  try {
+    const items = await fetchVancouver(query);
+    return { city: "Vancouver", items, rawSource: "https://opendata.vancouver.ca/api/permits" };
+  } catch (error) {
+    console.error("Vancouver service error:", error);
+    return { city: "Vancouver", items: [], rawSource: "https://opendata.vancouver.ca/api/permits" };
+  }
+}
+
 // Unified permit fetcher for all BC municipalities
 export async function fetchAllBCPermits(query: string): Promise<{
   totalItems: number;
@@ -198,6 +232,7 @@ export async function fetchAllBCPermits(query: string): Promise<{
     fetchBurnaby(query),
     fetchSurrey(query),
     fetchMapleRidge(query),
+    fetchCoquitlamService(query)
   ]);
 
   const aggregatedItems = cities.flatMap(cityData => cityData.items);

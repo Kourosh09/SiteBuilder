@@ -68,6 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "Burnaby": 0.9,
     "Vancouver": 0.95,
     "Surrey": 0.85,
+    "Coquitlam": 0.88,
   };
 
   function scorePermit(p: any): number {
@@ -100,14 +101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cached.data);
       }
 
-      // Import connectors
+      // Import all BC connectors
       const { fetchMapleRidge } = await import("./connectors/mapleRidge");
       const { fetchBurnaby } = await import("./connectors/burnaby");
+      const { fetchCoquitlam } = await import("./connectors/coquitlam");
+      const { fetchSurrey } = await import("./connectors/surrey");
+      const { fetchVancouver } = await import("./connectors/vancouver");
 
-      // Pull from 2 cities (Phase 1)
+      // Pull from all 5 BC cities
       const results = await Promise.allSettled([
         fetchMapleRidge(q),
         fetchBurnaby(q),
+        fetchCoquitlam(q).then(items => ({ city: "Coquitlam", items, rawSource: "https://data.coquitlam.ca/api/permits" })),
+        fetchSurrey(q).then(items => ({ city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" })),
+        fetchVancouver(q).then(items => ({ city: "Vancouver", items, rawSource: "https://opendata.vancouver.ca/api/permits" })),
       ]);
 
       // Flatten & validate defensively
