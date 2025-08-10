@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Building, Calendar, MapPin, Clock } from "lucide-react";
-import type { PermitRecord, SmartFetchResponse } from "@/types/permit";
+import type { Permit, SmartFetchResponse, PermitSchema } from "@/types/permit";
 
 // Enhanced renderer for permit data
 function RenderPayload({ payload }: { payload: any }) {
@@ -14,7 +14,7 @@ function RenderPayload({ payload }: { payload: any }) {
 
   // Enhanced permit data visualization
   if (Array.isArray(payload) && payload.length > 0 && typeof payload[0] === "object") {
-    const permits = payload as PermitRecord[];
+    const permits = payload as Permit[];
     
     return (
       <div className="space-y-4">

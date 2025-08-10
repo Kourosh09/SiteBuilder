@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLeadSchema, insertCalculationSchema } from "@shared/schema";
+import { insertLeadSchema, insertCalculationSchema, PermitSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
 import * as path from "path";
@@ -98,20 +98,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         for (const source of okOnes) {
           if (source.data?.records && Array.isArray(source.data.records)) {
-            // Transform to standardized permit format
-            const permits = source.data.records.map((record: any) => ({
-              id: record.recordid || record.id || `${source.source}-${record.fields?.permit_number || Math.random()}`,
-              address: record.fields?.address || record.fields?.location || "Unknown",
-              city: record.fields?.city || city,
-              type: record.fields?.permit_type || record.fields?.type || "Building",
-              status: record.fields?.status || "Unknown",
-              submittedDate: record.fields?.submitted_date || record.fields?.application_date || undefined,
-              issuedDate: record.fields?.issue_date || record.fields?.issued_date || undefined,
-              lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || undefined,
-              lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || undefined,
-              source: source.source,
-              sourceUpdatedAt: record.record_timestamp || new Date().toISOString()
-            }));
+            // Transform to standardized permit format with Zod validation
+            const permits = source.data.records.map((record: any) => {
+              const permitData = {
+                id: record.recordid || record.id || `${source.source}-${record.fields?.permit_number || Math.random()}`,
+                address: record.fields?.address || record.fields?.location || "Unknown Address",
+                city: record.fields?.city || city,
+                type: record.fields?.permit_type || record.fields?.type || "Permit",
+                status: record.fields?.status || "Unknown",
+                submittedDate: record.fields?.submitted_date || record.fields?.application_date || null,
+                issuedDate: record.fields?.issue_date || record.fields?.issued_date || null,
+                lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || null,
+                lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || null,
+                source: source.source,
+                sourceUpdatedAt: record.record_timestamp || new Date().toISOString()
+              };
+              
+              // Validate with Zod schema for data quality
+              try {
+                return PermitSchema.parse(permitData);
+              } catch (error) {
+                // Return raw data if validation fails, but log the issue
+                console.warn(`Permit validation failed for ${permitData.id}:`, error);
+                return permitData;
+              }
+            });
             allPermits.push(...permits);
           }
         }
@@ -220,6 +231,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("File listing error:", error);
       res.status(500).json({ error: "Failed to list files" });
+    }
+  });
+
+  // Permit validation endpoint for testing Zod schema
+  app.post("/api/permits/validate", async (req, res) => {
+    try {
+      const validatedPermit = PermitSchema.parse(req.body);
+      res.json({ 
+        success: true, 
+        valid: true,
+        permit: validatedPermit,
+        message: "Permit data is valid" 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          success: false, 
+          valid: false,
+          error: "Invalid permit data", 
+          details: error.errors 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          error: "Validation failed" 
+        });
+      }
     }
   });
 

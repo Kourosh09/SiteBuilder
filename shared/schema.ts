@@ -3,6 +3,23 @@ import { pgTable, text, varchar, timestamp, decimal } from "drizzle-orm/pg-core"
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Enhanced Zod schema for permit validation
+export const PermitSchema = z.object({
+  id: z.string(),
+  address: z.string().min(3),
+  city: z.string(),
+  type: z.string().optional().default("Permit"),
+  status: z.string().optional().default("Unknown"),
+  submittedDate: z.string().datetime().optional().nullable(),
+  issuedDate: z.string().datetime().optional().nullable(),
+  lat: z.number().optional().nullable(),
+  lng: z.number().optional().nullable(),
+  source: z.string().url(),
+  sourceUpdatedAt: z.string().datetime().optional().nullable(),
+});
+
+export type Permit = z.infer<typeof PermitSchema>;
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -82,4 +99,4 @@ export type Lead = typeof leads.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type Calculation = typeof calculationResults.$inferSelect;
 export type InsertPermit = z.infer<typeof insertPermitSchema>;
-export type Permit = typeof permits.$inferSelect;
+export type DBPermit = typeof permits.$inferSelect;

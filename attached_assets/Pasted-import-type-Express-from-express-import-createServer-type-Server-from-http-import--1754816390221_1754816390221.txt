@@ -1,0 +1,96 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { z } from "zod";
+import type { Permit } from "@shared/schema";
+import { PermitSchema } from "@shared/schema";
+import { fetchMapleRidge } from "./connectors/mapleRidge";
+import { fetchBurnaby } from "./connectors/burnaby";
+
+const memCache = new Map<string, { ts: number; data: any }>();
+const CACHE_MS = 60 * 1000; // 1 minute cache to keep it snappy
+
+const CityTrust: Record<string, number> = {
+  "Maple Ridge": 0.9,
+  "Burnaby": 0.9,
+};
+
+function scorePermit(p: Permit): number {
+  const trust = CityTrust[p.city] ?? 0.7;
+  const recency = p.sourceUpdatedAt ? Date.parse(p.sourceUpdatedAt) : 0;
+  const recencyBoost = recency ? Math.min(1, (Date.now() - recency) / (1000 * 60 * 60 * 24 * 365)) : 0.5; // older => higher value -> worse
+  const freshness = 1 - Math.min(1, recencyBoost);
+  return 0.7 * trust + 0.3 * freshness;
+}
+
+function dedupeById(perms: Permit[]): Permit[] {
+  const m = new Map<string, Permit>();
+  for (const p of perms) {
+    const existing = m.get(p.id);
+    if (!existing) m.set(p.id, p);
+    else {
+      // keep higher score
+      const keep = scorePermit(existing) >= scorePermit(p) ? existing : p;
+      m.set(p.id, keep);
+    }
+  }
+  return Array.from(m.values());
+}
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // … existing routes …
+
+  // ---------- SMART FETCH ----------
+  app.get("/smart_fetch", async (req, res) => {
+    try {
+      const q = String(req.query.q || "");
+      const cacheKey = `smart:${q}`;
+      const cached = memCache.get(cacheKey);
+      if (cached && Date.now() - cached.ts < CACHE_MS) {
+        return res.json(cached.data);
+      }
+
+      // Pull from 2 cities (Phase 1)
+      const results = await Promise.allSettled([
+        fetchMapleRidge(q),
+        fetchBurnaby(q),
+      ]);
+
+      // Flatten & validate again defensively
+      const allPermits: Permit[] = [];
+      const provenance: any[] = [];
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          const { city, items, rawSource } = r.value;
+          provenance.push({ city, count: items.length, source: rawSource, ok: true });
+          for (const it of items) {
+            const parsed = PermitSchema.safeParse(it);
+            if (parsed.success) allPermits.push(parsed.data);
+          }
+        } else {
+          provenance.push({ city: "unknown", count: 0, source: "", ok: false, err: String(r.reason) });
+        }
+      }
+
+      // Rank, dedupe, and compute confidence
+      const ranked = dedupeById(allPermits).sort((a, b) => scorePermit(b) - scorePermit(a));
+      const avgScore = ranked.length ? ranked.map(scorePermit).reduce((a,b)=>a+b,0)/ranked.length : 0;
+      const response = {
+        ok: ranked.length > 0,
+        payload: ranked,        // array of normalized permits
+        confidence: Number(avgScore.toFixed(2)),
+        provenance,
+        notes: ranked.length ? null : "No permits matched (or data sources returned nothing).",
+      };
+
+      memCache.set(cacheKey, { ts: Date.now(), data: response });
+      return res.json(response);
+    } catch (err: any) {
+      return res.status(500).json({ ok: false, error: String(err) });
+    }
+  });
+
+  // … keep your other routes …
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
