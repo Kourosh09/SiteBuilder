@@ -356,6 +356,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // FeatureServer diagnostic endpoint for testing municipal APIs
+  app.get("/api/admin/test-featureserver", async (req, res) => {
+    try {
+      const url = String(req.query.url || "");
+      const q = String(req.query.q || "test");
+      const { validateFSUrl, buildFSQueryUrl } = await import("./lib/arcgis");
+      
+      const val = validateFSUrl(url);
+      if (!val.ok) return res.status(400).json({ ok: false, issues: val.issues });
+
+      // Build a minimal query to avoid heavy loads
+      const testUrl = buildFSQueryUrl(url, q, {
+        resultRecordCount: 1, outFields: "*", returnGeometry: true, outSR: 4326
+      });
+
+      const r = await fetch(testUrl, { method: "GET" });
+      const text = await r.text();
+      let json: any = {};
+      try { json = JSON.parse(text); } catch { /* leave as text for diagnostics */ }
+
+      const diagnostics = {
+        ok: r.ok,
+        status: r.status,
+        testUrl,
+        contentType: r.headers.get("content-type"),
+        hasFeaturesArray: Array.isArray(json?.features),
+        featuresCount: Array.isArray(json?.features) ? json.features.length : 0,
+        sampleAttributes: Array.isArray(json?.features) && json.features[0]?.attributes ? json.features[0].attributes : null,
+        sampleGeometry: Array.isArray(json?.features) && json.features[0]?.geometry ? json.features[0].geometry : null,
+        issues: val.issues,
+      };
+      return res.json(diagnostics);
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, error: String(e) });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
