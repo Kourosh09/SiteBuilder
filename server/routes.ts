@@ -101,20 +101,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cached.data);
       }
 
-      // Import all BC connectors
+      // Import core BC connectors
       const { fetchMapleRidge } = await import("./connectors/mapleRidge");
-      const { fetchBurnaby } = await import("./connectors/burnaby");
-      const { fetchCoquitlam } = await import("./connectors/coquitlam");
-      const { fetchSurrey } = await import("./connectors/surrey");
       const { fetchVancouver } = await import("./connectors/vancouver");
 
-      // Pull from all 5 BC cities
+      // Pull from 2 core BC cities (Vancouver live + Maple Ridge ArcGIS pattern)
       const results = await Promise.allSettled([
         fetchMapleRidge(q),
-        fetchBurnaby(q),
-        fetchCoquitlam(q).then(items => ({ city: "Coquitlam", items, rawSource: "https://data.coquitlam.ca/api/permits" })),
-        fetchSurrey(q).then(items => ({ city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" })),
         fetchVancouver(q),
+        // later: fetchBurnaby(q) if we scrape or get an API
       ]);
 
       // Flatten & validate defensively
