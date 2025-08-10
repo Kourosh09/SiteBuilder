@@ -10,12 +10,12 @@ export const PermitSchema = z.object({
   city: z.string(),
   type: z.string().optional().default("Permit"),
   status: z.string().optional().default("Unknown"),
-  submittedDate: z.string().datetime().optional().nullable(),
-  issuedDate: z.string().datetime().optional().nullable(),
+  submittedDate: z.string().optional().nullable(),
+  issuedDate: z.string().optional().nullable(),
   lat: z.number().optional().nullable(),
   lng: z.number().optional().nullable(),
   source: z.string().url(),
-  sourceUpdatedAt: z.string().datetime().optional().nullable(),
+  sourceUpdatedAt: z.string().optional().nullable(),
 });
 
 export type Permit = z.infer<typeof PermitSchema>;
