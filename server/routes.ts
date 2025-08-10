@@ -305,6 +305,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Smart Fetch endpoint with city selection and mode filtering
+  app.get("/smart_fetch", async (req, res) => {
+    try {
+      const q = String(req.query.q || "");
+      const city = String(req.query.city || "Maple Ridge");
+      const mode = String(req.query.mode || "any") as "address" | "any";
+      
+      const { fetchAllBCPermits } = await import("./permit-services");
+      const { fetchMapleRidge } = await import("./connectors/mapleRidge");
+      const { fetchVancouver } = await import("./connectors/vancouver");
+      const { fetchSurrey } = await import("./connectors/surrey");
+      const { fetchCoquitlam } = await import("./connectors/coquitlam");
+      
+      let result;
+      
+      // City-specific fetching
+      if (city.toLowerCase().includes("vancouver")) {
+        result = await fetchVancouver(q);
+      } else if (city.toLowerCase().includes("maple")) {
+        result = await fetchMapleRidge(q);
+      } else if (city.toLowerCase().includes("surrey")) {
+        result = await fetchSurrey(q);
+      } else if (city.toLowerCase().includes("coquitlam")) {
+        result = await fetchCoquitlam(q);
+      } else {
+        // Default to all BC municipalities
+        const allResult = await fetchAllBCPermits(q);
+        result = {
+          city: "All BC",
+          items: allResult.aggregatedItems,
+          rawSource: "Multiple municipal APIs"
+        };
+      }
+      
+      // Mode filtering
+      let filteredItems = result.items;
+      if (mode === "address" && q.length >= 3) {
+        // Filter for address-specific matches
+        const addressTerms = q.toLowerCase().split(/\s+/);
+        filteredItems = result.items.filter(permit => {
+          const address = permit.address.toLowerCase();
+          return addressTerms.some(term => address.includes(term));
+        });
+      }
+      
+      res.json({
+        success: true,
+        query: q,
+        city: result.city,
+        mode,
+        totalFound: result.items.length,
+        filtered: filteredItems.length,
+        permits: filteredItems,
+        source: result.rawSource
+      });
+    } catch (error) {
+      console.error("Smart Fetch error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Smart fetch failed" 
+      });
+    }
+  });
+
   // Test endpoint for permit data patterns
   app.get("/api/permits/test", async (req, res) => {
     try {
