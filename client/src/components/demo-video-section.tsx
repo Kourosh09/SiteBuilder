@@ -12,7 +12,8 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
   const [currentTime, setCurrentTime] = useState(0);
   const [voiceoverPhase, setVoiceoverPhase] = useState(0);
   const [showCaptions, setShowCaptions] = useState(true);
-  const intervalRef = useRef<number | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const totalDuration = 60; // Faster 1:00 demo video
   
   // Cleanup on unmount
@@ -34,7 +35,21 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
     5: { title: "Complete Report", description: "Professional PDF with contractor connections" }
   };
 
-  // Remove problematic speech synthesis - use visual captions instead
+  // Speech synthesis support check
+  const speechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  
+  const voiceoverTexts: Record<number, string> = {
+    0: "Let's start by entering a real BC property address to see instant analysis.",
+    1: "Watch as we fetch authentic BC Assessment data including assessed values and lot details.",
+    2: "Now we're retrieving recent MLS sales data to understand current market trends.",
+    3: "Our AI analyzes municipal zoning rules and Bill 44/47 compliance for development potential.",
+    4: "Financial modeling calculates ROI using real construction costs and market values.", 
+    5: "Complete analysis with professional reports and contractor network connections ready."
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
