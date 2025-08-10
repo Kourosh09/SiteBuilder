@@ -1,11 +1,16 @@
 import { PermitSchema, type Permit } from "@shared/schema";
 import { CITY_ENDPOINTS } from "../city-config";
+import { buildFeatureServerUrl } from "../lib/queryBuilder";
 
 export async function fetchMapleRidge(query: string) {
-  // Build query with address filtering
+  // Build enhanced FeatureServer query
   const baseEndpoint = CITY_ENDPOINTS.mapleRidge.split('?')[0];
-  const whereClause = query ? `UPPER(NVL(Street, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(House, '')) LIKE UPPER('%${query}%') OR UPPER(NVL(NeighbourhoodName, '')) LIKE UPPER('%${query}%')` : "1=1";
-  const endpoint = `${baseEndpoint}?where=${encodeURIComponent(whereClause)}&outFields=*&f=json&resultRecordCount=100`;
+  const endpoint = buildFeatureServerUrl({
+    baseUrl: baseEndpoint,
+    query: query,
+    orderBy: "IssueDate DESC",
+    maxResults: 100
+  });
   
   const r = await fetch(endpoint);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -15,10 +20,18 @@ export async function fetchMapleRidge(query: string) {
   const items: Permit[] = [];
 
   for (const r of rows) {
-    // Map Maple Ridge API fields to our schema
+    // Map Maple Ridge API fields with enhanced geometry handling
     const address = r.House && r.Street ? `${r.House} ${r.Street}` : String(r.ADDRESS ?? "Unknown");
     const issuedDate = r.IssueDate ? new Date(r.IssueDate).toISOString().split('T')[0] : null;
     const appliedDate = r.InDate ? new Date(r.InDate).toISOString().split('T')[0] : null;
+    
+    // Extract coordinates from geometry (now returned due to returnGeometry=true)
+    let lat = null, lng = null;
+    if (r.geometry?.x && r.geometry?.y) {
+      // Convert from UTM Zone 10N (EPSG:26910) to WGS84 if needed
+      lat = r.geometry.y;
+      lng = r.geometry.x;
+    }
     
     const normalized = {
       id: String(r.PermitNumber ?? r.OBJECTID ?? `MR-${Date.now()}-${Math.random()}`),
@@ -28,8 +41,8 @@ export async function fetchMapleRidge(query: string) {
       status: String(r.StatusDescription ?? "Unknown"),
       submittedDate: appliedDate,
       issuedDate: issuedDate,
-      lat: typeof r.LAT === "number" ? r.LAT : null,
-      lng: typeof r.LNG === "number" ? r.LNG : null,
+      lat: lat,
+      lng: lng,
       source: endpoint,
       sourceUpdatedAt: new Date().toISOString()
     };
