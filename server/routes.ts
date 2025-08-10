@@ -59,6 +59,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ---- AI Optimization Layer: /smart_fetch ----
+  app.get("/smart_fetch", async (req, res) => {
+    try {
+      const q = String(req.query.q || "");
+      const city = String(req.query.city || "Maple Ridge");
+
+      // TODO: replace with real sources (city open data, APIs, scrapers)
+      const sources = [
+        `https://example.com/opendata?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+        `https://example.com/city_api?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+        `https://example.com/scrape?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`
+      ];
+
+      type Prov = { source: string; ok: boolean; data: any; fetched_at: number };
+      const provenance: Prov[] = [];
+
+      for (const url of sources) {
+        try {
+          const r = await fetch(url); // Node 18+ has global fetch
+          const ct = r.headers.get("content-type") || "";
+          const data = ct.includes("application/json") ? await r.json() : { text: await r.text() };
+          provenance.push({ source: url, ok: r.ok, data, fetched_at: Date.now()/1000 });
+        } catch (e: any) {
+          provenance.push({ source: url, ok: false, data: { error: String(e) }, fetched_at: Date.now()/1000 });
+        }
+      }
+
+      // Simple reconcile + confidence (we'll upgrade later)
+      const okOnes = provenance.filter(p => p.ok);
+      let payload: any = {};
+      let confidence = 0.0;
+      let note = "No sources succeeded.";
+      if (okOnes.length) {
+        const pick = okOnes[0]; // later: pick by trust/recency/majority
+        payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
+        confidence = 0.75;
+        note = `Selected ${pick.source}`;
+      }
+      const ok = confidence >= 0.7 && Object.keys(payload).length > 0;
+      return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? null : note });
+    } catch (err: any) {
+      return res.status(500).json({ ok: false, error: String(err) });
+    }
+  });
+
   // Project export endpoint
   app.get("/api/export/project", (req, res) => {
     try {

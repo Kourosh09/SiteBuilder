@@ -1,0 +1,115 @@
+A) Add “smart_fetch” to your backend
+Open SiteBuilder-main/server/routes.ts and add this near the other routes (top has registerRoutes(app: Express)):
+
+ts
+Copy
+Edit
+// ---- AI Optimization Layer: /smart_fetch ----
+app.get("/smart_fetch", async (req, res) => {
+  try {
+    const q = String(req.query.q || "");
+    const city = String(req.query.city || "Maple Ridge");
+
+    // TODO: replace with real sources (city open data, APIs, scrapers)
+    const sources = [
+      `https://example.com/opendata?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+      `https://example.com/city_api?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+      `https://example.com/scrape?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`
+    ];
+
+    type Prov = { source: string; ok: boolean; data: any; fetched_at: number };
+    const provenance: Prov[] = [];
+
+    for (const url of sources) {
+      try {
+        const r = await fetch(url); // Node 18+ has global fetch
+        const ct = r.headers.get("content-type") || "";
+        const data = ct.includes("application/json") ? await r.json() : { text: await r.text() };
+        provenance.push({ source: url, ok: r.ok, data, fetched_at: Date.now()/1000 });
+      } catch (e: any) {
+        provenance.push({ source: url, ok: false, data: { error: String(e) }, fetched_at: Date.now()/1000 });
+      }
+    }
+
+    // Simple reconcile + confidence (we’ll upgrade later)
+    const okOnes = provenance.filter(p => p.ok);
+    let payload: any = {};
+    let confidence = 0.0;
+    let note = "No sources succeeded.";
+    if (okOnes.length) {
+      const pick = okOnes[0]; // later: pick by trust/recency/majority
+      payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
+      confidence = 0.75;
+      note = `Selected ${pick.source}`;
+    }
+    const ok = confidence >= 0.7 && Object.keys(payload).length > 0;
+    return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? null : note });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+This creates GET /smart_fetch?q=...&city=..., which tries multiple sources, picks the best response, and returns a payload with a confidence score.
+
+B) Call it from the frontend (1 small helper)
+Create SiteBuilder-main/client/src/lib/smartFetch.ts:
+
+ts
+Copy
+Edit
+export async function smartFetch(query: string, city = "Maple Ridge") {
+  const url = `/smart_fetch?q=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json(); // { ok, payload, confidence, provenance, notes }
+}
+Use it anywhere (e.g., inside home.tsx while testing):
+
+tsx
+Copy
+Edit
+import React, { useState } from "react";
+import { smartFetch } from "@/lib/smartFetch";
+
+export function DemoSmartFetch() {
+  const [q, setQ] = useState("permits near city hall");
+  const [out, setOut] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function run() {
+    setLoading(true);
+    try {
+      const data = await smartFetch(q, "Maple Ridge");
+      setOut(data);
+    } catch (e) {
+      setOut({ ok: false, error: String(e) });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ padding: 12 }}>
+      <input value={q} onChange={e => setQ(e.target.value)} />
+      <button onClick={run} disabled={loading}>{loading ? "..." : "Go"}</button>
+      <pre style={{ maxHeight: 280, overflow: "auto" }}>
+        {out ? JSON.stringify(out, null, 2) : "// results"}
+      </pre>
+    </div>
+  );
+}
+Drop <DemoSmartFetch /> somewhere on your homepage temporarily to verify it works.
+
+C) Run it
+From the project root on Replit:
+
+nginx
+Copy
+Edit
+npm install
+npm run build    # builds the Vite client (your server already serves it)
+npm start        # server runs on port 5000 in Replit
+Test:
+
+App: /
+
+AI layer: /smart_fetch?q=test&city=Maple%20Ridge
