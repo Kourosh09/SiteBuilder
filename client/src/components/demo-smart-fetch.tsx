@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 export function DemoSmartFetch() {
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("Vancouver");
-  const [mode, setMode] = useState<"address" | "any">("any");
+  const [mode, setMode] = useState<"address" | "any">("address");
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -67,16 +67,18 @@ export function DemoSmartFetch() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Mode</label>
-              <Select value={mode} onValueChange={(value: "address" | "any") => setMode(value)}>
-                <SelectTrigger data-testid="select-mode">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any Match</SelectItem>
-                  <SelectItem value="address">Address Only</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium">Search mode</label>
+                <select
+                  value={mode}
+                  onChange={(e) => setMode(e.target.value as any)}
+                  className="border rounded-md px-2 py-1 text-sm"
+                  data-testid="select-mode"
+                >
+                  <option value="address">Address only</option>
+                  <option value="any">Anywhere</option>
+                </select>
+              </div>
             </div>
           </div>
           
