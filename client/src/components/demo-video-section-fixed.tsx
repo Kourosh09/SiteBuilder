@@ -124,18 +124,34 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
               </div>
 
               {/* Video Content */}
-              <div className="p-8 min-h-[400px] relative">
-                {/* Progress Bar */}
+              <div className="p-8 min-h-[400px] relative bg-gradient-to-br from-slate-800 to-slate-900">
+                {/* Fixed: Added proper video container styling */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-white/20">
                   <div 
                     className="h-full bg-emerald-400 transition-all duration-1000"
                     style={{ width: `${(currentTime / totalDuration) * 100}%` }}
                   ></div>
                 </div>
+                
+                {/* Demo Video Placeholder - Ready for real video integration */}
+                <div className="absolute inset-4 bg-black/20 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                      {isPlaying ? (
+                        <Pause className="h-8 w-8 text-white" />
+                      ) : (
+                        <Play className="h-8 w-8 text-white ml-1" />
+                      )}
+                    </div>
+                    <div className="text-white/80 text-sm">
+                      {isPlaying ? 'Demo Running...' : 'Click Play to Start Demo'}
+                    </div>
+                  </div>
+                </div>
 
-                {/* Current Step Display */}
-                {showCaptions && (
-                  <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 mb-6">
+                {/* Current Step Display - Fixed positioning */}
+                {showCaptions && isPlaying && (
+                  <div className="absolute bottom-20 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 z-10">
                     <div className="text-emerald-300 text-sm font-medium mb-1">
                       Step {currentPhase + 1} of 6
                     </div>
@@ -148,88 +164,92 @@ export default function DemoVideoSection({ onGetStarted }: DemoVideoSectionProps
                   </div>
                 )}
 
-                {/* Dynamic Content Based on Phase */}
-                {currentPhase === 0 && (
-                  <div className="space-y-4">
-                    <div className="bg-white/10 rounded-lg p-4">
-                      <div className="text-white text-sm mb-2">Property Address</div>
-                      <div className="bg-white/20 rounded px-3 py-2 text-white">
-                        Enter any BC property address...
+                {/* Dynamic Content Based on Phase - Fixed overlay positioning */}
+                {isPlaying && (
+                  <div className="absolute top-8 left-4 right-4 z-20">
+                    {currentPhase === 0 && (
+                      <div className="space-y-4">
+                        <div className="bg-white/10 rounded-lg p-4 animate-pulse">
+                          <div className="text-white text-sm mb-2">Property Address</div>
+                          <div className="bg-white/20 rounded px-3 py-2 text-white">
+                            1856 34th Avenue West, Vancouver...
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {currentPhase === 1 && (
-                  <div className="bg-emerald-500/20 rounded-lg p-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-emerald-300">Assessed Value</div>
-                        <div className="text-white text-xl font-bold">Dynamic BC Data</div>
+                    {currentPhase === 1 && (
+                      <div className="bg-emerald-500/20 rounded-lg p-4 animate-fadeIn">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <div className="text-emerald-300">Assessed Value</div>
+                            <div className="text-white text-xl font-bold">$2,349,000</div>
+                          </div>
+                          <div>
+                            <div className="text-emerald-300">Lot Size</div>
+                            <div className="text-white text-xl font-bold">5,000 sq ft</div>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-emerald-300">Lot Size</div>
-                        <div className="text-white text-xl font-bold">Real MLS Data</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {currentPhase === 2 && (
-                  <div className="bg-blue-500/20 rounded-lg p-4">
-                    <div className="text-blue-300 text-sm mb-3">Recent Sales</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Similar Property</span>
-                        <span className="font-bold">$2,850,000</span>
+                    {currentPhase === 2 && (
+                      <div className="bg-blue-500/20 rounded-lg p-4 animate-fadeIn">
+                        <div className="text-blue-300 text-sm mb-3">Recent Sales</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Similar Property</span>
+                            <span className="font-bold">$2,850,000</span>
+                          </div>
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Market Trend</span>
+                            <span className="text-emerald-400 font-bold">↗ Rising</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Market Trend</span>
-                        <span className="text-emerald-400 font-bold">↗ Rising</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {currentPhase === 3 && (
-                  <div className="bg-purple-500/20 rounded-lg p-4">
-                    <div className="text-purple-300 text-sm mb-3">Zoning Analysis</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Bill 44 Eligible</span>
-                        <span className="text-emerald-400 font-bold">✓ Yes</span>
+                    {currentPhase === 3 && (
+                      <div className="bg-purple-500/20 rounded-lg p-4 animate-fadeIn">
+                        <div className="text-purple-300 text-sm mb-3">Zoning Analysis</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Bill 44 Eligible</span>
+                            <span className="text-emerald-400 font-bold">✓ Yes</span>
+                          </div>
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Max Units</span>
+                            <span className="text-white font-bold">6-plex</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Max Units</span>
-                        <span className="text-white font-bold">4-plex</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {currentPhase === 4 && (
-                  <div className="bg-yellow-500/20 rounded-lg p-4">
-                    <div className="text-yellow-300 text-sm mb-3">Financial Analysis</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Investment</span>
-                        <span className="font-bold">$3,500,000</span>
+                    {currentPhase === 4 && (
+                      <div className="bg-yellow-500/20 rounded-lg p-4 animate-fadeIn">
+                        <div className="text-yellow-300 text-sm mb-3">Financial Analysis</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Investment</span>
+                            <span className="font-bold">$3,500,000</span>
+                          </div>
+                          <div className="flex justify-between text-white text-sm">
+                            <span>Projected ROI</span>
+                            <span className="text-emerald-400 font-bold">32.4%</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-white text-sm">
-                        <span>Projected ROI</span>
-                        <span className="text-emerald-400 font-bold">32.4%</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {currentPhase === 5 && (
-                  <div className="bg-green-500/20 rounded-lg p-4">
-                    <div className="text-green-300 text-sm mb-3">Analysis Complete</div>
-                    <div className="text-white text-sm">
-                      <div className="text-2xl font-bold text-emerald-400 mb-2">87% Feasible</div>
-                      <div>PDF report generated with contractor connections</div>
-                    </div>
+                    {currentPhase === 5 && (
+                      <div className="bg-green-500/20 rounded-lg p-4 animate-fadeIn">
+                        <div className="text-green-300 text-sm mb-3">Analysis Complete</div>
+                        <div className="text-white text-sm">
+                          <div className="text-2xl font-bold text-emerald-400 mb-2">87% Feasible</div>
+                          <div>PDF report generated with contractor connections</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
