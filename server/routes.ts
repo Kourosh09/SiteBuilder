@@ -105,9 +105,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               city: record.fields?.city || city,
               type: record.fields?.permit_type || record.fields?.type || "Building",
               status: record.fields?.status || "Unknown",
-              issuedDate: record.fields?.issue_date || record.fields?.issued_date || null,
-              lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || null,
-              lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || null,
+              submittedDate: record.fields?.submitted_date || record.fields?.application_date || undefined,
+              issuedDate: record.fields?.issue_date || record.fields?.issued_date || undefined,
+              lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || undefined,
+              lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || undefined,
               source: source.source,
               sourceUpdatedAt: record.record_timestamp || new Date().toISOString()
             }));
@@ -154,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const excludeDirs = new Set(["node_modules", ".git", ".cache", "dist", ".local", ".upm", "attached_assets"]);
       const projectRoot = path.resolve(".");
 
-      const addDirectory = (dirPath: string, archivePath = "") => {
+      const addDirectory = (dirPath: string, archivePath = ""): void => {
         const items = fs.readdirSync(dirPath, { withFileTypes: true });
         
         for (const item of items) {
@@ -171,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             archive.file(fullPath, { name: itemArchivePath });
           }
         }
-      }
+      };
 
       addDirectory(projectRoot);
       archive.finalize();
@@ -189,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const projectRoot = path.resolve(".");
       const files: Array<{ path: string; size: number }> = [];
 
-      function listFiles(dirPath: string, basePath = "") {
+      const listFiles = (dirPath: string, basePath = "") => {
         const items = fs.readdirSync(dirPath, { withFileTypes: true });
         
         for (const item of items) {
@@ -207,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             files.push({ path: relativePath, size: stats.size });
           }
         }
-      }
+      };
 
       listFiles(projectRoot);
       res.json({ 

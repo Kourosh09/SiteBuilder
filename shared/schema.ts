@@ -43,13 +43,14 @@ export const permits = pgTable("permits", {
   id: varchar("id").primaryKey(),
   address: varchar("address").notNull(),
   city: varchar("city").notNull(),
-  type: varchar("type").notNull(), // "Building", "Electrical", "Plumbing", etc.
-  status: varchar("status").notNull(), // "Issued", "Approved", "Pending", "Closed"
-  issuedDate: timestamp("issued_date"),
+  type: varchar("type").notNull(), // Building/Electrical/Plumbing/DP/etc.
+  status: varchar("status").notNull(), // Issued/Approved/Pending/Closed
+  submittedDate: varchar("submitted_date"), // ISO string
+  issuedDate: varchar("issued_date"), // ISO string
   lat: decimal("lat"),
   lng: decimal("lng"),
-  source: varchar("source").notNull(),
-  sourceUpdatedAt: timestamp("source_updated_at"),
+  source: varchar("source").notNull(), // URL
+  sourceUpdatedAt: varchar("source_updated_at"), // ISO string
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

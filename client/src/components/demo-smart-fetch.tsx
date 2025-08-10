@@ -5,40 +5,98 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2 } from "lucide-react";
+import { Loader2, Building, Calendar, MapPin, Clock } from "lucide-react";
+import type { PermitRecord, SmartFetchResponse } from "@/types/permit";
 
-// Lightweight renderer for array/object payloads
+// Enhanced renderer for permit data
 function RenderPayload({ payload }: { payload: any }) {
   if (!payload) return null;
 
-  // If it's an array of records, show a tidy preview table
+  // Enhanced permit data visualization
   if (Array.isArray(payload) && payload.length > 0 && typeof payload[0] === "object") {
-    const cols = Object.keys(payload[0]).slice(0, 6);
+    const permits = payload as PermitRecord[];
+    
     return (
-      <div className="w-full overflow-auto border rounded-lg">
-        <table className="w-full text-sm">
-          <thead className="bg-muted">
-            <tr>
-              {cols.map((c) => (
-                <th key={c} className="text-left font-medium p-2">{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {payload.slice(0, 20).map((row: any, i: number) => (
-              <tr key={i} className="border-t">
-                {cols.map((c) => (
-                  <td key={c} className="p-2 align-top">{String(row?.[c] ?? "")}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {payload.length > 20 && (
-          <div className="text-xs text-muted-foreground p-2">
-            Showing first 20 of {payload.length} items…
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {permits.slice(0, 6).map((permit, i) => (
+            <Card key={permit.id || i} className="border border-border/50 hover:border-primary/50 transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">{permit.type}</span>
+                  </div>
+                  <Badge 
+                    variant={permit.status === "Issued" ? "default" : permit.status === "Approved" ? "secondary" : "outline"}
+                    className="text-xs"
+                  >
+                    {permit.status}
+                  </Badge>
+                </div>
+                <p className="text-sm font-medium text-foreground truncate" title={permit.address}>
+                  {permit.address}
+                </p>
+                <p className="text-xs text-muted-foreground">{permit.city}</p>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                {permit.issuedDate && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>Issued: {new Date(permit.issuedDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {permit.submittedDate && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>Submitted: {new Date(permit.submittedDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {permit.lat && permit.lng && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span>{permit.lat.toFixed(4)}, {permit.lng.toFixed(4)}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        {permits.length > 6 && (
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              Showing first 6 of {permits.length} permit records
+            </p>
           </div>
         )}
+        
+        {/* Fallback table for non-permit data */}
+        <details className="mt-4">
+          <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+            View raw data table
+          </summary>
+          <div className="mt-2 w-full overflow-auto border rounded-lg">
+            <table className="w-full text-sm">
+              <thead className="bg-muted">
+                <tr>
+                  {Object.keys(permits[0]).slice(0, 8).map((c) => (
+                    <th key={c} className="text-left font-medium p-2">{c}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {permits.slice(0, 20).map((row: any, i: number) => (
+                  <tr key={i} className="border-t">
+                    {Object.keys(permits[0]).slice(0, 8).map((c) => (
+                      <td key={c} className="p-2 align-top text-xs">{String(row?.[c] ?? "")}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </div>
     );
   }
