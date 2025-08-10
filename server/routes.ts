@@ -59,75 +59,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ---- Enhanced Smart Fetch with Real BC Permit Services ----
+  // ---- Enhanced Smart Fetch with Ranking and Deduplication ----
+  const memCache = new Map<string, { ts: number; data: any }>();
+  const CACHE_MS = 60 * 1000; // 1 minute cache
+
+  const CityTrust: Record<string, number> = {
+    "Maple Ridge": 0.9,
+    "Burnaby": 0.9,
+    "Vancouver": 0.95,
+    "Surrey": 0.85,
+  };
+
+  function scorePermit(p: any): number {
+    const trust = CityTrust[p.city] ?? 0.7;
+    const recency = p.sourceUpdatedAt ? Date.parse(p.sourceUpdatedAt) : 0;
+    const recencyBoost = recency ? Math.min(1, (Date.now() - recency) / (1000 * 60 * 60 * 24 * 365)) : 0.5;
+    const freshness = 1 - Math.min(1, recencyBoost);
+    return 0.7 * trust + 0.3 * freshness;
+  }
+
+  function dedupeById(perms: any[]): any[] {
+    const m = new Map<string, any>();
+    for (const p of perms) {
+      const existing = m.get(p.id);
+      if (!existing) m.set(p.id, p);
+      else {
+        const keep = scorePermit(existing) >= scorePermit(p) ? existing : p;
+        m.set(p.id, keep);
+      }
+    }
+    return Array.from(m.values());
+  }
+
   app.get("/smart_fetch", async (req, res) => {
     try {
       const q = String(req.query.q || "");
-      const city = String(req.query.city || "").toLowerCase();
-
-      // Import permit services
-      const { fetchAllBCPermits, fetchVancouver, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
-
-      let result;
-      let confidence = 0.85;
-      let note = "";
-
-      // City-specific or all cities
-      if (city && city !== "all") {
-        switch (city) {
-          case "vancouver":
-            result = await fetchVancouver(q);
-            note = `Fetched ${result.items.length} permits from Vancouver`;
-            break;
-          case "burnaby":
-            result = await fetchBurnaby(q);
-            note = `Fetched ${result.items.length} permits from Burnaby`;
-            break;
-          case "surrey":
-            result = await fetchSurrey(q);
-            note = `Fetched ${result.items.length} permits from Surrey`;
-            break;
-          case "maple ridge":
-          case "mapleridge":
-            result = await fetchMapleRidge(q);
-            note = `Fetched ${result.items.length} permits from Maple Ridge`;
-            break;
-          default:
-            // Fallback to all cities
-            const allResult = await fetchAllBCPermits(q);
-            result = { items: allResult.aggregatedItems, rawSource: "Multiple BC Municipalities" };
-            note = `Aggregated ${allResult.totalItems} permits from ${allResult.cities.length} BC cities`;
-            confidence = Math.min(0.95, 0.7 + (allResult.cities.filter(c => c.items.length > 0).length * 0.1));
-        }
-      } else {
-        // All cities
-        const allResult = await fetchAllBCPermits(q);
-        result = { items: allResult.aggregatedItems, rawSource: "Multiple BC Municipalities" };
-        note = `Aggregated ${allResult.totalItems} permits from ${allResult.cities.length} BC cities`;
-        confidence = Math.min(0.95, 0.7 + (allResult.cities.filter(c => c.items.length > 0).length * 0.1));
+      const cacheKey = `smart:${q}`;
+      const cached = memCache.get(cacheKey);
+      if (cached && Date.now() - cached.ts < CACHE_MS) {
+        return res.json(cached.data);
       }
 
-      const payload = result.items;
-      const ok = payload.length > 0;
-      
-      // Build provenance for transparency
-      const provenance = [{
-        source: result.rawSource,
-        ok: true,
-        data: { records: payload },
-        fetched_at: Date.now() / 1000
-      }];
+      // Import connectors
+      const { fetchMapleRidge } = await import("./connectors/mapleRidge");
+      const { fetchBurnaby } = await import("./connectors/burnaby");
 
-      return res.json({ 
-        ok, 
-        payload, 
-        confidence: Number(confidence.toFixed(2)), 
-        provenance, 
-        notes: ok ? note : "No permits found for the specified query and location" 
-      });
+      // Pull from 2 cities (Phase 1)
+      const results = await Promise.allSettled([
+        fetchMapleRidge(q),
+        fetchBurnaby(q),
+      ]);
+
+      // Flatten & validate defensively
+      const allPermits: any[] = [];
+      const provenance: any[] = [];
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          const { city, items, rawSource } = r.value;
+          provenance.push({ city, count: items.length, source: rawSource, ok: true });
+          for (const it of items) {
+            const parsed = PermitSchema.safeParse(it);
+            if (parsed.success) allPermits.push(parsed.data);
+          }
+        } else {
+          provenance.push({ city: "unknown", count: 0, source: "", ok: false, err: String(r.reason) });
+        }
+      }
+
+      // Rank, dedupe, and compute confidence
+      const ranked = dedupeById(allPermits).sort((a, b) => scorePermit(b) - scorePermit(a));
+      const avgScore = ranked.length ? ranked.map(scorePermit).reduce((a,b)=>a+b,0)/ranked.length : 0;
+      const response = {
+        ok: ranked.length > 0,
+        payload: ranked,
+        confidence: Number(avgScore.toFixed(2)),
+        provenance,
+        notes: ranked.length ? `Ranked and deduplicated ${ranked.length} permits` : "No permits matched data sources.",
+      };
+
+      memCache.set(cacheKey, { ts: Date.now(), data: response });
+      return res.json(response);
     } catch (err: any) {
-      console.error("Smart fetch error:", err);
-      return res.status(500).json({ ok: false, error: String(err), notes: "Failed to fetch permit data" });
+      return res.status(500).json({ ok: false, error: String(err) });
     }
   });
 

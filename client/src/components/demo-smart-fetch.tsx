@@ -7,71 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Building, Calendar, MapPin, Clock } from "lucide-react";
 import type { Permit, SmartFetchResponse, PermitSchema } from "@/types/permit";
+import PermitsResults from "@/components/permits-results";
 
 // Enhanced renderer for permit data
 function RenderPayload({ payload }: { payload: any }) {
   if (!payload) return null;
 
-  // Enhanced permit data visualization
+  // Enhanced permit data visualization with dedicated component
   if (Array.isArray(payload) && payload.length > 0 && typeof payload[0] === "object") {
     const permits = payload as Permit[];
     
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {permits.slice(0, 6).map((permit, i) => (
-            <Card key={permit.id || i} className="border border-border/50 hover:border-primary/50 transition-colors">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">{permit.type}</span>
-                  </div>
-                  <Badge 
-                    variant={permit.status === "Issued" ? "default" : permit.status === "Approved" ? "secondary" : "outline"}
-                    className="text-xs"
-                  >
-                    {permit.status}
-                  </Badge>
-                </div>
-                <p className="text-sm font-medium text-foreground truncate" title={permit.address}>
-                  {permit.address}
-                </p>
-                <p className="text-xs text-muted-foreground">{permit.city}</p>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-2">
-                {permit.issuedDate && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>Issued: {new Date(permit.issuedDate).toLocaleDateString()}</span>
-                  </div>
-                )}
-                {permit.submittedDate && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>Submitted: {new Date(permit.submittedDate).toLocaleDateString()}</span>
-                  </div>
-                )}
-                {permit.lat && permit.lng && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    <span>{permit.lat.toFixed(4)}, {permit.lng.toFixed(4)}</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <PermitsResults items={permits} />
         
-        {permits.length > 6 && (
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Showing first 6 of {permits.length} permit records
-            </p>
-          </div>
-        )}
-        
-        {/* Fallback table for non-permit data */}
+        {/* Fallback table for raw data view */}
         <details className="mt-4">
           <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
             View raw data table
