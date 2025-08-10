@@ -316,6 +316,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // FeatureServer URL structure validation endpoint
+  app.get("/api/featureserver/test", async (req, res) => {
+    const query = req.query.q as string || "main";
+    const { buildWhere, buildFeatureServerQuery } = await import("./lib/queryBuilder");
+    
+    const examples = {
+      maple_ridge: {
+        base: "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query",
+        where: buildWhere(query),
+        full_url: buildFeatureServerQuery(
+          "https://geoservices.mapleridge.ca/server/rest/services/DataCatalog/EconomicDevelopment/MapServer/0/query",
+          buildWhere(query)
+        )
+      }
+    };
+    
+    res.json({
+      query: query,
+      specification: {
+        pattern: "/FeatureServer/0/query",
+        required_params: ["where", "outFields=*", "returnGeometry=true", "outSR=4326", "resultRecordCount=100", "f=json"]
+      },
+      examples: examples
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

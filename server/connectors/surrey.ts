@@ -1,16 +1,12 @@
 import { PermitSchema, type Permit } from "@shared/schema";
 import { CITY_ENDPOINTS } from "../city-config";
-import { buildFeatureServerUrl } from "../lib/queryBuilder";
+import { buildWhere, buildFeatureServerQuery } from "../lib/queryBuilder";
 
 export async function fetchSurrey(query: string) {
-  // Enhanced FeatureServer query for Surrey Development Applications
+  // FeatureServer query following exact specification
   const baseEndpoint = CITY_ENDPOINTS.surrey.split('?')[0];
-  const endpoint = buildFeatureServerUrl({
-    baseUrl: baseEndpoint,
-    query: query,
-    orderBy: "SUBMIT_DATE DESC",
-    maxResults: 100
-  });
+  const whereClause = buildWhere(query);
+  const endpoint = buildFeatureServerQuery(baseEndpoint, whereClause);
   
   try {
     const r = await fetch(endpoint);

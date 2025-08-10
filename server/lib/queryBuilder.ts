@@ -26,21 +26,39 @@ export interface FeatureServerParams {
   maxResults?: number;
 }
 
+// Simple FeatureServer URL builder following exact specification
+export function buildFeatureServerQuery(baseUrl: string, whereClause: string): string {
+  const params = new URLSearchParams({
+    where: whereClause,
+    outFields: "*",
+    returnGeometry: "true", 
+    outSR: "4326",
+    resultRecordCount: "100",
+    f: "json"
+  });
+  
+  return `${baseUrl}?${params.toString()}`;
+}
+
 export function buildFeatureServerUrl({ 
   baseUrl, 
   query, 
-  orderBy = "OBJECTID", 
+  orderBy, 
   maxResults = 100 
 }: FeatureServerParams): string {
   const params = new URLSearchParams({
     where: buildWhere(query),
     outFields: "*",
     returnGeometry: "true",
-    outSR: "4326", // WGS84 geographic coordinate system
-    orderByFields: orderBy,
+    outSR: "4326",
     resultRecordCount: maxResults.toString(),
     f: "json"
   });
+  
+  // Only add orderByFields if provided
+  if (orderBy) {
+    params.set("orderByFields", orderBy);
+  }
   
   return `${baseUrl}?${params.toString()}`;
 }

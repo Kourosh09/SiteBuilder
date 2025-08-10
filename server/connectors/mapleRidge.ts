@@ -1,16 +1,12 @@
 import { PermitSchema, type Permit } from "@shared/schema";
 import { CITY_ENDPOINTS } from "../city-config";
-import { buildFeatureServerUrl } from "../lib/queryBuilder";
+import { buildWhere, buildFeatureServerQuery } from "../lib/queryBuilder";
 
 export async function fetchMapleRidge(query: string) {
-  // Build enhanced FeatureServer query
+  // Build FeatureServer query using exact specification
   const baseEndpoint = CITY_ENDPOINTS.mapleRidge.split('?')[0];
-  const endpoint = buildFeatureServerUrl({
-    baseUrl: baseEndpoint,
-    query: query,
-    orderBy: "IssueDate DESC",
-    maxResults: 100
-  });
+  const whereClause = buildWhere(query);
+  const endpoint = buildFeatureServerQuery(baseEndpoint, whereClause);
   
   const r = await fetch(endpoint);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
