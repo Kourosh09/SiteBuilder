@@ -59,91 +59,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ---- AI Optimization Layer: /smart_fetch ----
+  // ---- Enhanced Smart Fetch with Real BC Permit Services ----
   app.get("/smart_fetch", async (req, res) => {
     try {
       const q = String(req.query.q || "");
-      const city = String(req.query.city || "Maple Ridge");
+      const city = String(req.query.city || "").toLowerCase();
 
-      // Real BC government data sources (for development/demo)
-      const sources = [
-        `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&q=${encodeURIComponent(q)}&refine.city=${encodeURIComponent(city)}`,
-        `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(q)}`,
-        `https://data.surrey.ca/api/records/1.0/search/?dataset=development-permits&q=${encodeURIComponent(q)}`
-      ];
+      // Import permit services
+      const { fetchAllBCPermits, fetchVancouver, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
 
-      type Prov = { source: string; ok: boolean; data: any; fetched_at: number };
-      const provenance: Prov[] = [];
+      let result;
+      let confidence = 0.85;
+      let note = "";
 
-      for (const url of sources) {
-        try {
-          const r = await fetch(url); // Node 18+ has global fetch
-          const ct = r.headers.get("content-type") || "";
-          const data = ct.includes("application/json") ? await r.json() : { text: await r.text() };
-          provenance.push({ source: url, ok: r.ok, data, fetched_at: Date.now()/1000 });
-        } catch (e: any) {
-          provenance.push({ source: url, ok: false, data: { error: String(e) }, fetched_at: Date.now()/1000 });
+      // City-specific or all cities
+      if (city && city !== "all") {
+        switch (city) {
+          case "vancouver":
+            result = await fetchVancouver(q);
+            note = `Fetched ${result.items.length} permits from Vancouver`;
+            break;
+          case "burnaby":
+            result = await fetchBurnaby(q);
+            note = `Fetched ${result.items.length} permits from Burnaby`;
+            break;
+          case "surrey":
+            result = await fetchSurrey(q);
+            note = `Fetched ${result.items.length} permits from Surrey`;
+            break;
+          case "maple ridge":
+          case "mapleridge":
+            result = await fetchMapleRidge(q);
+            note = `Fetched ${result.items.length} permits from Maple Ridge`;
+            break;
+          default:
+            // Fallback to all cities
+            const allResult = await fetchAllBCPermits(q);
+            result = { items: allResult.aggregatedItems, rawSource: "Multiple BC Municipalities" };
+            note = `Aggregated ${allResult.totalItems} permits from ${allResult.cities.length} BC cities`;
+            confidence = Math.min(0.95, 0.7 + (allResult.cities.filter(c => c.items.length > 0).length * 0.1));
         }
+      } else {
+        // All cities
+        const allResult = await fetchAllBCPermits(q);
+        result = { items: allResult.aggregatedItems, rawSource: "Multiple BC Municipalities" };
+        note = `Aggregated ${allResult.totalItems} permits from ${allResult.cities.length} BC cities`;
+        confidence = Math.min(0.95, 0.7 + (allResult.cities.filter(c => c.items.length > 0).length * 0.1));
       }
 
-      // Enhanced reconciliation for permit data
-      const okOnes = provenance.filter(p => p.ok);
-      let payload: any = {};
-      let confidence = 0.0;
-      let note = "No sources succeeded.";
+      const payload = result.items;
+      const ok = payload.length > 0;
       
-      if (okOnes.length) {
-        // Aggregate permit records from successful sources
-        const allPermits: any[] = [];
-        
-        for (const source of okOnes) {
-          if (source.data?.records && Array.isArray(source.data.records)) {
-            // Transform to standardized permit format with Zod validation
-            const permits = source.data.records.map((record: any) => {
-              const permitData = {
-                id: record.recordid || record.id || `${source.source}-${record.fields?.permit_number || Math.random()}`,
-                address: record.fields?.address || record.fields?.location || "Unknown Address",
-                city: record.fields?.city || city,
-                type: record.fields?.permit_type || record.fields?.type || "Permit",
-                status: record.fields?.status || "Unknown",
-                submittedDate: record.fields?.submitted_date || record.fields?.application_date || null,
-                issuedDate: record.fields?.issue_date || record.fields?.issued_date || null,
-                lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || null,
-                lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || null,
-                source: source.source,
-                sourceUpdatedAt: record.record_timestamp || new Date().toISOString()
-              };
-              
-              // Validate with Zod schema for data quality
-              try {
-                return PermitSchema.parse(permitData);
-              } catch (error) {
-                // Return raw data if validation fails, but log the issue
-                console.warn(`Permit validation failed for ${permitData.id}:`, error);
-                return permitData;
-              }
-            });
-            allPermits.push(...permits);
-          }
-        }
-        
-        if (allPermits.length > 0) {
-          payload = allPermits;
-          confidence = Math.min(0.95, 0.6 + (okOnes.length * 0.15)); // Higher confidence with more sources
-          note = `Aggregated ${allPermits.length} permits from ${okOnes.length} sources`;
-        } else {
-          // Fallback to first successful response
-          const pick = okOnes[0];
-          payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
-          confidence = 0.75;
-          note = `Selected ${pick.source}`;
-        }
-      }
-      
-      const ok = confidence >= 0.6 && (Array.isArray(payload) ? payload.length > 0 : Object.keys(payload).length > 0);
-      return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? note : "No sources succeeded." });
+      // Build provenance for transparency
+      const provenance = [{
+        source: result.rawSource,
+        ok: true,
+        data: { records: payload },
+        fetched_at: Date.now() / 1000
+      }];
+
+      return res.json({ 
+        ok, 
+        payload, 
+        confidence: Number(confidence.toFixed(2)), 
+        provenance, 
+        notes: ok ? note : "No permits found for the specified query and location" 
+      });
     } catch (err: any) {
-      return res.status(500).json({ ok: false, error: String(err) });
+      console.error("Smart fetch error:", err);
+      return res.status(500).json({ ok: false, error: String(err), notes: "Failed to fetch permit data" });
     }
   });
 
@@ -258,6 +242,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Validation failed" 
         });
       }
+    }
+  });
+
+  // BC Permits API endpoint for direct access
+  app.get("/api/permits/bc", async (req, res) => {
+    try {
+      const q = String(req.query.q || "");
+      const city = String(req.query.city || "");
+      
+      const { fetchAllBCPermits, fetchVancouver, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
+      
+      let result;
+      if (city.toLowerCase() === "vancouver") {
+        result = await fetchVancouver(q);
+      } else if (city.toLowerCase() === "burnaby") {
+        result = await fetchBurnaby(q);
+      } else if (city.toLowerCase() === "surrey") {
+        result = await fetchSurrey(q);
+      } else if (city.toLowerCase().includes("maple")) {
+        result = await fetchMapleRidge(q);
+      } else {
+        const allResult = await fetchAllBCPermits(q);
+        return res.json({
+          success: true,
+          totalItems: allResult.totalItems,
+          cities: allResult.cities,
+          permits: allResult.aggregatedItems
+        });
+      }
+      
+      res.json({
+        success: true,
+        city: result.city,
+        permits: result.items,
+        source: result.rawSource,
+        count: result.items.length
+      });
+    } catch (error) {
+      console.error("BC Permits API error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to fetch BC permit data" 
+      });
     }
   });
 
