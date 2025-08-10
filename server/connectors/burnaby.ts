@@ -1,9 +1,13 @@
 import type { Permit } from "@shared/schema";
 import { PermitSchema } from "@shared/schema";
+import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchBurnaby(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  // Burnaby Open Data Portal - Building Permits
-  const endpoint = `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(query)}&rows=100`;
+  // Use centralized endpoint configuration
+  const configuredEndpoint = CITY_ENDPOINTS.burnaby;
+  const endpoint = configuredEndpoint.startsWith('<PASTE') 
+    ? `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(query)}&rows=100`
+    : configuredEndpoint;
   
   try {
     const res = await fetch(endpoint);

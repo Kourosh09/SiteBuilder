@@ -1,9 +1,10 @@
 import { fetchArcGISPermits, type ArcGISConfig } from "./arcgis-base";
+import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchCoquitlam(query: string) {
-  // Coquitlam uses ArcGIS FeatureServer format - placeholder until real endpoint provided
+  const endpoint = CITY_ENDPOINTS.coquitlam;
   const config: ArcGISConfig = {
-    baseUrl: "https://mapping.coquitlam.ca/arcgis/rest/services",
+    baseUrl: endpoint.split('/FeatureServer')[0] || "https://mapping.coquitlam.ca/arcgis/rest/services", 
     layerId: "0",
     cityName: "Coquitlam",
     fieldMappings: {

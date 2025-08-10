@@ -1,12 +1,8 @@
 import { PermitSchema, type Permit } from "@shared/schema";
+import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchMapleRidge(query: string) {
-  // 1) In the API Explorer on the dataset page, set:
-  //    - where: UPPER(ADDRESS) LIKE UPPER('%<query>%')
-  //    - outFields: *
-  //    - f: json
-  // 2) Copy the generated URL into `endpoint` below.
-  const endpoint = "<PASTE_FEATURESERVER_QUERY_URL_FROM_API_EXPLORER>";
+  const endpoint = CITY_ENDPOINTS.mapleRidge;
   const r = await fetch(endpoint);
   const j = await r.json();
 

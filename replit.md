@@ -24,19 +24,19 @@ Preferred communication style: Simple, everyday language.
 - **Technical Enhancement**: Zod schema validation ensures data integrity across the entire pipeline
 - **Business Impact**: Production-ready system demonstrating sophisticated data validation and quality control
 
-### Streamlined BC Municipal System with Live Data Integration
+### Centralized BC Municipal Configuration System
 - **Date**: August 10, 2025
-- **Status**: Production-ready 2-city core system with live Vancouver data and ArcGIS pattern
+- **Status**: Production-ready centralized endpoint and trust score management
 - **Features Implemented**:
+  - **Centralized Configuration**: Single `city-config.ts` file for all endpoint URLs and trust scores
   - **Live Vancouver Integration**: Real BC government data via opendata.vancouver.ca API
-  - **Optimized Maple Ridge**: Advanced ArcGIS FeatureServer connector ready for real endpoint
-  - **ArcGIS Base Architecture**: Standardized pattern for BC municipalities using FeatureServer format
-  - **Streamlined Smart Fetch**: 2-city focused aggregation with Vancouver live data
-  - **Enhanced Field Mapping**: Comprehensive attribute extraction with safeParse validation
-  - **Future-Ready**: Additional cities (Burnaby, Surrey, Coquitlam) prepared for integration
-  - **Production Architecture**: Clean, maintainable connector system with authentic data focus
-- **Technical Achievement**: Live BC government data with extensible ArcGIS FeatureServer pattern
-- **Business Value**: Authentic regional data demonstrating real government API integration capabilities
+  - **ArcGIS Pattern Ready**: Maple Ridge, Surrey, Coquitlam connectors using centralized endpoints
+  - **Flexible Endpoint Management**: Support for FeatureServer URLs and scraping fallbacks
+  - **Unified Trust Scoring**: Centralized city trust configuration (Vancouver 0.9, others 0.85-0.9)
+  - **Easy Activation**: Simply paste real endpoints to activate any city connector
+  - **Production Architecture**: Clean, maintainable system ready for immediate endpoint integration
+- **Technical Achievement**: Centralized configuration enabling rapid city activation
+- **Business Value**: Streamlined management of BC municipal data sources with authentic government integration
 
 ### Enhanced Data Structure Patterns  
 - **Date**: August 10, 2025

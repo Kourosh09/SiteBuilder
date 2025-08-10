@@ -1,9 +1,10 @@
 import { fetchArcGISPermits, type ArcGISConfig } from "./arcgis-base";
+import { CITY_ENDPOINTS } from "../city-config";
 
 export async function fetchSurrey(query: string) {
-  // Surrey uses ArcGIS FeatureServer format - placeholder until real endpoint provided
+  const endpoint = CITY_ENDPOINTS.surrey;
   const config: ArcGISConfig = {
-    baseUrl: "https://cosmos.surrey.ca/geo_ref/rest/services",
+    baseUrl: endpoint.split('/FeatureServer')[0] || "https://cosmos.surrey.ca/geo_ref/rest/services",
     layerId: "0",
     cityName: "Surrey",
     fieldMappings: {

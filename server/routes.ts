@@ -63,13 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const memCache = new Map<string, { ts: number; data: any }>();
   const CACHE_MS = 60 * 1000; // 1 minute cache
 
-  const CityTrust: Record<string, number> = {
-    "Maple Ridge": 0.9,
-    "Burnaby": 0.9,
-    "Vancouver": 0.95,
-    "Surrey": 0.85,
-    "Coquitlam": 0.88,
-  };
+  // Import centralized city trust configuration
+  const cityConfig = await import("./city-config");
+  const CityTrust: Record<string, number> = cityConfig.CITY_TRUST;
 
   function scorePermit(p: any): number {
     const trust = CityTrust[p.city] ?? 0.7;
@@ -266,7 +262,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const q = String(req.query.q || "");
       const city = String(req.query.city || "");
       
-      const { fetchAllBCPermits, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
+      const { fetchAllBCPermits, fetchBurnaby, fetchSurrey } = await import("./permit-services");
+      const { fetchMapleRidge } = await import("./connectors/mapleRidge");
       const { fetchVancouver } = await import("./connectors/vancouver");
       
       let result;
