@@ -65,11 +65,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const q = String(req.query.q || "");
       const city = String(req.query.city || "Maple Ridge");
 
-      // TODO: replace with real sources (city open data, APIs, scrapers)
+      // Real BC government data sources (for development/demo)
       const sources = [
-        `https://example.com/opendata?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
-        `https://example.com/city_api?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
-        `https://example.com/scrape?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`
+        `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&q=${encodeURIComponent(q)}&refine.city=${encodeURIComponent(city)}`,
+        `https://data.burnaby.ca/api/records/1.0/search/?dataset=building-permits&q=${encodeURIComponent(q)}`,
+        `https://data.surrey.ca/api/records/1.0/search/?dataset=development-permits&q=${encodeURIComponent(q)}`
       ];
 
       type Prov = { source: string; ok: boolean; data: any; fetched_at: number };
@@ -86,19 +86,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Simple reconcile + confidence (we'll upgrade later)
+      // Enhanced reconciliation for permit data
       const okOnes = provenance.filter(p => p.ok);
       let payload: any = {};
       let confidence = 0.0;
       let note = "No sources succeeded.";
+      
       if (okOnes.length) {
-        const pick = okOnes[0]; // later: pick by trust/recency/majority
-        payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
-        confidence = 0.75;
-        note = `Selected ${pick.source}`;
+        // Aggregate permit records from successful sources
+        const allPermits: any[] = [];
+        
+        for (const source of okOnes) {
+          if (source.data?.records && Array.isArray(source.data.records)) {
+            // Transform to standardized permit format
+            const permits = source.data.records.map((record: any) => ({
+              id: record.recordid || record.id || `${source.source}-${record.fields?.permit_number || Math.random()}`,
+              address: record.fields?.address || record.fields?.location || "Unknown",
+              city: record.fields?.city || city,
+              type: record.fields?.permit_type || record.fields?.type || "Building",
+              status: record.fields?.status || "Unknown",
+              issuedDate: record.fields?.issue_date || record.fields?.issued_date || null,
+              lat: record.fields?.latitude || record.geometry?.coordinates?.[1] || null,
+              lng: record.fields?.longitude || record.geometry?.coordinates?.[0] || null,
+              source: source.source,
+              sourceUpdatedAt: record.record_timestamp || new Date().toISOString()
+            }));
+            allPermits.push(...permits);
+          }
+        }
+        
+        if (allPermits.length > 0) {
+          payload = allPermits;
+          confidence = Math.min(0.95, 0.6 + (okOnes.length * 0.15)); // Higher confidence with more sources
+          note = `Aggregated ${allPermits.length} permits from ${okOnes.length} sources`;
+        } else {
+          // Fallback to first successful response
+          const pick = okOnes[0];
+          payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
+          confidence = 0.75;
+          note = `Selected ${pick.source}`;
+        }
       }
-      const ok = confidence >= 0.7 && Object.keys(payload).length > 0;
-      return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? null : note });
+      
+      const ok = confidence >= 0.6 && (Array.isArray(payload) ? payload.length > 0 : Object.keys(payload).length > 0);
+      return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? note : "No sources succeeded." });
     } catch (err: any) {
       return res.status(500).json({ ok: false, error: String(err) });
     }
