@@ -142,11 +142,7 @@ export default function DemoSmartFetch() {
                 {out.notes}
               </div>
             )}
-
-            <div className="space-y-3">
-              <div className="text-sm font-medium">Payload</div>
-              <RenderPayload payload={out.payload} />
-            </div>
+            <PermitsResults items={Array.isArray(out.payload) ? out.payload : []} />
 
             {Array.isArray(out.provenance) && out.provenance.length > 0 && (
               <div className="space-y-2">
