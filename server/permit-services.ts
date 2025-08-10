@@ -133,12 +133,17 @@ export async function fetchAllBCPermits(query: string): Promise<{
   cities: Array<{ city: string; items: Permit[]; rawSource: string }>;
   aggregatedItems: Permit[];
 }> {
+  const { fetchVancouver } = await import("./connectors/vancouver");
+  const { fetchMapleRidge } = await import("./connectors/mapleRidge");
+  const { fetchSurrey } = await import("./connectors/surrey");
+  const { fetchCoquitlam } = await import("./connectors/coquitlam");
+
   const results = await Promise.allSettled([
-    fetchMapleRidge(query),
     fetchVancouver(query),
+    fetchMapleRidge(query),
     fetchSurrey(query),
     fetchCoquitlam(query),
-    // later: fetchBurnaby(query) if we get full API access
+    // Burnaby later (SCRAPE or API)
   ]);
 
   const cities = results

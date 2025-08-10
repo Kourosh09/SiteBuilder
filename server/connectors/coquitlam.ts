@@ -1,32 +1,38 @@
 import { PermitSchema, type Permit } from "@shared/schema";
-import { buildFSQueryUrl, parseFSJson } from "../lib/arcgis";
 import { CITY_ENDPOINTS } from "../lib/config";
 
 export async function fetchCoquitlam(query: string) {
-  const base = CITY_ENDPOINTS.coquitlam; // e.g. https://.../FeatureServer/0/query
-  const endpoint = buildFSQueryUrl(base, query, { resultRecordCount: 100, returnGeometry: true });
-  const r = await fetch(endpoint);
-  const j = await r.json();
-  const rows = parseFSJson(j);
-  const items: Permit[] = [];
+  const base = CITY_ENDPOINTS.coquitlam; 
+  const endpoint = `${base}&rows=100&q=${encodeURIComponent(query)}`;
+  
+  try {
+    const r = await fetch(endpoint);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j = await r.json();
+    const items: Permit[] = [];
 
-  for (const rec of rows) {
-    const p = {
-      id: String(rec.PERMIT_ID ?? rec.PERMITNUMBER ?? rec.OBJECTID ?? `${rec.ADDRESS ?? rec.SITE_ADDRESS ?? "Unknown"}-${rec.ISSUED_DATE ?? ""}`),
-      address: String(rec.ADDRESS ?? rec.SITE_ADDRESS ?? rec.CIVIC_ADDRESS ?? "Unknown"),
-      city: "Coquitlam",
-      type: String(rec.PERMIT_TYPE ?? rec.TYPE ?? "Permit"),
-      status: String(rec.STATUS ?? "Unknown"),
-      submittedDate: rec.APPLIED_DATE ?? null,
-      issuedDate: rec.ISSUED_DATE ?? null,
-      lat: typeof rec.__lat === "number" ? rec.__lat : null,
-      lng: typeof rec.__lng === "number" ? rec.__lng : null,
-      source: endpoint,
-      sourceUpdatedAt: rec.LAST_UPDATED ?? rec.LASTUPDATE ?? null,
-    };
-    const ok = PermitSchema.safeParse(p);
-    if (ok.success) items.push(ok.data);
+    for (const rec of j.records ?? []) {
+      const f = rec.fields || {};
+      const p = {
+        id: String(f.permit_number ?? f.permitnumber ?? rec.recordid ?? `${f.address ?? "Unknown"}-${f.issue_date ?? ""}`),
+        address: String(f.address ?? f.site_address ?? "Unknown"),
+        city: "Coquitlam",
+        type: String(f.permit_type ?? f.typeofwork ?? "Permit"),
+        status: String(f.status ?? "Unknown"),
+        submittedDate: f.application_date ?? f.applied_date ?? null,
+        issuedDate: f.issue_date ?? f.issuedate ?? null,
+        lat: Array.isArray(f.geo_point_2d) ? f.geo_point_2d[0] : null,
+        lng: Array.isArray(f.geo_point_2d) ? f.geo_point_2d[1] : null,
+        source: endpoint,
+        sourceUpdatedAt: null
+      };
+      const ok = PermitSchema.safeParse(p);
+      if (ok.success) items.push(ok.data);
+    }
+
+    return { city: "Coquitlam", items, rawSource: endpoint };
+  } catch (error) {
+    console.error("Coquitlam API error:", error);
+    return { city: "Coquitlam", items: [], rawSource: endpoint };
   }
-
-  return { city: "Coquitlam", items, rawSource: endpoint };
 }
