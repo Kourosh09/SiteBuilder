@@ -1,7 +1,7 @@
 import type { Permit } from "@shared/schema";
 import { PermitSchema } from "@shared/schema";
 import { fetchCoquitlam } from "./connectors/coquitlam";
-import { fetchSurrey } from "./connectors/surrey";
+import { fetchSurrey as fetchSurreyConnector } from "./connectors/surrey";
 import { fetchVancouver } from "./connectors/vancouver";
 
 export async function fetchMapleRidge(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
@@ -49,18 +49,7 @@ export async function fetchMapleRidge(query: string): Promise<{ city: string; it
   }
 }
 
-export async function fetchVancouverLegacy(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  // Use the new modular Vancouver connector
-  try {
-    const items = await fetchVancouver(query);
-    const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
-    return { city: "Vancouver", items, rawSource: endpoint };
-  } catch (error) {
-    console.error("Vancouver service error:", error);
-    const endpoint = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=issued-building-permits&rows=100&q=${encodeURIComponent(query)}`;
-    return { city: "Vancouver", items: [], rawSource: endpoint };
-  }
-}
+// Vancouver service wrapper removed - using direct connector in fetchAllBCPermits
 
 export async function fetchBurnaby(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
   // Burnaby Open Data Portal - Building Permits
@@ -171,7 +160,7 @@ export async function fetchCoquitlamService(query: string): Promise<{ city: stri
 
 export async function fetchSurreyService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
   try {
-    const items = await fetchSurrey(query);
+    const items = await fetchSurreyConnector(query);
     return { city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" };
   } catch (error) {
     console.error("Surrey service error:", error);
@@ -179,15 +168,7 @@ export async function fetchSurreyService(query: string): Promise<{ city: string;
   }
 }
 
-export async function fetchVancouverService(query: string): Promise<{ city: string; items: Permit[]; rawSource: string }> {
-  try {
-    const items = await fetchVancouver(query);
-    return { city: "Vancouver", items, rawSource: "https://opendata.vancouver.ca/api/permits" };
-  } catch (error) {
-    console.error("Vancouver service error:", error);
-    return { city: "Vancouver", items: [], rawSource: "https://opendata.vancouver.ca/api/permits" };
-  }
-}
+// Vancouver now uses direct connector - no wrapper needed
 
 // Unified permit fetcher for all BC municipalities
 export async function fetchAllBCPermits(query: string): Promise<{
@@ -196,7 +177,7 @@ export async function fetchAllBCPermits(query: string): Promise<{
   aggregatedItems: Permit[];
 }> {
   const cities = await Promise.all([
-    fetchVancouverLegacy(query),
+    fetchVancouver(query),
     fetchBurnaby(query),
     fetchSurrey(query),
     fetchMapleRidge(query),

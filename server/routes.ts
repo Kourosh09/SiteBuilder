@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fetchBurnaby(q),
         fetchCoquitlam(q).then(items => ({ city: "Coquitlam", items, rawSource: "https://data.coquitlam.ca/api/permits" })),
         fetchSurrey(q).then(items => ({ city: "Surrey", items, rawSource: "https://data.surrey.ca/api/permits" })),
-        fetchVancouver(q).then(items => ({ city: "Vancouver", items, rawSource: "https://opendata.vancouver.ca/api/permits" })),
+        fetchVancouver(q),
       ]);
 
       // Flatten & validate defensively
@@ -271,7 +271,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const q = String(req.query.q || "");
       const city = String(req.query.city || "");
       
-      const { fetchAllBCPermits, fetchVancouver, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
+      const { fetchAllBCPermits, fetchBurnaby, fetchSurrey, fetchMapleRidge } = await import("./permit-services");
+      const { fetchVancouver } = await import("./connectors/vancouver");
       
       let result;
       if (city.toLowerCase() === "vancouver") {
