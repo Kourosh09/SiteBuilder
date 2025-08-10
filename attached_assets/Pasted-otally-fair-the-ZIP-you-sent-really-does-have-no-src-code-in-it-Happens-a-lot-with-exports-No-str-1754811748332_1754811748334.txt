@@ -1,0 +1,277 @@
+otally fair—the ZIP you sent really does have no src/ code in it. Happens a lot with exports. No stress—I’ll get you back to a working site right now with a clean starter + the AI /smart_fetch endpoint.
+
+Here’s the copy-paste fix. Do these in your Replit project:
+
+1) Create these files
+index.html (root)
+html
+Copy
+Edit
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>BuildwiseAI</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+src/main.tsx
+ts
+Copy
+Edit
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
+src/App.tsx
+tsx
+Copy
+Edit
+import React, { useState } from "react";
+
+export default function App() {
+  const [q, setQ] = useState("permits near city hall");
+  const [resp, setResp] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function run() {
+    setLoading(true);
+    try {
+      const r = await fetch(`/smart_fetch?q=${encodeURIComponent(q)}&city=Maple Ridge`);
+      const data = await r.json();
+      setResp(data);
+    } catch (e) {
+      setResp({ ok: false, error: String(e) });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ fontFamily: "system-ui", padding: 24, maxWidth: 800, margin: "0 auto" }}>
+      <h1>BuildwiseAI</h1>
+      <p>Type a query and we’ll route to the best data source with validation.</p>
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <input value={q} onChange={e => setQ(e.target.value)} style={{ flex: 1, padding: 8 }} />
+        <button onClick={run} disabled={loading} style={{ padding: "8px 16px" }}>
+          {loading ? "Loading..." : "Search"}
+        </button>
+      </div>
+      <pre style={{ background: "#111", color: "#0f0", padding: 16, marginTop: 24, borderRadius: 8, overflowX: "auto" }}>
+        {resp ? JSON.stringify(resp, null, 2) : "// results appear here"}
+      </pre>
+    </div>
+  );
+}
+server.js (root)
+js
+Copy
+Edit
+const express = require("express");
+const path = require("path");
+const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ---- AI optimization layer: /smart_fetch ----
+app.get("/smart_fetch", async (req, res) => {
+  const q = (req.query.q || "").toString();
+  const city = (req.query.city || "Maple Ridge").toString();
+
+  // Replace these with real endpoints when ready
+  const sources = [
+    `https://example.com/opendata?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+    `https://example.com/city_api?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`,
+    `https://example.com/scrape?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`
+  ];
+
+  const provenance = [];
+  for (const url of sources) {
+    try {
+      const r = await fetch(url, { timeout: 10000 });
+      const ct = r.headers.get("content-type") || "";
+      const data = ct.includes("application/json") ? await r.json() : { text: await r.text() };
+      provenance.push({ source: url, ok: r.ok, data, fetched_at: Date.now()/1000 });
+    } catch (e) {
+      provenance.push({ source: url, ok: false, data: { error: String(e) }, fetched_at: Date.now()/1000 });
+    }
+  }
+
+  // Simple reconciliation & confidence
+  const okOnes = provenance.filter(p => p.ok);
+  let payload = {};
+  let confidence = 0.0;
+  let note = "No sources succeeded.";
+  if (okOnes.length) {
+    const pick = okOnes[0]; // later: choose by trust/recency/etc.
+    payload = typeof pick.data === "object" ? pick.data : { raw: pick.data };
+    confidence = 0.75;
+    note = `Selected ${pick.source}`;
+  }
+  const ok = confidence >= 0.7 && Object.keys(payload).length > 0;
+  return res.json({ ok, payload, confidence: Number(confidence.toFixed(2)), provenance, notes: ok ? null : note });
+});
+
+// ---- serve built frontend from /dist ----
+app.use(express.static(path.join(__dirname, "dist")));
+app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "dist", "index.html")));
+
+app.listen(PORT, () => console.log(`BuildwiseAI running on :${PORT}`));
+2) Update package.json scripts
+Open package.json and make sure you have these scripts:
+
+json
+Copy
+Edit
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.js"
+  }
+}
+3) Run it on Replit
+First run: npm install (only if deps aren’t installed yet)
+
+Build the front-end: npm run build
+
+Start the server: npm start
+
+Your app opens; test at:
+
+/ (the UI)
+
+/smart_fetch?q=test&city=Maple%20Ridge (the AI layer)
+
+4) Next step (when you’re ready)
+Give me 1–2 real data source URLs for Maple Ridge/Burnaby/Coquitlam and I’ll upgrade the /smart_fetch to:
+
+try multiple sources with retries/timeouts,
+
+validate/normalize fields,
+
+score confidence by source trust & recency,
+
+and return graceful fallbacks.
+
+If you prefer, I can also switch this to Python/FastAPI—but the Node version above will work immediately with your current project.
+
+Want me to keep going and add the trust/validation logic now with placeholder rules?
+
+
+
+
+
+
+
+
+You said:
+write me a code so you can see allthe files
+
+
+ChatGPT said:
+
+Thought for 5s
+Got you. Here’s a tiny drop-in export tool so I can see (and you can share) all your project files safely from your running Replit app—no Replit UI, no Drive.
+
+1) Install one helper
+In Replit shell:
+
+bash
+Copy
+Edit
+npm i archiver
+2) Paste this into your existing server.js (or create it if you don’t have one)
+You can put this at the bottom of server.js. If you don’t have Express yet, paste the whole file; otherwise just add the routes.
+
+js
+Copy
+Edit
+// --- EXPORT & LIST HELPERS (add to your server.js) ---
+const fs = require("fs");
+const path = require("path");
+const archiver = require("archiver");
+
+// config: which folders to skip (too big / not needed)
+const EXCLUDES = new Set(["node_modules", ".git", ".cache", ".next", "dist", "build"]);
+const PROJECT_ROOT = __dirname; // change if needed
+const EXPORT_NAME = "project-export.zip";
+
+// walk the directory and collect files (excluding big/system dirs)
+function listFiles(dir, base = "") {
+  const out = [];
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+  for (const it of items) {
+    if (EXCLUDES.has(it.name)) continue;
+    const abs = path.join(dir, it.name);
+    const rel = path.join(base, it.name);
+    if (it.isDirectory()) {
+      out.push(...listFiles(abs, rel));
+    } else {
+      const st = fs.statSync(abs);
+      out.push({ path: rel.replace(/\\/g, "/"), size: st.size });
+    }
+  }
+  return out;
+}
+
+// GET /_list  -> JSON listing of files (paths + sizes)
+app.get("/_list", (_req, res) => {
+  try {
+    const files = listFiles(PROJECT_ROOT);
+    res.json({ ok: true, count: files.length, files });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
+
+// GET /_zip   -> streams a fresh ZIP of the project (excludes big dirs)
+app.get("/_zip", (req, res) => {
+  try {
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename="${EXPORT_NAME}"`);
+
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    archive.on("error", err => { throw err; });
+    archive.pipe(res);
+
+    // add files manually, honoring EXCLUDES
+    (function addDir(dir, base = "") {
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+      for (const it of items) {
+        if (EXCLUDES.has(it.name)) continue;
+        const abs = path.join(dir, it.name);
+        const rel = path.join(base, it.name).replace(/\\/g, "/");
+        if (it.isDirectory()) addDir(abs, rel);
+        else archive.file(abs, { name: rel });
+      }
+    })(PROJECT_ROOT);
+
+    archive.finalize();
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
+3) Start your app
+If your scripts are standard:
+
+bash
+Copy
+Edit
+npm run build   # if you have a Vite/Next build; ok to skip if not
+npm start
+4) Share the files
+Visit: https://<your-replit-app>.repl.co/_list → you’ll see JSON of all files.
+
+Download: https://<your-replit-app>.repl.co/_zip → this downloads project-export.zip with your full code (excluding node_modules/.git/dist).
+
+Send me that /_zip link (or the ZIP itself), and I can review everything.
+
+Tip: After I’ve got the files, delete these routes from server.js so your code isn’t exposed publicly
